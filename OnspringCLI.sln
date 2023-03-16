@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F11C4518-8E00-41EF-B21A-8D0290F3545F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnspringCLI.Tests", "tests\OnspringCLI.Tests\OnspringCLI.Tests.csproj", "{2005EE5A-919B-4BBF-8C88-ACBF68E2B145}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{19736640-0454-4073-835E-D4C3FE34CCC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnspringCLI", "src\OnspringCLI\OnspringCLI.csproj", "{FBE7CC4D-FACE-4977-AC38-44F656E9A6C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2005EE5A-919B-4BBF-8C88-ACBF68E2B145}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2005EE5A-919B-4BBF-8C88-ACBF68E2B145}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2005EE5A-919B-4BBF-8C88-ACBF68E2B145}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2005EE5A-919B-4BBF-8C88-ACBF68E2B145}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBE7CC4D-FACE-4977-AC38-44F656E9A6C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBE7CC4D-FACE-4977-AC38-44F656E9A6C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBE7CC4D-FACE-4977-AC38-44F656E9A6C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBE7CC4D-FACE-4977-AC38-44F656E9A6C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2005EE5A-919B-4BBF-8C88-ACBF68E2B145} = {F11C4518-8E00-41EF-B21A-8D0290F3545F}
+		{FBE7CC4D-FACE-4977-AC38-44F656E9A6C7} = {19736640-0454-4073-835E-D4C3FE34CCC3}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,4 @@
+[submodule "lib/onspring-api-sdk"]
+	path = lib/onspring-api-sdk
+	url = https://github.com/StevanFreeborn/onspring-api-sdk.git
+  branch = forked

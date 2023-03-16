@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyTitle>OnspringCLI</AssemblyTitle>
+    <Product>OnspringCLI</Product>
+    <Description>A command line interface to interact with Onspring</Description>
+    <Version>0.0.1</Version>
+    <Authors>Stevan Freeborn</Authors>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\onspring-api-sdk\Onspring.API.SDK\Onspring.API.SDK.csproj" />
+  </ItemGroup>
+
+</Project>
