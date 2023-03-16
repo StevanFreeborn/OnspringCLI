@@ -1,5 +1,9 @@
 root = true
 
+# Ignore paths
+[lib/**/*]
+generated_code = true
+
 # All files
 [*]
 indent_style = space
