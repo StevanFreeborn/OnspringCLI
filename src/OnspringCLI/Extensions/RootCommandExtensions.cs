@@ -19,6 +19,14 @@ static class RootCommandExtensions
       }
     );
 
+    root.AddGlobalOption(
+      new Option<LogEventLevel>(
+        aliases: new[] { "--log-level", "-l" },
+        description: "The log level to use.",
+        getDefaultValue: () => LogEventLevel.Information
+      )
+    );
+
     return root;
   }
 

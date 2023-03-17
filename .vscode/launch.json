@@ -7,7 +7,16 @@
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/src/OnspringCLI/bin/Debug/net7.0/win-x64/OnspringCLI.dll",
-      "args": ["attachments", "reporter"],
+      "args": [
+        "attachments",
+        "reporter",
+        "-a",
+        "134",
+        "-k",
+        "5f4d205f66dd642274fa7e1c/601014f8-e881-4647-b7c6-158d1321a158",
+        "-l",
+        "debug"
+      ],
       "cwd": "${workspaceFolder}/src/OnspringCLI",
       "console": "integratedTerminal",
       "stopAtEntry": false,

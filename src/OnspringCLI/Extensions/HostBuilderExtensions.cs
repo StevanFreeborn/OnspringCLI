@@ -8,15 +8,15 @@ static class HostBuilderExtensions
     .UseSerilog(
       (hostingContext, services, loggerConfiguration) =>
       {
-        var logLevelSwitch = services.GetRequiredService<LoggingLevelSwitch>();
+        var options = services.GetRequiredService<IOptions<GlobalOptions>>().Value;
 
         loggerConfiguration
-        .MinimumLevel.ControlledBy(logLevelSwitch)
+        .MinimumLevel.Debug()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("Application", "OnspringCLI")
         .WriteTo.Console(
-          restrictedToMinimumLevel: LogEventLevel.Information,
+          restrictedToMinimumLevel: options.LogLevel,
           theme: AnsiConsoleTheme.Code
         );
       }
@@ -34,7 +34,7 @@ static class HostBuilderExtensions
         );
 
         services.AddSingleton(logLevelSwitch);
-        services.AddOptions<OnspringClientOptions>().BindCommandLine();
+        services.AddOptions<GlobalOptions>().BindCommandLine();
         services.AddSingleton<IOnspringService, OnspringService>();
         services.AddSingleton<IAttachmentsProcessor, AttachmentsProcessor>();
         services.AddSingleton<IReportService, ReportService>();

@@ -23,14 +23,6 @@ public class ReporterCommand : Command
     );
 
     AddOption(
-      new Option<LogEventLevel>(
-        aliases: new[] { "--log-level", "-l" },
-        description: "The log level to use.",
-        getDefaultValue: () => LogEventLevel.Information
-      )
-    );
-
-    AddOption(
       new Option<List<int>>(
         aliases: new[] { "--files-filter", "-f" },
         description: "A list of file IDs to filter on."
@@ -44,7 +36,6 @@ public class ReporterCommand : Command
     private readonly IAttachmentsProcessor _processor;
     public int AppId { get; set; } = 0;
     public string OutputDirectory { get; set; } = "output";
-    public LogEventLevel LogLevel { get; set; } = LogEventLevel.Information;
     public List<int> FilesFilter { get; set; } = new List<int>();
 
     public Handler(

@@ -3,12 +3,12 @@ namespace OnspringCLI.Services;
 class OnspringService : IOnspringService
 {
   private readonly ILogger _logger;
-  private readonly IOptions<OnspringClientOptions> _options;
+  private readonly IOptions<GlobalOptions> _options;
   private readonly IOnspringClient _client;
 
   public OnspringService(
     ILogger logger,
-    IOptions<OnspringClientOptions> options
+    IOptions<GlobalOptions> options
   )
   {
     _logger = logger;
