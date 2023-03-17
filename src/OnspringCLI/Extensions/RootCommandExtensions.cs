@@ -10,4 +10,10 @@ static class RootCommandExtensions
 
     return new CommandLineBuilder(root);
   }
+
+  public static RootCommand AddSubCommands(this RootCommand root)
+  {
+    root.AddCommand(new AttachmentsCommand());
+    return root;
+  }
 }
