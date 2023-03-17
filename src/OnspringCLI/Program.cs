@@ -1,4 +1,4 @@
-﻿new RootCommand(
+﻿await new RootCommand(
   "A command-line interface for interacting with an Onspring instance."
 )
 .AddOptions()
@@ -15,4 +15,4 @@
 )
 .UseDefaults()
 .Build()
-.Invoke(args);
+.InvokeAsync(args);
