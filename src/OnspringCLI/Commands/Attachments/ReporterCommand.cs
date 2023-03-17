@@ -116,7 +116,10 @@ public class ReporterCommand : Command
 
       _logger.Information(
         "You can find the log and report files in the output directory: {OutputDirectory}",
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OutputDirectory)
+        Path.Combine(
+          AppDomain.CurrentDomain.BaseDirectory,
+          OutputDirectory
+        )
       );
 
       await Log.CloseAndFlushAsync();
