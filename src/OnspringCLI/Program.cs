@@ -1,4 +1,4 @@
-﻿await new RootCommand(
+﻿new RootCommand(
   "A command-line interface for interacting with an Onspring instance."
 )
 .AddSubCommands()
@@ -8,10 +8,10 @@
     Host.CreateDefaultBuilder(args),
     host =>
       host
-      .UseSerilog()
       .AddServices()
+      .AddSerilog()
       .AddCommandHandlers()
 )
 .UseDefaults()
 .Build()
-.InvokeAsync(args);
+.Invoke(args);
