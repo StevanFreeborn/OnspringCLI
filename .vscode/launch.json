@@ -7,7 +7,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/src/OnspringCLI/bin/Debug/net7.0/win-x64/OnspringCLI.dll",
-      "args": [],
+      "args": "${input:command}",
       "cwd": "${workspaceFolder}/src/OnspringCLI",
       "console": "integratedTerminal",
       "stopAtEntry": false,
@@ -17,6 +17,14 @@
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"
+    }
+  ],
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "command",
+      "description": "Command to run",
+      "default": "help"
     }
   ]
 }
