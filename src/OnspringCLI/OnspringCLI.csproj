@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyTitle>OnspringCLI</AssemblyTitle>
     <Product>OnspringCLI</Product>
-    <Description>A command line interface to interact with Onspring</Description>
+    <Description>A command-line interface for interacting with an Onspring instance.</Description>
     <Version>0.0.1</Version>
     <Authors>Stevan Freeborn</Authors>
     <OutputType>Exe</OutputType>
@@ -17,6 +17,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\lib\onspring-api-sdk\Onspring.API.SDK\Onspring.API.SDK.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1" />
   </ItemGroup>
 
 </Project>
