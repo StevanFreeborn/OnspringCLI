@@ -2,17 +2,50 @@ namespace OnspringCLI.Commands.Attachments;
 
 public class ReporterCommand : Command
 {
-  public ReporterCommand() : base(name: "reporter", "Report on attachments") { }
+  public ReporterCommand() : base(name: "reporter", "Report on attachments")
+  {
+    AddOption(
+      new Option<int>(
+        aliases: new[] { "--app-id", "-a" },
+        description: "The app ID to use to authenticate with Onspring."
+      )
+      {
+        IsRequired = true
+      }
+    );
+
+    AddOption(
+      new Option<string>(
+        aliases: new[] { "--output-directory", "-o" },
+        description: "The directory to write the report to.",
+        getDefaultValue: () => "output"
+      )
+    );
+
+    AddOption(
+      new Option<LogEventLevel>(
+        aliases: new[] { "--log-level", "-l" },
+        description: "The log level to use.",
+        getDefaultValue: () => LogEventLevel.Information
+      )
+    );
+
+    AddOption(
+      new Option<List<int>>(
+        aliases: new[] { "--files-filter", "-f" },
+        description: "A list of file IDs to filter on."
+      )
+    );
+  }
 
   public new class Handler : ICommandHandler
   {
     private readonly ILogger _logger;
     private readonly IAttachmentsProcessor _processor;
-    public string? ApiKey { get; set; }
-    public int AppId { get; set; }
-    public string OutputDirectory { get; set; }
-    public LogEventLevel LogLevel { get; set; }
-    public List<int> FilesFilter { get; set; }
+    public int AppId { get; set; } = 0;
+    public string OutputDirectory { get; set; } = "output";
+    public LogEventLevel LogLevel { get; set; } = LogEventLevel.Information;
+    public List<int> FilesFilter { get; set; } = new List<int>();
 
     public Handler(
       ILogger logger,
@@ -34,7 +67,7 @@ public class ReporterCommand : Command
 
       _logger.Information("Retrieving file fields.");
 
-      var fileFields = await _processor.GetFileFields();
+      var fileFields = await _processor.GetFileFields(AppId);
 
       if (fileFields.Count == 0)
       {
@@ -49,7 +82,11 @@ public class ReporterCommand : Command
 
       _logger.Information("Retrieving files that need to be requested.");
 
-      var fileRequests = await _processor.GetFileRequests(fileFields);
+      var fileRequests = await _processor.GetFileRequests(
+        AppId,
+        fileFields,
+        FilesFilter
+      );
 
       if (fileRequests.Count == 0)
       {
@@ -80,7 +117,7 @@ public class ReporterCommand : Command
 
       _logger.Information("Start writing attachments report.");
 
-      _processor.PrintReport(fileInfos);
+      _processor.PrintReport(fileInfos, OutputDirectory);
 
       _logger.Information("Finished writing attachments report:");
 
@@ -88,7 +125,7 @@ public class ReporterCommand : Command
 
       _logger.Information(
         "You can find the log and report files in the output directory: {OutputDirectory}",
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _context.OutputDirectory)
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OutputDirectory)
       );
 
       await Log.CloseAndFlushAsync();

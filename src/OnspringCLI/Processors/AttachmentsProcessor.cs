@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
-
-namespace OnspringAttachmentReporter.Models;
+namespace OnspringCLI.Processors;
 
 class AttachmentsProcessor : IAttachmentsProcessor
 {
@@ -8,7 +6,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
   private readonly IReportService _reportService;
   private readonly ILogger _logger;
 
-  public Processor(
+  public AttachmentsProcessor(
     IOnspringService onspringService,
     IReportService reportService,
     ILogger logger
@@ -19,16 +17,20 @@ class AttachmentsProcessor : IAttachmentsProcessor
     _logger = logger;
   }
 
-  public async Task<List<Field>> GetFileFields()
+  public async Task<List<Field>> GetFileFields(int appId)
   {
-    var fields = await _onspringService.GetAllFields();
+    var fields = await _onspringService.GetAllFields(appId);
 
     return fields
     .Where(f => f.Type == FieldType.Attachment || f.Type == FieldType.Image)
     .ToList();
   }
 
-  public async Task<List<FileInfoRequest>> GetFileRequests(List<Field> fileFields)
+  public async Task<List<FileInfoRequest>> GetFileRequests(
+    int appId,
+    List<Field> fileFields,
+    List<int> filesFilter
+  )
   {
     var fileFieldIds = fileFields.Select(f => f.Id).ToList();
     var pagingRequest = new PagingRequest(1, 50);
@@ -36,17 +38,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
     var currentPage = pagingRequest.PageNumber;
     var fileRequests = new List<FileInfoRequest>();
 
-    var options = new ProgressBarOptions
-    {
-      ForegroundColor = ConsoleColor.DarkBlue,
-      ProgressCharacter = '─',
-      ShowEstimatedDuration = false,
-    };
-
-    using var progressBar = new ProgressBar(
-      totalPages,
-      "Retrieving files whose information needs to be requested...",
-      options
+    _logger.Debug(
+      "Retrieving records whose information needs to be requested."
     );
 
     do
@@ -56,9 +49,16 @@ class AttachmentsProcessor : IAttachmentsProcessor
         currentPage
       );
 
-      progressBar.Message = $"Retrieving files from page {currentPage} of records.";
+      _logger.Debug(
+        "Retrieving records for page {PageNumber}.",
+        currentPage
+      );
 
-      var res = await _onspringService.GetAPageOfRecords(fileFieldIds, pagingRequest);
+      var res = await _onspringService.GetAPageOfRecords(
+        appId,
+        fileFieldIds,
+        pagingRequest
+      );
 
       if (res == null)
       {
@@ -66,6 +66,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
           "No records found for page {PageNumber}.",
           currentPage
         );
+
         break;
       }
 
@@ -77,19 +78,30 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
       totalPages = res.TotalPages;
 
-      progressBar.Tick($"Retrieved files from page {currentPage} of records.");
-
       foreach (var record in res.Items)
       {
-        var requests = GetFileRequestsFromRecord(record, fileFields);
+        var requests = GetFileRequestsFromRecord(
+          record,
+          fileFields,
+          filesFilter
+        );
+
         fileRequests.AddRange(requests);
       }
+
+      _logger.Debug(
+        "Retrieved files from page {CurrentPage} of records.",
+        currentPage
+      );
 
       pagingRequest.PageNumber++;
       currentPage = pagingRequest.PageNumber;
     } while (currentPage <= totalPages);
 
-    progressBar.Tick("Finished retrieving files whose information needs to be requested.");
+    _logger.Debug(
+      "Finished retrieving records whose information needs to be requested."
+    );
+
     return fileRequests;
   }
 
@@ -126,9 +138,15 @@ class AttachmentsProcessor : IAttachmentsProcessor
     return fileInfos.ToList();
   }
 
-  public void PrintReport(List<FileInfo> fileInfos)
+  public void PrintReport(
+    List<FileInfoResult> fileInfos,
+    string outputDirectory
+  )
   {
-    _reportService.WriteReport(fileInfos);
+    _reportService.WriteReport(
+      fileInfos,
+      outputDirectory
+    );
   }
 
   [ExcludeFromCodeCoverage]
@@ -182,7 +200,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
   [ExcludeFromCodeCoverage]
   private static List<FileInfoRequest> GetFileRequestsFromRecord(
     ResultRecord record,
-    List<Field> fileFields
+    List<Field> fileFields,
+    List<int> filesFilter
   )
   {
     var fileRequests = new List<FileInfoRequest>();
@@ -213,8 +232,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
           }
 
           if (
-            _context.FilesFilter.Any() is true &&
-            _context.FilesFilter.Contains(attachment.FileId) is false
+            filesFilter.Any() is true &&
+            filesFilter.Contains(attachment.FileId) is false
           )
           {
             continue;
@@ -238,8 +257,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
         foreach (var file in files)
         {
           if (
-            _context.FilesFilter.Any() is true &&
-            _context.FilesFilter.Contains(file) is false
+            filesFilter.Any() is true &&
+            filesFilter.Contains(file) is false
           )
           {
             continue;

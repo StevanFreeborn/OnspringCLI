@@ -34,6 +34,10 @@ static class HostBuilderExtensions
         );
 
         services.AddSingleton(logLevelSwitch);
+        services.AddOptions<OnspringClientOptions>().BindCommandLine();
+        services.AddSingleton<IOnspringService, OnspringService>();
+        services.AddSingleton<IAttachmentsProcessor, AttachmentsProcessor>();
+        services.AddSingleton<IReportService, ReportService>();
       }
     );
   }
