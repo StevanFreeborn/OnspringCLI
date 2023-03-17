@@ -45,6 +45,6 @@ static class HostBuilderExtensions
   public static IHostBuilder AddCommandHandlers(this IHostBuilder hostBuilder)
   {
     return hostBuilder
-    .UseCommandHandler<ReporterCommand, ReporterCommand.Handler>();
+    .UseCommandHandler<ReportCommand, ReportCommand.Handler>();
   }
 }

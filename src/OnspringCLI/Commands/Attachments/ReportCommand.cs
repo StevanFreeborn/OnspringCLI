@@ -1,8 +1,8 @@
 namespace OnspringCLI.Commands.Attachments;
 
-public class ReporterCommand : Command
+public class ReportCommand : Command
 {
-  public ReporterCommand() : base(name: "reporter", "Report on attachments")
+  public ReportCommand() : base(name: "report", "Report on the attachments in an Onspring app.")
   {
     AddOption(
       new Option<int>(
@@ -25,7 +25,7 @@ public class ReporterCommand : Command
     AddOption(
       new Option<List<int>>(
         aliases: new[] { "--files-filter", "-f" },
-        description: "A list of file IDs to filter on."
+        description: "A list of file ids to include in the report."
       )
     );
   }
