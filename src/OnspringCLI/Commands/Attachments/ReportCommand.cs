@@ -7,7 +7,7 @@ public class ReportCommand : Command
     AddOption(
       new Option<int>(
         aliases: new[] { "--app-id", "-a" },
-        description: "The app ID to use to authenticate with Onspring."
+        description: "The app id where the attachments are held."
       )
       {
         IsRequired = true
@@ -26,15 +26,7 @@ public class ReportCommand : Command
       new Option<List<int>>(
         aliases: new[] { "--files-filter", "-ff" },
         description: "A comma separated list of file ids to include in the report.",
-        parseArgument: result =>
-          result
-          .Tokens[0]
-          .Value
-          .Split(',')
-          .Select(
-            int.Parse
-          )
-          .ToList()
+        parseArgument: result => result.ParseToIntegerList()
       )
     );
 
@@ -67,7 +59,7 @@ public class ReportCommand : Command
     private readonly IAttachmentsProcessor _processor;
     public int AppId { get; set; } = 0;
     public string OutputDirectory { get; set; } = "output";
-    public List<int> FilesFilter { get; set; } = new List<int>();
+    public List<int> FilesFilter { get; set; } = new();
     public FileInfo? FilesFilterCsv { get; set; } = null;
     public List<int> FilesFilterList => GetFilesFilterList();
 
@@ -88,10 +80,10 @@ public class ReportCommand : Command
 
       var fileFields = await _processor.GetFileFields(AppId);
 
-      if (fileFields.Count == 0)
+      if (fileFields.Count is 0)
       {
         _logger.Warning("No file fields could be found.");
-        return 2;
+        return 1;
       }
 
       _logger.Information(
@@ -104,13 +96,13 @@ public class ReportCommand : Command
       var fileRequests = await _processor.GetFileRequests(
         AppId,
         fileFields,
-        FilesFilterList
+        filesFilter: FilesFilterList
       );
 
-      if (fileRequests.Count == 0)
+      if (fileRequests.Count is 0)
       {
         _logger.Warning("No files could be found.");
-        return 3;
+        return 2;
       }
 
       _logger.Information(
@@ -122,10 +114,10 @@ public class ReportCommand : Command
 
       var fileInfos = await _processor.GetFileInfos(fileRequests);
 
-      if (fileInfos.Count == 0)
+      if (fileInfos.Count is 0)
       {
         _logger.Warning("No files information could be found.");
-        return 4;
+        return 3;
       }
 
       _logger.Information(
@@ -136,7 +128,7 @@ public class ReportCommand : Command
 
       _logger.Information("Start writing attachments report.");
 
-      _processor.PrintReport(fileInfos, OutputDirectory);
+      _processor.WriteFileInfoReport(fileInfos, OutputDirectory);
 
       _logger.Information("Finished writing attachments report:");
 

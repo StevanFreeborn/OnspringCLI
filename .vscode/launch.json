@@ -24,7 +24,7 @@
       "type": "promptString",
       "id": "command",
       "description": "Command to run",
-      "default": "help"
+      "default": ""
     }
   ]
 }

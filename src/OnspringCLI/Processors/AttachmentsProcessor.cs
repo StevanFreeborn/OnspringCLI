@@ -17,9 +17,24 @@ class AttachmentsProcessor : IAttachmentsProcessor
     _logger = logger;
   }
 
-  public async Task<List<Field>> GetFileFields(int appId)
+  public async Task<List<Field>> GetFileFields(
+    int appId,
+    List<int>? fieldsFilter = null
+  )
   {
     var fields = await _onspringService.GetAllFields(appId);
+
+    if (
+      fieldsFilter is not null &&
+      fieldsFilter.Any() is true
+    )
+    {
+      fields = fields
+      .Where(
+        f => fieldsFilter.Contains(f.Id)
+      )
+      .ToList();
+    }
 
     return fields
     .Where(f => f.Type == FieldType.Attachment || f.Type == FieldType.Image)
@@ -29,7 +44,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
   public async Task<List<FileInfoRequest>> GetFileRequests(
     int appId,
     List<Field> fileFields,
-    List<int> filesFilter
+    List<int>? filesFilter = null,
+    List<int>? recordsFilter = null
   )
   {
     var fileFieldIds = fileFields.Select(f => f.Id).ToList();
@@ -80,6 +96,15 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
       foreach (var record in res.Items)
       {
+        if (
+          recordsFilter is not null &&
+          recordsFilter.Any() is true &&
+          recordsFilter.Contains(record.RecordId) is false
+        )
+        {
+          continue;
+        }
+
         var requests = GetFileRequestsFromRecord(
           record,
           fileFields,
@@ -105,9 +130,9 @@ class AttachmentsProcessor : IAttachmentsProcessor
     return fileRequests;
   }
 
-  public async Task<List<FileInfoResult>> GetFileInfos(List<FileInfoRequest> fileRequests)
+  public async Task<List<OnspringFileInfoResult>> GetFileInfos(List<FileInfoRequest> fileRequests)
   {
-    var fileInfos = new ConcurrentBag<FileInfoResult>();
+    var fileInfos = new ConcurrentBag<OnspringFileInfoResult>();
 
     _logger.Debug(
       "Retrieving information for {Count} files.",
@@ -138,19 +163,19 @@ class AttachmentsProcessor : IAttachmentsProcessor
     return fileInfos.ToList();
   }
 
-  public void PrintReport(
-    List<FileInfoResult> fileInfos,
+  public void WriteFileInfoReport(
+    List<OnspringFileInfoResult> fileInfos,
     string outputDirectory
   )
   {
-    _reportService.WriteReport(
+    _reportService.WriteCsvFileInfoReport(
       fileInfos,
       outputDirectory
     );
   }
 
   [ExcludeFromCodeCoverage]
-  private async Task<FileInfoResult> GetFileInfo(FileInfoRequest fileRequest)
+  private async Task<OnspringFileInfoResult> GetFileInfo(FileInfoRequest fileRequest)
   {
     _logger.Debug(
       "Retrieving file info for record {RecordId}, field {FieldId}, file {FileId}.",
@@ -170,7 +195,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
         fileRequest.FileId
       );
 
-      return new FileInfoResult(
+      return new OnspringFileInfoResult(
         fileRequest.RecordId,
         fileRequest.FieldId,
         fileRequest.FieldName,
@@ -187,7 +212,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
       fileRequest.FileId
     );
 
-    return new FileInfoResult(
+    return new OnspringFileInfoResult(
       fileRequest.RecordId,
       fileRequest.FieldId,
       fileRequest.FieldName,
@@ -201,9 +226,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
   private static List<FileInfoRequest> GetFileRequestsFromRecord(
     ResultRecord record,
     List<Field> fileFields,
-    List<int> filesFilter
+    List<int>? filesFilter
   )
   {
+    var hasFileFilter = filesFilter is not null && filesFilter.Any() is true;
     var fileRequests = new List<FileInfoRequest>();
 
     foreach (var fieldValue in record.FieldData)
@@ -232,6 +258,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
           }
 
           if (
+            filesFilter is not null &&
             filesFilter.Any() is true &&
             filesFilter.Contains(attachment.FileId) is false
           )
@@ -257,6 +284,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
         foreach (var file in files)
         {
           if (
+            filesFilter is not null &&
             filesFilter.Any() is true &&
             filesFilter.Contains(file) is false
           )

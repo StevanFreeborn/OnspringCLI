@@ -7,5 +7,9 @@ public class AttachmentsCommand : Command
     AddCommand(
       new ReportCommand()
     );
+
+    AddCommand(
+      new DownloadCommand()
+    );
   }
 }

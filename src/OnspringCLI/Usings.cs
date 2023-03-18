@@ -21,8 +21,10 @@ global using Onspring.API.SDK.Models;
 
 global using OnspringCLI.Commands;
 global using OnspringCLI.Commands.Attachments;
+global using OnspringCLI.Commands.Attachments.Download;
 global using OnspringCLI.Extensions;
 global using OnspringCLI.Interfaces;
+global using OnspringCLI.Maps;
 global using OnspringCLI.Models;
 global using OnspringCLI.Processors;
 global using OnspringCLI.Services;

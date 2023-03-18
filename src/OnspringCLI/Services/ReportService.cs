@@ -9,8 +9,8 @@ public class ReportService : IReportService
     _logger = logger;
   }
 
-  public void WriteReport(
-    List<FileInfoResult> fileInfos,
+  public void WriteCsvFileInfoReport(
+    List<OnspringFileInfoResult> onspringFiles,
     string outputDirectory
   )
   {
@@ -24,8 +24,9 @@ public class ReportService : IReportService
 
     using (var csv = new CsvWriter(writer, config))
     {
+      csv.Context.RegisterClassMap<OnspringFileInfoResultMap>();
       _logger.Debug("Writing report to {FileName}.", fileName);
-      csv.WriteRecords(fileInfos);
+      csv.WriteRecords(onspringFiles);
       _logger.Debug("Report written to {FileName}.", fileName);
     };
   }

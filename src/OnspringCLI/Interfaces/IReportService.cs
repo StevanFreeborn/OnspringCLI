@@ -2,5 +2,5 @@ namespace OnspringCLI.Interfaces;
 
 public interface IReportService
 {
-  void WriteReport(List<FileInfoResult> fileInfos, string outputDirectory);
+  void WriteCsvFileInfoReport(List<OnspringFileInfoResult> fileInfos, string outputDirectory);
 }
