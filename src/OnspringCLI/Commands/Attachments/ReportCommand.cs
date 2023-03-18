@@ -24,10 +24,41 @@ public class ReportCommand : Command
 
     AddOption(
       new Option<List<int>>(
-        aliases: new[] { "--files-filter", "-f" },
-        description: "A list of file ids to include in the report."
+        aliases: new[] { "--files-filter", "-ff" },
+        description: "A comma separated list of file ids to include in the report.",
+        parseArgument: result =>
+          result
+          .Tokens[0]
+          .Value
+          .Split(',')
+          .Select(
+            int.Parse
+          )
+          .ToList()
       )
     );
+
+    var filesFilterCsv = new Option<FileInfo>(
+      aliases: new string[] { "--files-filter-csv", "-ffcsv" },
+      description: "The path to a csv file that specifies a list of file ids to include in the report."
+    );
+
+    filesFilterCsv.AddValidator(
+      result =>
+      {
+        var value = result.GetValueOrDefault<FileInfo>();
+
+        if (
+          value is not null &&
+          value.Exists is false
+        )
+        {
+          result.ErrorMessage = $"The file {value.FullName} does not exist.";
+        }
+      }
+    );
+
+    AddOption(filesFilterCsv);
   }
 
   public new class Handler : ICommandHandler
@@ -37,6 +68,8 @@ public class ReportCommand : Command
     public int AppId { get; set; } = 0;
     public string OutputDirectory { get; set; } = "output";
     public List<int> FilesFilter { get; set; } = new List<int>();
+    public FileInfo? FilesFilterCsv { get; set; } = null;
+    public List<int> FilesFilterList => GetFilesFilterList();
 
     public Handler(
       ILogger logger,
@@ -45,11 +78,6 @@ public class ReportCommand : Command
     {
       _logger = logger.ForContext<Handler>();
       _processor = processor;
-    }
-
-    public int Invoke(InvocationContext context)
-    {
-      throw new NotImplementedException();
     }
 
     public async Task<int> InvokeAsync(InvocationContext context)
@@ -76,7 +104,7 @@ public class ReportCommand : Command
       var fileRequests = await _processor.GetFileRequests(
         AppId,
         fileFields,
-        FilesFilter
+        FilesFilterList
       );
 
       if (fileRequests.Count == 0)
@@ -125,6 +153,30 @@ public class ReportCommand : Command
       await Log.CloseAndFlushAsync();
 
       return 0;
+    }
+
+    internal List<int> GetFilesFilterList()
+    {
+      var filesFilterList = new List<int>();
+
+      filesFilterList.AddRange(FilesFilter);
+
+      if (FilesFilterCsv is null)
+      {
+        return filesFilterList;
+      }
+
+      using var reader = new StreamReader(FilesFilterCsv.FullName);
+      using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+      var files = csv.GetRecords<int>().ToList();
+      filesFilterList.AddRange(files);
+
+      return filesFilterList;
+    }
+
+    public int Invoke(InvocationContext context)
+    {
+      throw new NotImplementedException();
     }
   }
 }
