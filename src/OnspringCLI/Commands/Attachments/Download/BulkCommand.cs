@@ -113,40 +113,40 @@ public class BulkCommand : Command
 
       _logger.Information("Downloading files.");
 
-      // foreach (var fileRequest in fileRequests)
-      // {
-      //   _logger.Information(
-      //     "Downloading file {FileId} from field {FieldId} on record {RecordId}.",
-      //     fileRequest.FileId,
-      //     fileRequest.FieldId,
-      //     fileRequest.RecordId
-      //   );
+      foreach (var fileRequest in fileRequests)
+      {
+        _logger.Debug(
+          "Downloading file {FileId} from field {FieldId} on record {RecordId}.",
+          fileRequest.FileId,
+          fileRequest.FieldId,
+          fileRequest.RecordId
+        );
 
-      //   var file = await _processor.GetFile(
-      //     fileRequest
-      //   );
+        var file = await _processor.GetFile(
+          fileRequest,
+          OutputDirectory
+        );
 
-      //   _logger.Information(
-      //     "File {FileName} downloaded.",
-      //     fileRequest.FileName
-      //   );
+        _logger.Debug(
+          "File {FileId} downloaded.",
+          file.FileId
+        );
 
-      //   _logger.Information(
-      //     "Saving file {FileName} to {OutputDirectory}.",
+        _logger.Debug(
+          "Saving file {FileId} to {OutputDirectory}.",
+          file.FileId,
+          OutputDirectory
+        );
 
-      //     OutputDirectory
-      //   );
+        await _processor.SaveFile(file);
 
-      //   await _processor.SaveFile(
-      //     file,
-      //     OutputDirectory
-      //   );
+        _logger.Debug(
+          "File {FileId} saved.",
+          file.FileId
+        );
+      }
 
-      //   _logger.Information(
-      //     "File {FileName} saved.",
-      //     fileRequest.FileName
-      //   );
-      // }
+      _logger.Information("Files downloaded.");
 
       _logger.Information("Onspring Bulk Attachment Downloader finished.");
 
