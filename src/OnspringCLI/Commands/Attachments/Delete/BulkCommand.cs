@@ -40,12 +40,12 @@ public class BulkCommand : Command
 
   public new class Handler : ICommandHandler
   {
-    public int Invoke(InvocationContext context)
+    public Task<int> InvokeAsync(InvocationContext context)
     {
       throw new NotImplementedException();
     }
 
-    public Task<int> InvokeAsync(InvocationContext context)
+    public int Invoke(InvocationContext context)
     {
       throw new NotImplementedException();
     }

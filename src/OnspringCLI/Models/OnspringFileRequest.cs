@@ -1,13 +1,13 @@
 namespace OnspringCLI.Models;
 
-public class FileInfoRequest
+public class OnspringFileRequest
 {
   public int RecordId { get; set; }
   public int FieldId { get; set; }
-  public string FieldName { get; set; }
   public int FileId { get; set; }
+  public string FieldName { get; set; }
 
-  public FileInfoRequest(
+  public OnspringFileRequest(
     int recordId,
     int fieldId,
     string fieldName,

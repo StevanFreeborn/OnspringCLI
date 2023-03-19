@@ -130,7 +130,7 @@ class OnspringService : IOnspringService
     }
   }
 
-  public async Task<GetFileResponse?> GetFile(FileInfoRequest fileRequest)
+  public async Task<GetFileResponse?> GetFile(OnspringFileRequest fileRequest)
   {
     try
     {

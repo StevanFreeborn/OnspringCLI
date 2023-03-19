@@ -41,7 +41,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     .ToList();
   }
 
-  public async Task<List<FileInfoRequest>> GetFileRequests(
+  public async Task<List<OnspringFileRequest>> GetFileRequests(
     int appId,
     List<Field> fileFields,
     List<int>? filesFilter = null,
@@ -52,7 +52,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     var pagingRequest = new PagingRequest(1, 50);
     var totalPages = 1;
     var currentPage = pagingRequest.PageNumber;
-    var fileRequests = new List<FileInfoRequest>();
+    var fileRequests = new List<OnspringFileRequest>();
 
     _logger.Debug(
       "Retrieving records whose information needs to be requested."
@@ -131,7 +131,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
   }
 
   public async Task<List<OnspringFileInfoResult>> GetFileInfos(
-    List<FileInfoRequest> fileRequests
+    List<OnspringFileRequest> fileRequests
   )
   {
     var fileInfos = new ConcurrentBag<OnspringFileInfoResult>();
@@ -197,7 +197,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
   }
 
   public async Task<OnspringFileResult?> GetFile(
-    FileInfoRequest fileRequest,
+    OnspringFileRequest fileRequest,
     string outputDirectory
   )
   {
@@ -318,7 +318,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
   }
 
   internal async Task<OnspringFileInfoResult> GetFileInfo(
-    FileInfoRequest fileRequest
+    OnspringFileRequest fileRequest
   )
   {
     _logger.Debug(
@@ -366,14 +366,14 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  internal static List<FileInfoRequest> GetFileRequestsFromRecord(
+  internal static List<OnspringFileRequest> GetFileRequestsFromRecord(
     ResultRecord record,
     List<Field> fileFields,
     List<int>? filesFilter
   )
   {
     var hasFileFilter = filesFilter is not null && filesFilter.Any() is true;
-    var fileRequests = new List<FileInfoRequest>();
+    var fileRequests = new List<OnspringFileRequest>();
 
     foreach (var fieldValue in record.FieldData)
     {
@@ -410,7 +410,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
           }
 
           fileRequests.Add(
-            new FileInfoRequest(
+            new OnspringFileRequest(
               record.RecordId,
               fieldValue.FieldId,
               field.Name,
@@ -436,7 +436,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
           }
 
           fileRequests.Add(
-            new FileInfoRequest(
+            new OnspringFileRequest(
               record.RecordId,
               fieldValue.FieldId,
               field.Name,
