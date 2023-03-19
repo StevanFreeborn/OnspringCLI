@@ -130,7 +130,9 @@ class AttachmentsProcessor : IAttachmentsProcessor
     return fileRequests;
   }
 
-  public async Task<List<OnspringFileInfoResult>> GetFileInfos(List<FileInfoRequest> fileRequests)
+  public async Task<List<OnspringFileInfoResult>> GetFileInfos(
+    List<FileInfoRequest> fileRequests
+  )
   {
     var fileInfos = new ConcurrentBag<OnspringFileInfoResult>();
 
@@ -174,8 +176,150 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  [ExcludeFromCodeCoverage]
-  private async Task<OnspringFileInfoResult> GetFileInfo(FileInfoRequest fileRequest)
+  public async Task<List<int>> GetRecordIdsFromReport(int reportId)
+  {
+    var report = await _onspringService.GetReport(reportId);
+
+    if (report == null)
+    {
+      _logger.Warning(
+        "Unable to get report {ReportId}.",
+        reportId
+      );
+
+      return new List<int>();
+    }
+
+    return report
+    .Rows
+    .Select(r => r.RecordId)
+    .ToList();
+  }
+
+  public async Task<OnspringFileResult?> GetFile(
+    FileInfoRequest fileRequest,
+    string outputDirectory
+  )
+  {
+    _logger.Debug(
+      "Retrieving file info for record {RecordId}, field {FieldId}, file {FileId}.",
+      fileRequest.RecordId,
+      fileRequest.FieldId,
+      fileRequest.FileId
+    );
+
+    var res = await _onspringService.GetFile(fileRequest);
+
+    if (res == null)
+    {
+      _logger.Warning(
+        "Unable to get file for record {RecordId}, field {FieldId}, file {FileId}.",
+        fileRequest.RecordId,
+        fileRequest.FieldId,
+        fileRequest.FileId
+      );
+
+      return null;
+    }
+
+    _logger.Debug(
+      "File retrieved for record {RecordId}, field {FieldId}, file {FileId}.",
+      fileRequest.RecordId,
+      fileRequest.FieldId,
+      fileRequest.FileId
+    );
+
+    var fileName = res.FileName.Trim('"');
+
+    var filePath = Path.Combine(
+      AppDomain.CurrentDomain.BaseDirectory,
+      outputDirectory,
+      "files",
+      $"{fileRequest.RecordId}-{fileRequest.FieldId}-{fileRequest.FileId}-{fileName}"
+    );
+
+    return new OnspringFileResult(
+      fileRequest.RecordId,
+      fileRequest.FieldId,
+      fileRequest.FieldName,
+      fileRequest.FileId,
+      fileName,
+      filePath,
+      res.Stream
+    );
+  }
+
+  public async Task<bool> SaveFile(OnspringFileResult file)
+  {
+    try
+    {
+      _logger.Debug(
+        "Saving file {FileName} for record {RecordId}, field {FieldId}, file {FileId}.",
+        file.FileName,
+        file.RecordId,
+        file.FieldId,
+        file.FileId
+      );
+
+      if (file.FilePath is null)
+      {
+        _logger.Warning(
+          "Unable to save file. File path is null for record {RecordId}, field {FieldId}, file {FileId}.",
+          file.RecordId,
+          file.FieldId,
+          file.FileId
+        );
+
+        return false;
+      }
+
+      var fileDirectory = Path.GetDirectoryName(file.FilePath);
+
+      if (fileDirectory is null)
+      {
+        _logger.Warning(
+          "Unable to save file. File directory is null for record {RecordId}, field {FieldId}, file {FileId}.",
+          file.RecordId,
+          file.FieldId,
+          file.FileId
+        );
+
+        return false;
+      }
+
+      Directory.CreateDirectory(fileDirectory);
+      var fileStream = File.Create(file.FilePath);
+      await file.Stream.CopyToAsync(fileStream);
+      await fileStream.DisposeAsync();
+
+      _logger.Debug(
+        "File {FileName} saved for record {RecordId}, field {FieldId}, file {FileId}.",
+        file.FileName,
+        file.RecordId,
+        file.FieldId,
+        file.FileId
+      );
+
+      return true;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Error saving file {FileName} for record {RecordId}, field {FieldId}, file {FileId}.",
+        file.FileName,
+        file.RecordId,
+        file.FieldId,
+        file.FileId
+      );
+
+      return false;
+    }
+  }
+
+  internal async Task<OnspringFileInfoResult> GetFileInfo(
+    FileInfoRequest fileRequest
+  )
   {
     _logger.Debug(
       "Retrieving file info for record {RecordId}, field {FieldId}, file {FileId}.",
@@ -222,8 +366,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  [ExcludeFromCodeCoverage]
-  private static List<FileInfoRequest> GetFileRequestsFromRecord(
+  internal static List<FileInfoRequest> GetFileRequestsFromRecord(
     ResultRecord record,
     List<Field> fileFields,
     List<int>? filesFilter

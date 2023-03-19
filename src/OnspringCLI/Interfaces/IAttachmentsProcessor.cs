@@ -12,7 +12,8 @@ public interface IAttachmentsProcessor
   );
 
   Task<List<OnspringFileInfoResult>> GetFileInfos(List<FileInfoRequest> fileRequests);
-  Task<OnspringFileResult> GetFile(FileInfoRequest fileRequest, string outputDirectory);
-  Task SaveFile(OnspringFileResult file);
+  Task<OnspringFileResult?> GetFile(FileInfoRequest fileRequest, string outputDirectory);
+  Task<bool> SaveFile(OnspringFileResult file);
+  Task<List<int>> GetRecordIdsFromReport(int reportId);
   void WriteFileInfoReport(List<OnspringFileInfoResult> fileInfos, string outputDirectory);
 }

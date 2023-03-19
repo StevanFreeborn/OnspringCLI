@@ -1,8 +1,8 @@
 namespace OnspringCLI.Commands.Attachments.Download;
 
-public class BulkCommand : Command
+public class BulkDownloadCommand : Command
 {
-  public BulkCommand() : base("bulk", "Download attachments in bulk")
+  public BulkDownloadCommand() : base("bulk", "Download attachments in bulk")
   {
     AddOption(
       new Option<int>(
@@ -89,7 +89,20 @@ public class BulkCommand : Command
 
       if (ReportFilter is not 0)
       {
+        _logger.Information(
+          "Retrieving records from report {ReportId}.",
+          ReportFilter
+        );
 
+        var records = await _processor.GetRecordIdsFromReport(
+          ReportFilter
+        );
+        _logger.Information(
+          "Records retrieved. {Count} records found.",
+          records.Count
+        );
+
+        RecordsFilter.AddRange(records);
       }
 
       _logger.Information("Retrieving files that need to be downloaded.");
@@ -113,6 +126,25 @@ public class BulkCommand : Command
 
       _logger.Information("Downloading files.");
 
+      var outputDirectory = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory,
+        OutputDirectory
+      );
+
+      Directory.CreateDirectory(outputDirectory);
+
+      var fileName = Path.Combine(
+        outputDirectory,
+        "file-list.csv"
+      );
+
+      using var writer = new StreamWriter(fileName);
+      using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+      csv.Context.RegisterClassMap<OnspringFileResultMap>();
+
+      csv.WriteHeader<OnspringFileResult>();
+      csv.NextRecord();
+
       foreach (var fileRequest in fileRequests)
       {
         _logger.Debug(
@@ -127,6 +159,15 @@ public class BulkCommand : Command
           OutputDirectory
         );
 
+        if (file is null)
+        {
+          _logger.Warning(
+            "File {FileId} could not be downloaded.",
+            fileRequest.FileId
+          );
+          continue;
+        }
+
         _logger.Debug(
           "File {FileId} downloaded.",
           file.FileId
@@ -138,7 +179,19 @@ public class BulkCommand : Command
           OutputDirectory
         );
 
-        await _processor.SaveFile(file);
+        var isFileSaved = await _processor.SaveFile(file);
+
+        if (isFileSaved is false)
+        {
+          _logger.Warning(
+            "File {FileId} could not be saved.",
+            file.FileId
+          );
+          continue;
+        }
+
+        csv.WriteRecord(file);
+        csv.NextRecord();
 
         _logger.Debug(
           "File {FileId} saved.",

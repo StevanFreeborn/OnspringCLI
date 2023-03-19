@@ -4,8 +4,6 @@ public class OnspringFileInfoResultMap : ClassMap<OnspringFileInfoResult>
 {
   public OnspringFileInfoResultMap()
   {
-    // Map(m => m.Id).Index(0).Name("id");
-    // Map(m => m.Name).Index(1).Name("name");
     Map(m => m.RecordId).Index(0).Name("Record Id");
     Map(m => m.FieldId).Index(1).Name("Field Id");
     Map(m => m.FieldName).Index(2).Name("Field Name");

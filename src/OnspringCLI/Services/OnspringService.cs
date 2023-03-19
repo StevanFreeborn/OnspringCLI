@@ -167,6 +167,38 @@ class OnspringService : IOnspringService
     }
   }
 
+  public async Task<ReportData?> GetReport(int reportId)
+  {
+    try
+    {
+      var res = await ExecuteRequest(
+        async () => await _client.GetReportAsync(reportId)
+      );
+
+      if (res.IsSuccessful is true)
+      {
+        return res.Value;
+      }
+
+      _logger.Error(
+        "Unable to get report. {StatusCode} - {Message}.",
+        res.StatusCode,
+        res.Message
+      );
+
+      return null;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Unable to get report."
+      );
+
+      return null;
+    }
+  }
+
   [ExcludeFromCodeCoverage]
   private async Task<ApiResponse<T>> ExecuteRequest<T>(Func<Task<ApiResponse<T>>> func, int retry = 1)
   {
