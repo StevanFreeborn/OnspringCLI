@@ -46,6 +46,15 @@ static class HostBuilderExtensions
   {
     return hostBuilder
     .UseCommandHandler<ReportCommand, ReportCommand.Handler>()
-    .UseCommandHandler<BulkCommand, BulkCommand.Handler>();
+    .UseCommandHandler
+    <
+      Commands.Attachments.Download.BulkCommand,
+      Commands.Attachments.Download.BulkCommand.Handler
+    >()
+    .UseCommandHandler
+    <
+      Commands.Attachments.Delete.BulkCommand,
+      Commands.Attachments.Delete.BulkCommand.Handler
+    >();
   }
 }

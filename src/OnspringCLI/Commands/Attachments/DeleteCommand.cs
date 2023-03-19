@@ -5,7 +5,7 @@ public class DeleteCommand : Command
   public DeleteCommand() : base("download", "Download attachments")
   {
     AddCommand(
-      new BulkCommand()
+      new Delete.BulkCommand()
     );
   }
 }
