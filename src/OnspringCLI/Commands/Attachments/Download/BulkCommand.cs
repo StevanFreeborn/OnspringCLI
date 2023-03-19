@@ -7,7 +7,7 @@ public class BulkCommand : Command
     AddOption(
       new Option<int>(
         aliases: new[] { "--app-id", "-a" },
-        description: "The app id where the attachments are held."
+        description: "The app id where the attachments are held that will be downloaded."
       )
       {
         IsRequired = true
@@ -17,7 +17,7 @@ public class BulkCommand : Command
     AddOption(
       new Option<string>(
         aliases: new[] { "--output-directory", "-o" },
-        description: "The directory to download the attachments to.",
+        description: "The name of the directory the attachments will be downloaded to.",
         getDefaultValue: () => "output"
       )
     );
@@ -202,6 +202,14 @@ public class BulkCommand : Command
       _logger.Information("Files downloaded.");
 
       _logger.Information("Onspring Bulk Attachment Downloader finished.");
+
+      _logger.Information(
+        "You can find downloaded files in the output directory: {OutputDirectory}",
+        Path.Combine(
+          AppDomain.CurrentDomain.BaseDirectory,
+          OutputDirectory
+        )
+      );
 
       return 0;
     }

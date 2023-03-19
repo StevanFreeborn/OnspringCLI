@@ -17,7 +17,7 @@ public class ReportCommand : Command
     AddOption(
       new Option<string>(
         aliases: new[] { "--output-directory", "-o" },
-        description: "The directory to write the report to.",
+        description: "The name of the directory to write the report to.",
         getDefaultValue: () => "output"
       )
     );
@@ -135,7 +135,7 @@ public class ReportCommand : Command
       _logger.Information("Onspring Attachment Reporter finished.");
 
       _logger.Information(
-        "You can find the log and report files in the output directory: {OutputDirectory}",
+        "You can find the report in the output directory: {OutputDirectory}",
         Path.Combine(
           AppDomain.CurrentDomain.BaseDirectory,
           OutputDirectory
