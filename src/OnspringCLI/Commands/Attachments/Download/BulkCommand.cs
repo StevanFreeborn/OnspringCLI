@@ -1,8 +1,8 @@
 namespace OnspringCLI.Commands.Attachments.Download;
 
-public class BulkDownloadCommand : Command
+public class BulkCommand : Command
 {
-  public BulkDownloadCommand() : base("bulk", "Download attachments in bulk")
+  public BulkCommand() : base("bulk", "Download attachments in bulk")
   {
     AddOption(
       new Option<int>(

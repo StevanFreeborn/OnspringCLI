@@ -46,6 +46,6 @@ static class HostBuilderExtensions
   {
     return hostBuilder
     .UseCommandHandler<ReportCommand, ReportCommand.Handler>()
-    .UseCommandHandler<BulkDownloadCommand, BulkDownloadCommand.Handler>();
+    .UseCommandHandler<BulkCommand, BulkCommand.Handler>();
   }
 }
