@@ -11,5 +11,9 @@ public class AttachmentsCommand : Command
     AddCommand(
       new DownloadCommand()
     );
+
+    AddCommand(
+      new DeleteCommand()
+    );
   }
 }
