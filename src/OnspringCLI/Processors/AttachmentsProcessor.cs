@@ -170,9 +170,24 @@ class AttachmentsProcessor : IAttachmentsProcessor
     string outputDirectory
   )
   {
-    _reportService.WriteCsvFileInfoReport(
+    _reportService.WriteCsvReport(
       fileInfos,
-      outputDirectory
+      typeof(OnspringFileInfoResultMap),
+      outputDirectory,
+      "attachments-report.csv"
+    );
+  }
+
+  public void WriteFileRequestErrorReport(
+    List<OnspringFileRequest> fileRequests,
+    string outputDirectory
+  )
+  {
+    _reportService.WriteCsvReport(
+      fileRequests,
+      typeof(OnspringFileRequestMap),
+      outputDirectory,
+      "file-request-errors.csv"
     );
   }
 
@@ -202,10 +217,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
   )
   {
     _logger.Debug(
-      "Retrieving file info for record {RecordId}, field {FieldId}, file {FileId}.",
+      "Retrieving file {FileId} for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
       fileRequest.RecordId,
-      fileRequest.FieldId,
-      fileRequest.FileId
+      fileRequest.FieldId
     );
 
     var res = await _onspringService.GetFile(fileRequest);
@@ -213,20 +228,20 @@ class AttachmentsProcessor : IAttachmentsProcessor
     if (res == null)
     {
       _logger.Warning(
-        "Unable to get file for record {RecordId}, field {FieldId}, file {FileId}.",
+        "Unable to get file {FileId} for record {RecordId} in field {FieldId}.",
+        fileRequest.FileId,
         fileRequest.RecordId,
-        fileRequest.FieldId,
-        fileRequest.FileId
+        fileRequest.FieldId
       );
 
       return null;
     }
 
     _logger.Debug(
-      "File retrieved for record {RecordId}, field {FieldId}, file {FileId}.",
+      "File {FileId} retrieved for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
       fileRequest.RecordId,
-      fileRequest.FieldId,
-      fileRequest.FileId
+      fileRequest.FieldId
     );
 
     var fileName = res.FileName.Trim('"');
@@ -249,7 +264,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  public async Task<bool> SaveFile(OnspringFileResult file)
+  public async Task<bool> TrySaveFile(OnspringFileResult file)
   {
     try
     {
@@ -293,11 +308,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
       await fileStream.DisposeAsync();
 
       _logger.Debug(
-        "File {FileName} saved for record {RecordId}, field {FieldId}, file {FileId}.",
-        file.FileName,
+        "File {FileId} saved for record {RecordId} in field {FieldId}.",
+        file.FileId,
         file.RecordId,
-        file.FieldId,
-        file.FileId
+        file.FieldId
       );
 
       return true;
@@ -306,11 +320,60 @@ class AttachmentsProcessor : IAttachmentsProcessor
     {
       _logger.Error(
         ex,
-        "Error saving file {FileName} for record {RecordId}, field {FieldId}, file {FileId}.",
-        file.FileName,
+        "Error saving file {FileId} for record {RecordId} in field {FieldId}.",
+        file.FileId,
         file.RecordId,
-        file.FieldId,
-        file.FileId
+        file.FieldId
+      );
+
+      return false;
+    }
+  }
+
+  public async Task<bool> TryDeleteFile(
+    OnspringFileRequest fileRequest
+  )
+  {
+    try
+    {
+      _logger.Debug(
+        "Deleting file {FileId} for record {RecordId} in field {FieldId}.",
+        fileRequest.FileId,
+        fileRequest.RecordId,
+        fileRequest.FieldId
+      );
+
+      var isDeleted = await _onspringService.TryDeleteFile(fileRequest);
+
+      if (isDeleted is false)
+      {
+        _logger.Warning(
+          "Unable to delete file {FileId} for record {RecordId} in field {FieldId}.",
+          fileRequest.FileId,
+          fileRequest.RecordId,
+          fileRequest.FieldId
+        );
+
+        return false;
+      }
+
+      _logger.Debug(
+        "File {FileId} deleted for record {RecordId} in field {FieldId}.",
+        fileRequest.FileId,
+        fileRequest.RecordId,
+        fileRequest.FieldId
+      );
+
+      return true;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Error deleting file {FileId} for record {RecordId} in field {FieldId}.",
+        fileRequest.FileId,
+        fileRequest.RecordId,
+        fileRequest.FieldId
       );
 
       return false;

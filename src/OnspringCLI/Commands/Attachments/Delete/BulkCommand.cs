@@ -40,9 +40,117 @@ public class BulkCommand : Command
 
   public new class Handler : ICommandHandler
   {
-    public Task<int> InvokeAsync(InvocationContext context)
+    private readonly ILogger _logger;
+    private readonly IAttachmentsProcessor _processor;
+    public int AppId { get; set; } = 0;
+    public string OutputDirectory { get; set; } = "output";
+    public List<int> FieldFilter { get; set; } = new();
+    public List<int> RecordsFilter { get; set; } = new();
+    public int ReportFilter { get; set; } = 0;
+
+    public Handler(
+      ILogger logger,
+      IAttachmentsProcessor processor
+    )
     {
-      throw new NotImplementedException();
+      _logger = logger;
+      _processor = processor;
+    }
+
+    public async Task<int> InvokeAsync(InvocationContext context)
+    {
+      _logger.Information("Starting Onspring Bulk Attachment Deleter");
+
+      _logger.Information("Retrieving file fields.");
+
+      var fileFields = await _processor.GetFileFields(
+        AppId,
+        FieldFilter
+      );
+
+      if (fileFields.Count is 0)
+      {
+        _logger.Warning("No file fields found.");
+        return 1;
+      }
+
+      if (ReportFilter is not 0)
+      {
+        _logger.Information(
+          "Retrieving records from report {ReportId}.",
+          ReportFilter
+        );
+
+        var records = await _processor.GetRecordIdsFromReport(
+          ReportFilter
+        );
+
+        _logger.Information(
+          "Records retrieved. {Count} records found.",
+          records.Count
+        );
+
+        RecordsFilter.AddRange(records);
+      }
+
+      _logger.Information("Retrieving files that need to be deleted.");
+
+      var fileRequests = await _processor.GetFileRequests(
+        AppId,
+        fileFields,
+        recordsFilter: RecordsFilter
+      );
+
+      if (fileRequests.Count is 0)
+      {
+        _logger.Warning("No files found to delete.");
+        return 2;
+      }
+
+      _logger.Information(
+        "Files retrieved. {Count} files found.",
+        fileRequests.Count
+      );
+
+      _logger.Information("Deleting files.");
+
+      var erroredRequests = new List<OnspringFileRequest>();
+
+      foreach (var fileRequest in fileRequests)
+      {
+        var isDeleted = await _processor.TryDeleteFile(
+          fileRequest
+        );
+
+        if (isDeleted is false)
+        {
+          erroredRequests.Add(fileRequest);
+        }
+      }
+
+      if (erroredRequests.Any() is true)
+      {
+        _processor.WriteFileRequestErrorReport(
+          erroredRequests,
+          OutputDirectory
+        );
+
+        var outputDirectory = Path.Combine(
+          AppDomain.CurrentDomain.BaseDirectory,
+          OutputDirectory
+        );
+
+        _logger.Warning(
+          "Some files were not deleted. You can find a list of the files that were not deleted in the output directory: {OutputDirectory}",
+          outputDirectory
+        );
+      }
+
+      _logger.Information("Files deleted.");
+
+      _logger.Information("Onspring Bulk Attachment Deleter finished.");
+
+      return 0;
     }
 
     public int Invoke(InvocationContext context)

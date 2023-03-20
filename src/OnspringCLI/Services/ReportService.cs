@@ -9,13 +9,15 @@ public class ReportService : IReportService
     _logger = logger;
   }
 
-  public void WriteCsvFileInfoReport(
-    List<OnspringFileInfoResult> onspringFiles,
-    string outputDirectory
+  public void WriteCsvReport<T>(
+    List<T> records,
+    Type mapType,
+    string outputDirectory,
+    string fileName
   )
   {
-    var fileName = GetReportPath(outputDirectory);
-    using var writer = new StreamWriter(fileName);
+    var reportPath = GetReportPath(outputDirectory, fileName);
+    using var writer = new StreamWriter(reportPath);
 
     var config = new CsvConfiguration(CultureInfo.InvariantCulture)
     {
@@ -24,26 +26,33 @@ public class ReportService : IReportService
 
     using (var csv = new CsvWriter(writer, config))
     {
-      csv.Context.RegisterClassMap<OnspringFileInfoResultMap>();
+      csv.Context.RegisterClassMap(mapType);
+
       _logger.Debug("Writing report to {FileName}.", fileName);
-      csv.WriteRecords(onspringFiles);
+
+      csv.WriteRecords(records);
+
       _logger.Debug("Report written to {FileName}.", fileName);
     };
   }
 
-  internal static string GetReportPath(string outputDirectory)
+  internal static string GetReportPath(
+    string outputDirectory,
+    string fileName
+  )
   {
-    var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-    var outputDirectoryPath = Path.Combine(currentDirectory, outputDirectory);
+    var outputDirectoryPath = Path.Combine(
+      AppDomain.CurrentDomain.BaseDirectory,
+      outputDirectory
+    );
 
-    if (!Directory.Exists(outputDirectoryPath))
-    {
-      Directory.CreateDirectory(outputDirectoryPath);
-    }
+    Directory.CreateDirectory(
+      outputDirectoryPath
+    );
 
     return Path.Combine(
       outputDirectoryPath,
-      "attachment_report.csv"
+      fileName
     );
   }
 }

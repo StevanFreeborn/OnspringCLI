@@ -199,10 +199,113 @@ class OnspringService : IOnspringService
     }
   }
 
+  public async Task<bool> TryDeleteFile(OnspringFileRequest fileRequest)
+  {
+    try
+    {
+      var res = await ExecuteRequest(
+        async () => await _client.DeleteFileAsync(
+          fileRequest.RecordId,
+          fileRequest.FieldId,
+          fileRequest.FileId
+        )
+      );
+
+      if (res.IsSuccessful is true)
+      {
+        return true;
+      }
+
+      _logger.Error(
+        "Unable to delete file. {StatusCode} - {Message}.",
+        res.StatusCode,
+        res.Message
+      );
+
+      return false;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Unable to delete file: {@FileRequest}.",
+        fileRequest
+      );
+
+      return false;
+    }
+  }
+
   [ExcludeFromCodeCoverage]
   private async Task<ApiResponse<T>> ExecuteRequest<T>(Func<Task<ApiResponse<T>>> func, int retry = 1)
   {
     ApiResponse<T> response;
+    var retryLimit = 3;
+
+    try
+    {
+      do
+      {
+        response = await func();
+
+        if (response.IsSuccessful is true)
+        {
+          return response;
+        }
+
+        _logger.Warning(
+          "Request was unsuccessful. {StatusCode} - {Message}. ({Attempt} of {AttemptLimit})",
+          response.StatusCode,
+          response.Message,
+          retry,
+          retryLimit
+        );
+
+        retry++;
+
+        if (retry > retryLimit)
+        {
+          break;
+        }
+
+        await Wait(retry);
+      } while (retry <= retryLimit);
+    }
+    catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+    {
+      _logger.Error(
+        ex,
+        "Request failed. ({Attempt} of {AttemptLimit})",
+        retry,
+        retryLimit
+      );
+
+      retry++;
+
+      if (retry > retryLimit)
+      {
+        throw;
+      }
+
+      await Wait(retry);
+
+      return await ExecuteRequest(func, retry);
+    }
+
+    _logger.Error(
+      "Request failed after {RetryLimit} attempts. {StatusCode} - {Message}.",
+      retryLimit,
+      response.StatusCode,
+      response.Message
+    );
+
+    return response;
+  }
+
+  [ExcludeFromCodeCoverage]
+  private async Task<ApiResponse> ExecuteRequest(Func<Task<ApiResponse>> func, int retry = 1)
+  {
+    ApiResponse response;
     var retryLimit = 3;
 
     try

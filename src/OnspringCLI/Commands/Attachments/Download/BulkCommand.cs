@@ -97,6 +97,7 @@ public class BulkCommand : Command
         var records = await _processor.GetRecordIdsFromReport(
           ReportFilter
         );
+
         _logger.Information(
           "Records retrieved. {Count} records found.",
           records.Count
@@ -145,15 +146,10 @@ public class BulkCommand : Command
       csv.WriteHeader<OnspringFileResult>();
       csv.NextRecord();
 
+      var erroredRequests = new List<OnspringFileRequest>();
+
       foreach (var fileRequest in fileRequests)
       {
-        _logger.Debug(
-          "Downloading file {FileId} from field {FieldId} on record {RecordId}.",
-          fileRequest.FileId,
-          fileRequest.FieldId,
-          fileRequest.RecordId
-        );
-
         var file = await _processor.GetFile(
           fileRequest,
           OutputDirectory
@@ -161,41 +157,32 @@ public class BulkCommand : Command
 
         if (file is null)
         {
-          _logger.Warning(
-            "File {FileId} could not be downloaded.",
-            fileRequest.FileId
-          );
+          erroredRequests.Add(fileRequest);
           continue;
         }
 
-        _logger.Debug(
-          "File {FileId} downloaded.",
-          file.FileId
-        );
+        var isSaved = await _processor.TrySaveFile(file);
 
-        _logger.Debug(
-          "Saving file {FileId} to {OutputDirectory}.",
-          file.FileId,
-          OutputDirectory
-        );
-
-        var isFileSaved = await _processor.SaveFile(file);
-
-        if (isFileSaved is false)
+        if (isSaved is false)
         {
-          _logger.Warning(
-            "File {FileId} could not be saved.",
-            file.FileId
-          );
+          erroredRequests.Add(fileRequest);
           continue;
         }
 
         csv.WriteRecord(file);
         csv.NextRecord();
+      }
 
-        _logger.Debug(
-          "File {FileId} saved.",
-          file.FileId
+      if (erroredRequests.Any() is true)
+      {
+        _processor.WriteFileRequestErrorReport(
+          erroredRequests,
+          OutputDirectory
+        );
+
+        _logger.Warning(
+          "Some files were not deleted. You can find a list of the files that were not deleted in the output directory: {OutputDirectory}",
+          outputDirectory
         );
       }
 
