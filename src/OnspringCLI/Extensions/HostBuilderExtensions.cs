@@ -8,15 +8,26 @@ static class HostBuilderExtensions
     .UseSerilog(
       (hostingContext, services, loggerConfiguration) =>
       {
+        var logLevelSwitch = services.GetRequiredService<LoggingLevelSwitch>();
         var options = services.GetRequiredService<IOptions<GlobalOptions>>().Value;
+        var logFilePath = Path.Combine(
+          AppDomain.CurrentDomain.BaseDirectory,
+          "logs",
+          $"{DateTime.Now:yyyy_MM_dd-HH_mm_ss}_log.json"
+        );
 
         loggerConfiguration
-        .MinimumLevel.Debug()
+        .MinimumLevel.Verbose()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("Application", "OnspringCLI")
+        .WriteTo.File(
+          new CompactJsonFormatter(),
+          logFilePath,
+          options.LogLevel
+        )
         .WriteTo.Console(
-          restrictedToMinimumLevel: options.LogLevel,
+          restrictedToMinimumLevel: logLevelSwitch.MinimumLevel,
           theme: AnsiConsoleTheme.Code
         );
       }

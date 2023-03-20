@@ -9,7 +9,6 @@ global using System.Globalization;
 
 global using CsvHelper;
 global using CsvHelper.Configuration;
-global using CsvHelper.Configuration.Attributes;
 
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
@@ -21,8 +20,6 @@ global using Onspring.API.SDK.Models;
 
 global using OnspringCLI.Commands;
 global using OnspringCLI.Commands.Attachments;
-global using OnspringCLI.Commands.Attachments.Delete;
-global using OnspringCLI.Commands.Attachments.Download;
 global using OnspringCLI.Extensions;
 global using OnspringCLI.Interfaces;
 global using OnspringCLI.Maps;
@@ -33,4 +30,5 @@ global using OnspringCLI.Services;
 global using Serilog;
 global using Serilog.Core;
 global using Serilog.Events;
+global using Serilog.Formatting.Compact;
 global using Serilog.Sinks.SystemConsole.Themes;

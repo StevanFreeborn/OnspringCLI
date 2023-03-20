@@ -24,16 +24,15 @@ public class ReportService : IReportService
       ShouldQuote = (field) => false,
     };
 
-    using (var csv = new CsvWriter(writer, config))
-    {
-      csv.Context.RegisterClassMap(mapType);
+    using var csv = new CsvWriter(writer, config);
 
-      _logger.Debug("Writing report to {FileName}.", fileName);
+    csv.Context.RegisterClassMap(mapType);
 
-      csv.WriteRecords(records);
+    _logger.Debug("Writing report to {FileName}.", fileName);
 
-      _logger.Debug("Report written to {FileName}.", fileName);
-    };
+    csv.WriteRecords(records);
+
+    _logger.Debug("Report written to {FileName}.", fileName);
   }
 
   internal static string GetReportPath(

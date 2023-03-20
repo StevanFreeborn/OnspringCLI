@@ -150,6 +150,8 @@ public class BulkCommand : Command
 
       _logger.Information("Onspring Bulk Attachment Deleter finished.");
 
+      await Log.CloseAndFlushAsync();
+
       return 0;
     }
 

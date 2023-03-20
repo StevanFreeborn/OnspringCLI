@@ -22,8 +22,8 @@ static class RootCommandExtensions
     root.AddGlobalOption(
       new Option<LogEventLevel>(
         aliases: new[] { "--log-level", "-l" },
-        description: "The log level to use.",
-        getDefaultValue: () => LogEventLevel.Information
+        description: "The minimum level of log events to be written to the log file.",
+        getDefaultValue: () => LogEventLevel.Debug
       )
     );
 

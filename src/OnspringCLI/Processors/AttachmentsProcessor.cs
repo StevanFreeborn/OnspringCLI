@@ -303,9 +303,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
       }
 
       Directory.CreateDirectory(fileDirectory);
-      var fileStream = File.Create(file.FilePath);
+      await using var fileStream = File.Create(file.FilePath);
       await file.Stream.CopyToAsync(fileStream);
-      await fileStream.DisposeAsync();
 
       _logger.Debug(
         "File {FileId} saved for record {RecordId} in field {FieldId}.",

@@ -198,6 +198,8 @@ public class BulkCommand : Command
         )
       );
 
+      await Log.CloseAndFlushAsync();
+
       return 0;
     }
 
