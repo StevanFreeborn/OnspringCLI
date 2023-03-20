@@ -2,5 +2,5 @@ namespace OnspringCLI.Interfaces;
 
 public interface IAttachmentTransferSettingsFactory
 {
-  IAttachmentTransferSettings Create(FileInfo configFile);
+  IAttachmentTransferSettings Create(FileInfo settingsFile);
 }

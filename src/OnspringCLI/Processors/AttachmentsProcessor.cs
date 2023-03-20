@@ -2,21 +2,24 @@ namespace OnspringCLI.Processors;
 
 class AttachmentsProcessor : IAttachmentsProcessor
 {
+  private readonly IOptions<GlobalOptions> _globalOptions;
   private readonly IOnspringService _onspringService;
   private readonly IReportService _reportService;
   private readonly ILogger _logger;
   private readonly LoggingLevelSwitch _logLevelSwitch;
 
   public AttachmentsProcessor(
+    IOptions<GlobalOptions> globalOptions,
     IOnspringService onspringService,
     IReportService reportService,
     ILogger logger,
     LoggingLevelSwitch loggingLevelSwitch
   )
   {
+    _globalOptions = globalOptions;
     _onspringService = onspringService;
     _reportService = reportService;
-    _logger = logger;
+    _logger = logger.ForContext<AttachmentsProcessor>();
     _logLevelSwitch = loggingLevelSwitch;
   }
 
@@ -25,7 +28,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
     List<int>? fieldsFilter = null
   )
   {
-    var fields = await _onspringService.GetAllFields(appId);
+    var fields = await _onspringService.GetAllFields(
+      _globalOptions.Value.SourceApiKey,
+      appId
+    );
 
     if (
       fieldsFilter is not null &&
@@ -74,6 +80,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
       );
 
       var res = await _onspringService.GetAPageOfRecords(
+        _globalOptions.Value.SourceApiKey,
         appId,
         fileFieldIds,
         pagingRequest
@@ -209,7 +216,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
   public async Task<List<int>> GetRecordIdsFromReport(int reportId)
   {
-    var report = await _onspringService.GetReport(reportId);
+    var report = await _onspringService.GetReport(
+      _globalOptions.Value.SourceApiKey,
+      reportId
+    );
 
     if (report == null)
     {
@@ -239,7 +249,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
       fileRequest.FieldId
     );
 
-    var res = await _onspringService.GetFile(fileRequest);
+    var res = await _onspringService.GetFile(
+      _globalOptions.Value.SourceApiKey,
+      fileRequest
+    );
 
     if (res == null)
     {
@@ -358,7 +371,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
         fileRequest.FieldId
       );
 
-      var isDeleted = await _onspringService.TryDeleteFile(fileRequest);
+      var isDeleted = await _onspringService.TryDeleteFile(
+        _globalOptions.Value.SourceApiKey,
+        fileRequest
+      );
 
       if (isDeleted is false)
       {
@@ -406,7 +422,10 @@ class AttachmentsProcessor : IAttachmentsProcessor
       fileRequest.FileId
     );
 
-    var res = await _onspringService.GetFile(fileRequest);
+    var res = await _onspringService.GetFile(
+      _globalOptions.Value.SourceApiKey,
+      fileRequest
+    );
 
     if (res == null)
     {

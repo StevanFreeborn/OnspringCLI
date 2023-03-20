@@ -3,27 +3,26 @@ namespace OnspringCLI.Services;
 class OnspringService : IOnspringService
 {
   private readonly ILogger _logger;
-  private readonly IOptions<GlobalOptions> _options;
-  private readonly IOnspringClient _client;
+  private readonly IOnspringClientFactory _clientFactory;
 
   public OnspringService(
     ILogger logger,
-    IOptions<GlobalOptions> options
+    IOnspringClientFactory clientFactory
   )
   {
     _logger = logger.ForContext<OnspringService>();
-    _options = options;
-
-    _client = new OnspringClient(
-      _options.Value.BaseUrl,
-      _options.Value.ApiKey
-    );
+    _clientFactory = clientFactory;
   }
 
-  public async Task<List<Field>> GetAllFields(int appId)
+  public async Task<List<Field>> GetAllFields(
+    string apiKey,
+    int appId
+  )
   {
     try
     {
+      var client = _clientFactory.Create(apiKey);
+
       var fields = new List<Field>();
       var totalPages = 1;
       var pagingRequest = new PagingRequest(1, 50);
@@ -40,7 +39,7 @@ class OnspringService : IOnspringService
         );
 
         var res = await ExecuteRequest(
-          async () => await _client.GetFieldsForAppAsync(
+          async () => await client.GetFieldsForAppAsync(
             appId,
             pagingRequest
           )
@@ -88,6 +87,7 @@ class OnspringService : IOnspringService
   }
 
   public async Task<GetPagedRecordsResponse?> GetAPageOfRecords(
+    string apiKey,
     int appId,
     List<int> fileFields,
     PagingRequest pagingRequest
@@ -95,6 +95,8 @@ class OnspringService : IOnspringService
   {
     try
     {
+      var client = _clientFactory.Create(apiKey);
+
       var request = new GetRecordsByAppRequest
       {
         AppId = appId,
@@ -103,7 +105,7 @@ class OnspringService : IOnspringService
       };
 
       var res = await ExecuteRequest(
-        async () => await _client.GetRecordsForAppAsync(request)
+        async () => await client.GetRecordsForAppAsync(request)
       );
 
       if (res.IsSuccessful is true)
@@ -130,12 +132,17 @@ class OnspringService : IOnspringService
     }
   }
 
-  public async Task<GetFileResponse?> GetFile(OnspringFileRequest fileRequest)
+  public async Task<GetFileResponse?> GetFile(
+    string apiKey,
+    OnspringFileRequest fileRequest
+  )
   {
     try
     {
+      var client = _clientFactory.Create(apiKey);
+
       var res = await ExecuteRequest(
-        async () => await _client.GetFileAsync(
+        async () => await client.GetFileAsync(
           fileRequest.RecordId,
           fileRequest.FieldId,
           fileRequest.FileId
@@ -167,12 +174,17 @@ class OnspringService : IOnspringService
     }
   }
 
-  public async Task<ReportData?> GetReport(int reportId)
+  public async Task<ReportData?> GetReport(
+    string apiKey,
+    int reportId
+  )
   {
     try
     {
+      var client = _clientFactory.Create(apiKey);
+
       var res = await ExecuteRequest(
-        async () => await _client.GetReportAsync(reportId)
+        async () => await client.GetReportAsync(reportId)
       );
 
       if (res.IsSuccessful is true)
@@ -199,12 +211,17 @@ class OnspringService : IOnspringService
     }
   }
 
-  public async Task<bool> TryDeleteFile(OnspringFileRequest fileRequest)
+  public async Task<bool> TryDeleteFile(
+    string apiKey,
+    OnspringFileRequest fileRequest
+  )
   {
     try
     {
+      var client = _clientFactory.Create(apiKey);
+
       var res = await ExecuteRequest(
-        async () => await _client.DeleteFileAsync(
+        async () => await client.DeleteFileAsync(
           fileRequest.RecordId,
           fileRequest.FieldId,
           fileRequest.FileId
@@ -303,7 +320,10 @@ class OnspringService : IOnspringService
   }
 
   [ExcludeFromCodeCoverage]
-  private async Task<ApiResponse> ExecuteRequest(Func<Task<ApiResponse>> func, int retry = 1)
+  private async Task<ApiResponse> ExecuteRequest(
+    Func<Task<ApiResponse>> func,
+    int retry = 1
+  )
   {
     ApiResponse response;
     var retryLimit = 3;

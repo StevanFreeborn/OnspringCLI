@@ -2,27 +2,19 @@ namespace OnspringCLI.Factories;
 
 public class AttachmentTransferSettingsFactory : IAttachmentTransferSettingsFactory
 {
-  private readonly Func<IAttachmentTransferSettings> _factory;
-
-  public AttachmentTransferSettingsFactory(
-    Func<IAttachmentTransferSettings> factory
-  )
+  public IAttachmentTransferSettings Create(FileInfo settingsFile)
   {
-    _factory = factory;
-  }
+    var settings = new AttachmentTransferSettings();
 
-  public IAttachmentTransferSettings Create(FileInfo configFile)
-  {
-    var settings = _factory();
+    var config = new ConfigurationBuilder()
+    .AddJsonFile(
+      settingsFile.FullName,
+      optional: false,
+      reloadOnChange: true
+    )
+    .Build();
 
-    new ConfigurationBuilder()
-      .AddJsonFile(
-        configFile.FullName,
-        optional: false,
-        reloadOnChange: true
-      )
-      .Build()
-      .Bind(settings);
+    config.Bind(settings);
 
     return settings;
   }

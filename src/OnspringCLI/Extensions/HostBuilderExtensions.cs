@@ -45,7 +45,8 @@ static class HostBuilderExtensions
 
         services.AddSingleton(logLevelSwitch);
         services.AddOptions<GlobalOptions>().BindCommandLine();
-        services.AddAttachmentTransferSettingsFactory();
+        services.AddSingleton<IOnspringClientFactory, OnspringClientFactory>();
+        services.AddSingleton<IAttachmentTransferSettingsFactory, AttachmentTransferSettingsFactory>();
         services.AddSingleton<IOnspringService, OnspringService>();
         services.AddSingleton<IAttachmentsProcessor, AttachmentsProcessor>();
         services.AddSingleton<IReportService, ReportService>();
@@ -66,6 +67,7 @@ static class HostBuilderExtensions
     <
       Commands.Attachments.Delete.BulkCommand,
       Commands.Attachments.Delete.BulkCommand.Handler
-    >();
+    >()
+    .UseCommandHandler<TransferCommand, TransferCommand.Handler>();
   }
 }

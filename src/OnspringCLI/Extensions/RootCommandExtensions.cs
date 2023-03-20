@@ -11,8 +11,8 @@ static class RootCommandExtensions
   {
     root.AddGlobalOption(
       new Option<string>(
-        aliases: new[] { "--api-key", "-k" },
-        description: "The API key to use to authenticate with Onspring."
+        aliases: new[] { "--source-api-key", "-sk" },
+        description: "The API key to use to authenticate with an Onspring source instance."
       )
       {
         IsRequired = true,
