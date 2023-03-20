@@ -41,7 +41,7 @@ static class HostBuilderExtensions
       (hostingContext, services) =>
       {
         var logLevelSwitch = new LoggingLevelSwitch(
-          LogEventLevel.Debug
+          LogEventLevel.Information
         );
 
         services.AddSingleton(logLevelSwitch);
