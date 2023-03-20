@@ -1,6 +1,7 @@
 global using System.Collections.Concurrent;
 global using System.CommandLine;
 global using System.CommandLine.Builder;
+global using System.CommandLine.Help;
 global using System.CommandLine.Hosting;
 global using System.CommandLine.Invocation;
 global using System.CommandLine.Parsing;
@@ -36,3 +37,5 @@ global using Serilog.Formatting.Compact;
 global using Serilog.Sinks.SystemConsole.Themes;
 
 global using ShellProgressBar;
+
+global using Spectre.Console;

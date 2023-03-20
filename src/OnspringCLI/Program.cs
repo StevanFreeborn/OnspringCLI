@@ -14,5 +14,6 @@
       .AddCommandHandlers()
 )
 .UseDefaults()
+.AddHelpFigletText()
 .Build()
 .InvokeAsync(args);
