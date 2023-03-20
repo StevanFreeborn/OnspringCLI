@@ -11,6 +11,10 @@ public class ProgressBarFactory
       ShowEstimatedDuration = false,
     };
 
-    return new ProgressBar(maxTicks, initialMessage, options);
+    return new ProgressBar(
+      maxTicks,
+      initialMessage,
+      options
+    );
   }
 }
