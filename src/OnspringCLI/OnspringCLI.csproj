@@ -30,4 +30,10 @@
     <PackageReference Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>OnspringCLITests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>
