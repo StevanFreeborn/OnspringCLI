@@ -7,7 +7,10 @@ public class TransferCommand : Command
     var configFileOption = new Option<FileInfo>(
       aliases: new string[] { "--config", "-c" },
       description: "The path to the file that specifies configuration for the transferer."
-    );
+    )
+    {
+      IsRequired = true
+    };
 
     configFileOption.AddValidator(
       FileInfoOptionValidator.Validate
@@ -36,6 +39,26 @@ public class TransferCommand : Command
 
   public new class Handler : ICommandHandler
   {
+    private readonly ILogger _logger;
+    private readonly IAttachmentsProcessor _attachmentsProcessor;
+    private readonly IAttachmentTransferSettingsFactory _settingsFactory;
+    private readonly IAttachmentTransferSettings _attachmentTransferSettings;
+    public FileInfo ConfigFile { get; set; } = null!;
+    public int PageSize { get; set; } = 50;
+    public int? PageNumber { get; set; } = null;
+
+    public Handler(
+      ILogger logger,
+      IAttachmentsProcessor attachmentsProcessor,
+      IAttachmentTransferSettingsFactory settingsFactory
+    )
+    {
+      _logger = logger.ForContext<Handler>();
+      _attachmentsProcessor = attachmentsProcessor;
+      _settingsFactory = settingsFactory;
+      _attachmentTransferSettings = _settingsFactory.Create(ConfigFile);
+    }
+
     public Task<int> InvokeAsync(InvocationContext context)
     {
       throw new NotImplementedException();

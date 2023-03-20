@@ -45,6 +45,7 @@ static class HostBuilderExtensions
 
         services.AddSingleton(logLevelSwitch);
         services.AddOptions<GlobalOptions>().BindCommandLine();
+        services.AddAttachmentTransferSettingsFactory();
         services.AddSingleton<IOnspringService, OnspringService>();
         services.AddSingleton<IAttachmentsProcessor, AttachmentsProcessor>();
         services.AddSingleton<IReportService, ReportService>();
