@@ -36,18 +36,7 @@ public class ReportCommand : Command
     );
 
     filesFilterCsv.AddValidator(
-      result =>
-      {
-        var value = result.GetValueOrDefault<FileInfo>();
-
-        if (
-          value is not null &&
-          value.Exists is false
-        )
-        {
-          result.ErrorMessage = $"The file {value.FullName} does not exist.";
-        }
-      }
+      FileInfoOptionValidator.Validate
     );
 
     AddOption(filesFilterCsv);

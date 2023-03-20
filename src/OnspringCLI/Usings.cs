@@ -27,6 +27,7 @@ global using OnspringCLI.Maps;
 global using OnspringCLI.Models;
 global using OnspringCLI.Processors;
 global using OnspringCLI.Services;
+global using OnspringCLI.Validators;
 
 global using Serilog;
 global using Serilog.Core;
