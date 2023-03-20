@@ -51,6 +51,7 @@ public class TransferCommand : Command
   {
     private readonly ILogger _logger;
     private readonly IAttachmentTransferSettingsFactory _settingsFactory;
+    private readonly IAttachmentsTransferProcessor _processor;
     public IAttachmentTransferSettings AttachmentTransferSettings { get; set; } = null!;
     public FileInfo SettingsFile { get; set; } = null!;
     public int PageSize { get; set; } = 50;
@@ -58,18 +59,36 @@ public class TransferCommand : Command
 
     public Handler(
       ILogger logger,
-      IAttachmentTransferSettingsFactory settingsFactory
+      IAttachmentTransferSettingsFactory settingsFactory,
+      IAttachmentsTransferProcessor processor
     )
     {
       _logger = logger.ForContext<Handler>();
       _settingsFactory = settingsFactory;
+      _processor = processor;
     }
 
-    public Task<int> InvokeAsync(InvocationContext context)
+    public async Task<int> InvokeAsync(InvocationContext context)
     {
       AttachmentTransferSettings = _settingsFactory.Create(SettingsFile);
-      Console.WriteLine("Transfering attachments...");
-      return Task.FromResult(0);
+
+      var hasValidMatchFields = await _processor.ValidateMatchFields();
+
+      if (hasValidMatchFields is false)
+      {
+        Log.Fatal("Invalid match fields. Match fields should be of type text, date, number, auto number, or a formula with a non list output type.");
+        return 1;
+      }
+
+      var hasValidFlagFieldIdAndValues = await _processor.ValidateFlagFieldIdAndValues();
+
+      if (hasValidFlagFieldIdAndValues is false)
+      {
+        Log.Fatal("Invalid flag field id or values. Flag field id should be of type text, date, number, auto number, or a formula with a non list output type.");
+        return 2;
+      }
+
+      return 0;
     }
 
     public int Invoke(InvocationContext context)

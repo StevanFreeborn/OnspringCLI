@@ -49,6 +49,7 @@ static class HostBuilderExtensions
         services.AddSingleton<IAttachmentTransferSettingsFactory, AttachmentTransferSettingsFactory>();
         services.AddSingleton<IOnspringService, OnspringService>();
         services.AddSingleton<IAttachmentsProcessor, AttachmentsProcessor>();
+        services.AddSingleton<IAttachmentsTransferProcessor, AttachmentsTransferProcessor>();
         services.AddSingleton<IReportService, ReportService>();
       }
     );
