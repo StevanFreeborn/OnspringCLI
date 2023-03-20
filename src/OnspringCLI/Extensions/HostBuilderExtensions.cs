@@ -20,7 +20,6 @@ static class HostBuilderExtensions
         .MinimumLevel.Verbose()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
-        .Enrich.WithProperty("Application", "OnspringCLI")
         .WriteTo.File(
           new CompactJsonFormatter(),
           logFilePath,

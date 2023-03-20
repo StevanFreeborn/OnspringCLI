@@ -21,6 +21,7 @@ global using Onspring.API.SDK.Models;
 global using OnspringCLI.Commands;
 global using OnspringCLI.Commands.Attachments;
 global using OnspringCLI.Extensions;
+global using OnspringCLI.Factories;
 global using OnspringCLI.Interfaces;
 global using OnspringCLI.Maps;
 global using OnspringCLI.Models;
@@ -32,3 +33,5 @@ global using Serilog.Core;
 global using Serilog.Events;
 global using Serilog.Formatting.Compact;
 global using Serilog.Sinks.SystemConsole.Themes;
+
+global using ShellProgressBar;

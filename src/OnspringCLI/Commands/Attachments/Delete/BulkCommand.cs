@@ -53,7 +53,7 @@ public class BulkCommand : Command
       IAttachmentsProcessor processor
     )
     {
-      _logger = logger;
+      _logger = logger.ForContext<Handler>();
       _processor = processor;
     }
 

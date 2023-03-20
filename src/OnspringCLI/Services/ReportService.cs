@@ -6,7 +6,7 @@ public class ReportService : IReportService
 
   public ReportService(ILogger logger)
   {
-    _logger = logger;
+    _logger = logger.ForContext<ReportService>();
   }
 
   public void WriteCsvReport<T>(

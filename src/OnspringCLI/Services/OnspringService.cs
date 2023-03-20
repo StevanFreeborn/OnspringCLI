@@ -11,7 +11,7 @@ class OnspringService : IOnspringService
     IOptions<GlobalOptions> options
   )
   {
-    _logger = logger;
+    _logger = logger.ForContext<OnspringService>();
     _options = options;
 
     _client = new OnspringClient(

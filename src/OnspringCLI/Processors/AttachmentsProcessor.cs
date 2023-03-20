@@ -5,16 +5,19 @@ class AttachmentsProcessor : IAttachmentsProcessor
   private readonly IOnspringService _onspringService;
   private readonly IReportService _reportService;
   private readonly ILogger _logger;
+  private readonly LoggingLevelSwitch _logLevelSwitch;
 
   public AttachmentsProcessor(
     IOnspringService onspringService,
     IReportService reportService,
-    ILogger logger
+    ILogger logger,
+    LoggingLevelSwitch loggingLevelSwitch
   )
   {
     _onspringService = onspringService;
     _reportService = reportService;
     _logger = logger;
+    _logLevelSwitch = loggingLevelSwitch;
   }
 
   public async Task<List<Field>> GetFileFields(
@@ -141,12 +144,22 @@ class AttachmentsProcessor : IAttachmentsProcessor
       fileRequests.Count
     );
 
+    using var pBar = ProgressBarFactory.Create(
+      fileRequests.Count,
+      "Starting to retrieve information for files."
+    );
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Fatal;
+
     await Parallel.ForEachAsync(
       fileRequests,
       async (fileRequest, token) =>
       {
+        pBar.Message = $"Retrieving file info for file {fileRequest.FileId}.";
+
         var fileInfo = await GetFileInfo(fileRequest);
         fileInfos.Add(fileInfo);
+
+        pBar.Tick($"Retrieved file info for file {fileRequest.FileId}.");
 
         _logger.Debug(
           "File info retrieved for record {RecordId}, field {FieldId}, file {FileId}.",
@@ -156,6 +169,9 @@ class AttachmentsProcessor : IAttachmentsProcessor
         );
       }
     );
+
+    pBar.Message = "Finished retrieving information for files.";
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Information;
 
     _logger.Debug(
       "Information retrieved for {Count} files.",
