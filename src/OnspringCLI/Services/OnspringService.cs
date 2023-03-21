@@ -253,11 +253,12 @@ class OnspringService : IOnspringService
     }
   }
 
-  public async Task<List<ResultRecord>> GetRecordsByQuery(
+  public async Task<GetPagedRecordsResponse?> GetAPageOfRecordsByQuery(
     string apiKey,
-    int targetAppId,
-    List<int> list,
-    string queryFilter
+    int appId,
+    List<int> fieldIds,
+    string queryFilter,
+    PagingRequest? pagingRequest = null
   )
   {
     try
@@ -266,18 +267,18 @@ class OnspringService : IOnspringService
 
       var request = new QueryRecordsRequest
       {
-        AppId = targetAppId,
-        FieldIds = list,
-        Filter = queryFilter
+        AppId = appId,
+        FieldIds = fieldIds,
+        Filter = queryFilter,
       };
 
       var res = await ExecuteRequest(
-        async () => await client.QueryRecordsAsync(request)
+        async () => await client.QueryRecordsAsync(request, pagingRequest)
       );
 
       if (res.IsSuccessful is true)
       {
-        return res.Value.Items;
+        return res.Value;
       }
 
       _logger.Error(
@@ -286,7 +287,7 @@ class OnspringService : IOnspringService
         res.Message
       );
 
-      return new List<ResultRecord>();
+      return null;
     }
     catch (Exception ex)
     {
@@ -295,7 +296,7 @@ class OnspringService : IOnspringService
         "Unable to get records by query."
       );
 
-      return new List<ResultRecord>();
+      return null;
     }
   }
 

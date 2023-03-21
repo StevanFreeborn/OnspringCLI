@@ -116,21 +116,8 @@ public class TransferCommand : Command
         RecordsFilter.AddRange(records);
       }
 
-      var sourceFieldIds = new List<int>
-      {
-        AttachmentTransferSettings.SourceMatchFieldId,
-        AttachmentTransferSettings.ProcessFlagFieldId,
-      };
-      sourceFieldIds.AddRange(
-        AttachmentTransferSettings
-        .AttachmentFieldIdMappings
-        .Keys
-        .ToList()
-      );
-
-      var sourceRecords = await _processor.GetSourceRecords(
-        AttachmentTransferSettings.SourceAppId,
-        sourceFieldIds,
+      var sourceRecords = await _processor.GetSourceRecordsToProcess(
+        AttachmentTransferSettings,
         RecordsFilter
       );
 

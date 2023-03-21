@@ -25,6 +25,7 @@ global using OnspringCLI.Commands.Attachments;
 global using OnspringCLI.Extensions;
 global using OnspringCLI.Factories;
 global using OnspringCLI.Interfaces;
+global using OnspringCLI.Logging;
 global using OnspringCLI.Maps;
 global using OnspringCLI.Models;
 global using OnspringCLI.Processors;

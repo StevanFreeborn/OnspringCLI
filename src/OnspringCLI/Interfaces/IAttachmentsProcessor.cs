@@ -39,9 +39,8 @@ public interface IAttachmentsProcessor
     IAttachmentTransferSettings settings
   );
 
-  Task<List<ResultRecord>> GetSourceRecords(
-    int sourceAppId,
-    List<int> sourceFieldIds,
+  Task<List<ResultRecord>> GetSourceRecordsToProcess(
+    IAttachmentTransferSettings settings,
     List<int>? recordsFilter = null
   );
 

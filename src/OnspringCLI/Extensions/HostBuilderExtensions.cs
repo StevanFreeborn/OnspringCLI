@@ -17,6 +17,10 @@ static class HostBuilderExtensions
         );
 
         loggerConfiguration
+        .Destructure.With(
+          new OnspringFileRequestDestructuringPolicy(),
+          new OnspringSaveFileRequestDestructuringPolicy()
+        )
         .MinimumLevel.Verbose()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
         .Enrich.FromLogContext()

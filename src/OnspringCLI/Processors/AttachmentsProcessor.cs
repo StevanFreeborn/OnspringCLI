@@ -491,12 +491,24 @@ class AttachmentsProcessor : IAttachmentsProcessor
     return true;
   }
 
-  public async Task<List<ResultRecord>> GetSourceRecords(
-    int sourceAppId,
-    List<int> sourceFieldIds,
+  public async Task<List<ResultRecord>> GetSourceRecordsToProcess(
+    IAttachmentTransferSettings settings,
     List<int>? recordsFilter = null
   )
   {
+    var sourceFieldIds = new List<int>
+    {
+      settings.SourceMatchFieldId,
+      settings.ProcessFlagFieldId,
+    };
+
+    sourceFieldIds.AddRange(
+      settings
+      .AttachmentFieldIdMappings
+      .Keys
+      .ToList()
+    );
+
     var pagingRequest = new PagingRequest(1, 50);
     int totalPages;
     var currentPage = pagingRequest.PageNumber;
@@ -513,10 +525,13 @@ class AttachmentsProcessor : IAttachmentsProcessor
         currentPage
       );
 
-      var res = await _onspringService.GetAPageOfRecords(
+      var queryFilter = $"{settings.ProcessFlagFieldId} contains '{settings.ProcessFlagValue}'";
+
+      var res = await _onspringService.GetAPageOfRecordsByQuery(
         _globalOptions.Value.SourceApiKey,
-        sourceAppId,
+        settings.SourceAppId,
         sourceFieldIds,
+        queryFilter,
         pagingRequest
       );
 
@@ -593,14 +608,17 @@ class AttachmentsProcessor : IAttachmentsProcessor
     var queryFields = new List<int> { settings.TargetMatchFieldId };
     var queryFilter = $"{settings.TargetMatchFieldId} eq '{matchValue.GetValue()}'";
 
-    var targetRecords = await _onspringService.GetRecordsByQuery(
+    var targetRecords = await _onspringService.GetAPageOfRecordsByQuery(
       _globalOptions.Value.TargetApiKey,
       settings.TargetAppId,
       queryFields,
       queryFilter
     );
 
-    if (targetRecords.Count == 0)
+    if (
+      targetRecords is null ||
+      targetRecords.Items.Count == 0
+    )
     {
       _logger.Warning(
         "No Target Record found for Source Record {SourceRecordId} in Source App {SourceAppId}.",
@@ -611,7 +629,9 @@ class AttachmentsProcessor : IAttachmentsProcessor
       return;
     }
 
-    if (targetRecords.Count > 1)
+    if (
+      targetRecords.Items.Count > 1
+    )
     {
       _logger.Warning(
         "Multiple Target Records found for Source Record {SourceRecordId} in Source App {SourceAppId}.",
@@ -622,7 +642,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
       return;
     }
 
-    var targetRecordId = targetRecords[0].RecordId;
+    var targetRecordId = targetRecords.Items[0].RecordId;
 
     var sourceAttachmentFieldIds = settings
     .AttachmentFieldIdMappings
@@ -769,7 +789,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
       FileName = sourceFileInfo.Name,
       ContentType = sourceFileInfo.ContentType,
       FileStream = sourceFile.Stream,
-      Notes = sourceFileInfo.Notes,
+      Notes = sourceFileInfo.Notes ?? string.Empty,
     };
 
     var res = await _onspringService.SaveFile(
@@ -780,7 +800,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     if (res is null)
     {
       _logger.Warning(
-        "Source File {SourceFileRequest} could not be saved in Target: {@SaveFileRequest}",
+        "Source File {@SourceFileRequest} could not be saved in Target: {@SaveFileRequest}",
         sourceFileRequest,
         saveFileRequest
       );
@@ -788,8 +808,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
       return;
     }
 
-    _logger.Information(
-      "Source File {@SourceFileRequest} successfully saved as File {TargetFileId}: @{@SaveFileRequest}",
+    _logger.Debug(
+      "Source File {@SourceFileRequest} successfully saved as File {TargetFileId}: {@SaveFileRequest}",
       sourceFileRequest,
       res.Id,
       saveFileRequest

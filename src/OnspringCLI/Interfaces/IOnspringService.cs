@@ -31,11 +31,12 @@ namespace OnspringCLI.Interfaces
       string apiKey,
       int fieldId
     );
-    Task<List<ResultRecord>> GetRecordsByQuery(
+    Task<GetPagedRecordsResponse?> GetAPageOfRecordsByQuery(
       string apiKey,
-      int targetAppId,
-      List<int> list,
-      string queryFilter
+      int appId,
+      List<int> fieldIds,
+      string queryFilter,
+      PagingRequest? pagingRequest = null
     );
     Task<GetFileInfoResponse?> GetFileInfo(
       string apiKey,
