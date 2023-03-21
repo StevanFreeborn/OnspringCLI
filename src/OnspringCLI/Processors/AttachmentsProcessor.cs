@@ -631,14 +631,38 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
     foreach (var sourceAttachmentFieldId in sourceAttachmentFieldIds)
     {
+      var targetAttachmentFieldId = settings
+      .AttachmentFieldIdMappings
+      .GetValueOrDefault(
+        sourceAttachmentFieldId
+      );
+
       await TransferAttachmentsForFieldId(
         sourceRecord,
         targetRecordId,
-        sourceAttachmentFieldId
+        sourceAttachmentFieldId,
+        targetAttachmentFieldId
       );
     }
 
-    var updateResponse = await _onspringService.UpdateRecord();
+    var sourceRecordUpdates = new ResultRecord
+    {
+      AppId = sourceRecord.AppId,
+      RecordId = sourceRecord.RecordId,
+      FieldData = new List<RecordFieldValue>
+      {
+        new StringFieldValue
+        {
+          FieldId = settings.ProcessFlagFieldId,
+          Value = settings.ProcessedFlagListValueId.ToString()
+        }
+      }
+    };
+
+    var updateResponse = await _onspringService.UpdateRecord(
+      _globalOptions.Value.SourceApiKey,
+      sourceRecordUpdates
+    );
 
     if (updateResponse is null)
     {
@@ -659,19 +683,20 @@ class AttachmentsProcessor : IAttachmentsProcessor
   internal async Task TransferAttachmentsForFieldId(
     ResultRecord sourceRecord,
     int targetRecordId,
-    int attachmentFieldId
+    int sourceAttachmentFieldId,
+    int targetAttachmentFieldId
   )
   {
     var attachmentFieldValue = GetRecordFieldValue(
       sourceRecord,
-      attachmentFieldId
+      sourceAttachmentFieldId
     );
 
     if (attachmentFieldValue is null)
     {
       _logger.Warning(
         "No field data found in Source Attachment Field {AttachmentFieldId} for Source Record {SourceRecordId} in Source App {SourceAppId}.",
-        attachmentFieldId,
+        sourceAttachmentFieldId,
         sourceRecord.RecordId,
         sourceRecord.AppId
       );
@@ -686,7 +711,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
       await TransferAttachment(
         sourceRecord,
         targetRecordId,
-        attachmentFieldId,
+        sourceAttachmentFieldId,
+        targetAttachmentFieldId,
         fileId
       );
     }
@@ -695,11 +721,79 @@ class AttachmentsProcessor : IAttachmentsProcessor
   internal async Task TransferAttachment(
     ResultRecord sourceRecord,
     int targetRecordId,
-    int attachmentFieldId,
-    int fileId
+    int sourceAttachmentFieldId,
+    int targetAttachmentFieldId,
+    int sourceFileId
   )
   {
-    throw new NotImplementedException();
+    var sourceFileRequest = new OnspringFileRequest(
+      sourceRecord.RecordId,
+      sourceAttachmentFieldId,
+      sourceFileId
+    );
+
+    var sourceFileInfo = await _onspringService.GetFileInfo(
+      _globalOptions.Value.SourceApiKey,
+      sourceFileRequest
+    );
+
+    if (sourceFileInfo is null)
+    {
+      _logger.Warning(
+        "No file information could be found for File: {@FileRequest}.",
+        sourceFileRequest
+      );
+
+      return;
+    }
+
+    var sourceFile = await _onspringService.GetFile(
+      _globalOptions.Value.SourceApiKey,
+      sourceFileRequest
+    );
+
+    if (sourceFile is null)
+    {
+      _logger.Warning(
+        "No file could be found for File: {@FileRequest}.",
+        sourceFileRequest
+      );
+
+      return;
+    }
+
+    var saveFileRequest = new SaveFileRequest
+    {
+      RecordId = targetRecordId,
+      FieldId = targetAttachmentFieldId,
+      FileName = sourceFileInfo.Name,
+      ContentType = sourceFileInfo.ContentType,
+      FileStream = sourceFile.Stream,
+      Notes = sourceFileInfo.Notes,
+    };
+
+    var res = await _onspringService.SaveFile(
+      _globalOptions.Value.TargetApiKey,
+      saveFileRequest
+    );
+
+    if (res is null)
+    {
+      _logger.Warning(
+        "Source File {SourceFileRequest} could not be saved in Target: {@SaveFileRequest}",
+        sourceFileRequest,
+        saveFileRequest
+      );
+
+      return;
+    }
+
+    _logger.Information(
+      "Source File {@SourceFileRequest} successfully saved as File {TargetFileId}: @{@SaveFileRequest}",
+      sourceFileRequest,
+      res.Id,
+      saveFileRequest
+    );
   }
 
   internal static List<int> GetFileIds(RecordFieldValue attachmentFieldData)

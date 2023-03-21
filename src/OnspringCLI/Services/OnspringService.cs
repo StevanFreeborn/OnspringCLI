@@ -211,6 +211,48 @@ class OnspringService : IOnspringService
     }
   }
 
+  public async Task<GetFileInfoResponse?> GetFileInfo(
+    string apiKey,
+    OnspringFileRequest fileRequest
+  )
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+
+      var res = await ExecuteRequest(
+        async () => await client.GetFileInfoAsync(
+          fileRequest.RecordId,
+          fileRequest.FieldId,
+          fileRequest.FileId
+        )
+      );
+
+      if (res.IsSuccessful is true)
+      {
+        return res.Value;
+      }
+
+      _logger.Error(
+        "Unable to get file info. {StatusCode} - {Message}.",
+        res.StatusCode,
+        res.Message
+      );
+
+      return null;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Unable to get file info: {@FileRequest}.",
+        fileRequest
+      );
+
+      return null;
+    }
+  }
+
   public async Task<List<ResultRecord>> GetRecordsByQuery(
     string apiKey,
     int targetAppId,
@@ -294,6 +336,44 @@ class OnspringService : IOnspringService
     }
   }
 
+  public async Task<CreatedWithIdResponse<int>?> SaveFile(
+    string apiKey,
+    SaveFileRequest request
+  )
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+
+      var res = await ExecuteRequest(
+        async () => await client.SaveFileAsync(request)
+      );
+
+      if (res.IsSuccessful is true)
+      {
+        return res.Value;
+      }
+
+      _logger.Error(
+        "Unable to save file. {StatusCode} - {Message}.",
+        res.StatusCode,
+        res.Message
+      );
+
+      return null;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Unable to save file: {@SaveFileRequest}.",
+        request
+      );
+
+      return null;
+    }
+  }
+
   public async Task<bool> TryDeleteFile(
     string apiKey,
     OnspringFileRequest fileRequest
@@ -336,8 +416,49 @@ class OnspringService : IOnspringService
     }
   }
 
+  public async Task<CreatedWithIdResponse<int>?> UpdateRecord(
+    string apiKey,
+    ResultRecord recordUpdates
+  )
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+
+      var res = await ExecuteRequest(
+        async () => await client.SaveRecordAsync(recordUpdates)
+      );
+
+      if (res.IsSuccessful is true)
+      {
+        return res.Value;
+      }
+
+      _logger.Error(
+        "Unable to save record. {StatusCode} - {Message}.",
+        res.StatusCode,
+        res.Message
+      );
+
+      return null;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Unable to save record: {@RecordUpdates}.",
+        recordUpdates
+      );
+
+      return null;
+    }
+  }
+
   [ExcludeFromCodeCoverage]
-  private async Task<ApiResponse<T>> ExecuteRequest<T>(Func<Task<ApiResponse<T>>> func, int retry = 1)
+  private async Task<ApiResponse<T>> ExecuteRequest<T>(
+    Func<Task<ApiResponse<T>>> func,
+    int retry = 1
+  )
   {
     ApiResponse<T> response;
     var retryLimit = 3;
