@@ -454,22 +454,24 @@ class AttachmentsProcessor : IAttachmentsProcessor
       return false;
     }
 
+    var processValue = settings.ProcessFlagValue;
+
     var processListValue = listField
     .Values
     .FirstOrDefault(
-      x =>
-        x.Name.ToLower() == settings
-        .ProcessedFlagValue
-        .ToLower()
+      v =>
+        v.Name.ToLower() == processValue.ToLower() ||
+        (Guid.TryParse(processValue, out var result) && v.Id == result)
     );
+
+    var processedValue = settings.ProcessedFlagValue;
 
     var processedListValue = listField
     .Values
     .FirstOrDefault(
-      x =>
-        x.Name.ToLower() == settings
-        .ProcessedFlagValue
-        .ToLower()
+      v =>
+        v.Name.ToLower() == processedValue.ToLower() ||
+        (Guid.TryParse(processedValue, out var result) && v.Id == result)
     );
 
     if (
