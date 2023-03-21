@@ -47,9 +47,9 @@ static class HostBuilderExtensions
         services.AddOptions<GlobalOptions>().BindCommandLine();
         services.AddSingleton<IOnspringClientFactory, OnspringClientFactory>();
         services.AddSingleton<IAttachmentTransferSettingsFactory, AttachmentTransferSettingsFactory>();
+        services.AddSingleton<IProgressBarFactory, ProgressBarFactory>();
         services.AddSingleton<IOnspringService, OnspringService>();
         services.AddSingleton<IAttachmentsProcessor, AttachmentsProcessor>();
-        services.AddSingleton<IAttachmentsTransferProcessor, AttachmentsTransferProcessor>();
         services.AddSingleton<IReportService, ReportService>();
       }
     );

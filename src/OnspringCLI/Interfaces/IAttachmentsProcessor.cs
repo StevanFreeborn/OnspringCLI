@@ -14,7 +14,9 @@ public interface IAttachmentsProcessor
     List<int>? recordsFilter = null
   );
 
-  Task<List<OnspringFileInfoResult>> GetFileInfos(List<OnspringFileRequest> fileRequests);
+  Task<List<OnspringFileInfoResult>> GetFileInfos(
+    List<OnspringFileRequest> fileRequests
+  );
 
   Task<OnspringFileResult?> GetFile(
     OnspringFileRequest fileRequest,
@@ -28,6 +30,25 @@ public interface IAttachmentsProcessor
   );
 
   Task<List<int>> GetRecordIdsFromReport(int reportId);
+
+  Task<bool> ValidateMatchFields(
+    IAttachmentTransferSettings settings
+  );
+
+  Task<bool> ValidateFlagFieldIdAndValues(
+    IAttachmentTransferSettings settings
+  );
+
+  Task<List<ResultRecord>> GetSourceRecords(
+    int sourceAppId,
+    List<int> sourceFieldIds,
+    List<int>? recordsFilter = null
+  );
+
+  Task TransferAttachments(
+    IAttachmentTransferSettings settings,
+    ResultRecord sourceRecord
+  );
 
   void WriteFileInfoReport(
     List<OnspringFileInfoResult> fileInfos,

@@ -15,7 +15,7 @@ namespace OnspringCLI.Interfaces
     Task<GetPagedRecordsResponse?> GetAPageOfRecords(
       string apiKey,
       int appId,
-      List<int> fileFields,
+      List<int> fieldIds,
       PagingRequest pagingRequest
     );
 
@@ -26,6 +26,10 @@ namespace OnspringCLI.Interfaces
     Task<ReportData?> GetReport(
       string apiKey,
       int reportId
+    );
+    Task<Field?> GetField(
+      string apiKey,
+      int fieldId
     );
   }
 }

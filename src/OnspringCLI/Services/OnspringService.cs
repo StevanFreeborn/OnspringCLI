@@ -89,7 +89,7 @@ class OnspringService : IOnspringService
   public async Task<GetPagedRecordsResponse?> GetAPageOfRecords(
     string apiKey,
     int appId,
-    List<int> fileFields,
+    List<int> fieldIds,
     PagingRequest pagingRequest
   )
   {
@@ -101,7 +101,7 @@ class OnspringService : IOnspringService
       {
         AppId = appId,
         PagingRequest = pagingRequest,
-        FieldIds = fileFields
+        FieldIds = fieldIds
       };
 
       var res = await ExecuteRequest(
@@ -126,6 +126,43 @@ class OnspringService : IOnspringService
       _logger.Error(
         ex,
         "Unable to get records."
+      );
+
+      return null;
+    }
+  }
+
+  public async Task<Field?> GetField(
+    string apiKey,
+    int fieldId
+  )
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+
+      var res = await ExecuteRequest(
+        async () => await client.GetFieldAsync(fieldId)
+      );
+
+      if (res.IsSuccessful is true)
+      {
+        return res.Value;
+      }
+
+      _logger.Error(
+        "Unable to get field. {StatusCode} - {Message}.",
+        res.StatusCode,
+        res.Message
+      );
+
+      return null;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Unable to get field."
       );
 
       return null;

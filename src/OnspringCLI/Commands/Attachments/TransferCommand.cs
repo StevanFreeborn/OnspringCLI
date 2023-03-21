@@ -6,7 +6,7 @@ public class TransferCommand : Command
   {
     AddOption(
       new Option<string>(
-        aliases: new[] { "--target-api-key", "-sk" },
+        aliases: new[] { "--target-api-key", "-tk" },
         description: "The API key to use to authenticate with an Onspring target instance."
       )
       {
@@ -31,18 +31,17 @@ public class TransferCommand : Command
     );
 
     AddOption(
-      new Option<int>(
-        aliases: new string[] { "--page-size", "-ps" },
-        description: "Set the size of each page of records processed.",
-        getDefaultValue: () => 50
+      new Option<List<int>>(
+        aliases: new[] { "--records-filter", "-rf" },
+        description: "A comma separated list of record ids whose attachments will be transferred.",
+        parseArgument: result => result.ParseToIntegerList()
       )
     );
 
     AddOption(
-      new Option<int?>(
-        aliases: new string[] { "--page-number", "-pn" },
-        description: "Set a limit to the number of pages of records processed.",
-        getDefaultValue: () => null
+      new Option<int>(
+        aliases: new[] { "--report-filter", "-rpf" },
+        description: "The id of the report whose records' attachments will be transferred."
       )
     );
   }
@@ -51,16 +50,16 @@ public class TransferCommand : Command
   {
     private readonly ILogger _logger;
     private readonly IAttachmentTransferSettingsFactory _settingsFactory;
-    private readonly IAttachmentsTransferProcessor _processor;
+    private readonly IAttachmentsProcessor _processor;
     public IAttachmentTransferSettings AttachmentTransferSettings { get; set; } = null!;
     public FileInfo SettingsFile { get; set; } = null!;
-    public int PageSize { get; set; } = 50;
-    public int? PageNumber { get; set; } = null;
+    public List<int> RecordsFilter { get; set; } = new();
+    public int ReportFilter { get; set; } = 0;
 
     public Handler(
       ILogger logger,
       IAttachmentTransferSettingsFactory settingsFactory,
-      IAttachmentsTransferProcessor processor
+      IAttachmentsProcessor processor
     )
     {
       _logger = logger.ForContext<Handler>();
@@ -72,21 +71,96 @@ public class TransferCommand : Command
     {
       AttachmentTransferSettings = _settingsFactory.Create(SettingsFile);
 
-      var hasValidMatchFields = await _processor.ValidateMatchFields();
+      var hasValidMatchFields = await _processor.ValidateMatchFields(
+        AttachmentTransferSettings
+      );
 
       if (hasValidMatchFields is false)
       {
-        Log.Fatal("Invalid match fields. Match fields should be of type text, date, number, auto number, or a formula with a non list output type.");
+        _logger.Fatal(
+          "Invalid match fields. Match fields should be of type text, date, number, auto number, or a formula with a non list output type."
+        );
         return 1;
       }
 
-      var hasValidFlagFieldIdAndValues = await _processor.ValidateFlagFieldIdAndValues();
+      bool hasValidFlagFieldIdAndValues = await _processor.ValidateFlagFieldIdAndValues(
+        AttachmentTransferSettings
+      );
 
       if (hasValidFlagFieldIdAndValues is false)
       {
-        Log.Fatal("Invalid flag field id or values. Flag field id should be of type text, date, number, auto number, or a formula with a non list output type.");
+        _logger.Fatal(
+          "Invalid flag field id or values. Flag field id should be of type text, date, number, auto number, or a formula with a non list output type."
+        );
         return 2;
       }
+
+      _logger.Information("Onspring Attachment Transferer Started");
+
+      if (ReportFilter is not 0)
+      {
+        _logger.Information(
+          "Retrieving records from report {ReportId}.",
+          ReportFilter
+        );
+
+        var records = await _processor.GetRecordIdsFromReport(
+          ReportFilter
+        );
+
+        _logger.Information(
+          "Records retrieved. {Count} records found.",
+          records.Count
+        );
+
+        RecordsFilter.AddRange(records);
+      }
+
+      var sourceFieldIds = new List<int>
+      {
+        AttachmentTransferSettings.SourceMatchFieldId,
+        AttachmentTransferSettings.ProcessFlagFieldId,
+      };
+      sourceFieldIds.AddRange(
+        AttachmentTransferSettings
+        .AttachmentFieldIdMappings
+        .Keys
+        .ToList()
+      );
+
+      var sourceRecords = await _processor.GetSourceRecords(
+        AttachmentTransferSettings.SourceAppId,
+        sourceFieldIds,
+        RecordsFilter
+      );
+
+      if (sourceRecords.Count is 0)
+      {
+        _logger.Warning("No records found to transfer.");
+        return 3;
+      }
+
+      _logger.Information(
+        "Retrieved {Count} records from source app.",
+        sourceRecords.Count
+      );
+
+      _logger.Information("Begin transferring attachments.");
+
+      await Parallel.ForEachAsync(
+        sourceRecords,
+        async (record, token) =>
+          await _processor.TransferAttachments(
+            AttachmentTransferSettings,
+            record
+          )
+      );
+
+      _logger.Information("Attachments transferred.");
+
+      _logger.Information("Onspring Attachment Transferer finished");
+
+      await Log.CloseAndFlushAsync();
 
       return 0;
     }

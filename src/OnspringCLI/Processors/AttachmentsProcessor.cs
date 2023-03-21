@@ -7,13 +7,15 @@ class AttachmentsProcessor : IAttachmentsProcessor
   private readonly IReportService _reportService;
   private readonly ILogger _logger;
   private readonly LoggingLevelSwitch _logLevelSwitch;
+  private readonly IProgressBarFactory _progressBarFactory;
 
   public AttachmentsProcessor(
     IOptions<GlobalOptions> globalOptions,
     IOnspringService onspringService,
     IReportService reportService,
     ILogger logger,
-    LoggingLevelSwitch loggingLevelSwitch
+    LoggingLevelSwitch loggingLevelSwitch,
+    IProgressBarFactory progressBarFactory
   )
   {
     _globalOptions = globalOptions;
@@ -21,6 +23,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     _reportService = reportService;
     _logger = logger.ForContext<AttachmentsProcessor>();
     _logLevelSwitch = loggingLevelSwitch;
+    _progressBarFactory = progressBarFactory;
   }
 
   public async Task<List<Field>> GetFileFields(
@@ -69,11 +72,6 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
     do
     {
-      _logger.Debug(
-        "Retrieving records for page {PageNumber}.",
-        currentPage
-      );
-
       _logger.Debug(
         "Retrieving records for page {PageNumber}.",
         currentPage
@@ -151,7 +149,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
       fileRequests.Count
     );
 
-    using var pBar = ProgressBarFactory.Create(
+    using var pBar = _progressBarFactory.Create(
       fileRequests.Count,
       "Starting to retrieve information for files."
     );
@@ -411,6 +409,204 @@ class AttachmentsProcessor : IAttachmentsProcessor
     }
   }
 
+  public async Task<bool> ValidateMatchFields(
+    IAttachmentTransferSettings settings
+  )
+  {
+    var sourceMatchField = await _onspringService.GetField(
+      _globalOptions.Value.SourceApiKey,
+      settings.SourceMatchFieldId
+    );
+
+    var targetMatchField = await _onspringService.GetField(
+      _globalOptions.Value.TargetApiKey,
+      settings.TargetMatchFieldId
+    );
+
+    if (
+      sourceMatchField is null ||
+      IsValidMatchFieldType(sourceMatchField) is false ||
+      targetMatchField is null ||
+      IsValidMatchFieldType(targetMatchField) is false
+    )
+    {
+      return false;
+    }
+
+    return true;
+  }
+
+  public async Task<bool> ValidateFlagFieldIdAndValues(
+    IAttachmentTransferSettings settings
+  )
+  {
+    var flagField = await _onspringService.GetField(
+      _globalOptions.Value.SourceApiKey,
+      settings.ProcessFlagFieldId
+    );
+
+    if (
+      flagField is null ||
+      flagField is not ListField listField ||
+      listField.Multiplicity is not Multiplicity.SingleSelect
+    )
+    {
+      return false;
+    }
+
+    var processListValue = listField
+    .Values
+    .FirstOrDefault(
+      x =>
+        x.Name.ToLower() == settings
+        .ProcessedFlagValue
+        .ToLower()
+    );
+
+    var processedListValue = listField
+    .Values
+    .FirstOrDefault(
+      x =>
+        x.Name.ToLower() == settings
+        .ProcessedFlagValue
+        .ToLower()
+    );
+
+    if (
+      processListValue is null ||
+      processedListValue is null
+    )
+    {
+      return false;
+    }
+
+    settings
+    .ProcessFlagListValueId = processListValue.Id;
+
+    settings
+    .ProcessedFlagListValueId = processedListValue.Id;
+
+    return true;
+  }
+
+  public async Task<List<ResultRecord>> GetSourceRecords(
+    int sourceAppId,
+    List<int> sourceFieldIds,
+    List<int>? recordsFilter = null
+  )
+  {
+    var pagingRequest = new PagingRequest(1, 50);
+    int totalPages;
+    var currentPage = pagingRequest.PageNumber;
+    var sourceRecords = new List<ResultRecord>();
+
+    _logger.Debug(
+      "Retrieving records whose attachments need to be transferred."
+    );
+
+    do
+    {
+      _logger.Debug(
+        "Retrieving records for page {PageNumber}.",
+        currentPage
+      );
+
+      var res = await _onspringService.GetAPageOfRecords(
+        _globalOptions.Value.SourceApiKey,
+        sourceAppId,
+        sourceFieldIds,
+        pagingRequest
+      );
+
+      if (res == null)
+      {
+        _logger.Warning(
+          "No records found for page {PageNumber}.",
+          currentPage
+        );
+
+        break;
+      }
+
+      _logger.Debug(
+        "Records retrieved for page {PageNumber}. {Count} records found.",
+        currentPage,
+        res.Items.Count
+      );
+
+      totalPages = res.TotalPages;
+
+      foreach (var record in res.Items)
+      {
+        if (
+          recordsFilter is not null &&
+          recordsFilter.Any() is true &&
+          recordsFilter.Contains(record.RecordId) is false
+        )
+        {
+          continue;
+        }
+
+        sourceRecords.Add(record);
+      }
+
+      pagingRequest.PageNumber++;
+      currentPage = pagingRequest.PageNumber;
+    } while (currentPage <= totalPages);
+
+    _logger.Debug(
+      "Finished retrieving records whose information needs to be transferred."
+    );
+
+    return sourceRecords;
+  }
+
+  public async Task TransferAttachments(
+    IAttachmentTransferSettings settings,
+    ResultRecord sourceRecord
+  )
+  {
+    _logger.Debug(
+      "Begin processing Source Record {SourceRecordId} in Source App {SourceAppId}.",
+      sourceRecord.RecordId,
+      settings.SourceAppId
+    );
+
+    var matchValue = GetRecordFieldValue(
+      sourceRecord,
+      settings.SourceMatchFieldId
+    );
+
+    if (matchValue is null)
+    {
+      _logger.Warning(
+        "No match value found for Source Record {SourceRecordId} in Source App {SourceAppId}.",
+        sourceRecord.RecordId,
+        sourceRecord.AppId
+      );
+
+      return;
+    }
+
+    var targetRecord = _onspringService.GetRecordsByQuery(
+      settings.TargetAppId,
+      new List<int> { settings.TargetMatchFieldId },
+      $"{settings.TargetMatchFieldId} eq '{matchValue.GetValue()}'"
+    );
+  }
+
+  private static RecordFieldValue? GetRecordFieldValue(
+    ResultRecord record,
+    int fieldId
+  )
+  {
+    return record
+    .FieldData
+    .FirstOrDefault(
+      x => x.FieldId == fieldId
+    );
+  }
+
   internal async Task<OnspringFileInfoResult> GetFileInfo(
     OnspringFileRequest fileRequest
   )
@@ -585,5 +781,31 @@ class AttachmentsProcessor : IAttachmentsProcessor
     .SequenceEqual(
       attachmentIds
     );
+  }
+
+  internal static bool IsValidMatchFieldType(Field field)
+  {
+    var isSupportedField = field.Type is
+    FieldType.Text or
+    FieldType.AutoNumber or
+    FieldType.Date or
+    FieldType.Number or
+    FieldType.Formula;
+
+    if (isSupportedField is false)
+    {
+      return false;
+    }
+
+    if (
+      field.Type is FieldType.Formula &&
+      field is FormulaField formulaField &&
+      formulaField is not null
+    )
+    {
+      return formulaField.OutputType is not FormulaOutputType.ListValue;
+    }
+
+    return true;
   }
 }

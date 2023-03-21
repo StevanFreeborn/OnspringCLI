@@ -14,4 +14,6 @@ public class AttachmentTransferSettings : IAttachmentTransferSettings
   public int ProcessFlagFieldId { get; set; } = 0;
   public string ProcessFlagValue { get; set; } = string.Empty;
   public string ProcessedFlagValue { get; set; } = string.Empty;
+  public Guid ProcessFlagListValueId { get; set; } = Guid.Empty;
+  public Guid ProcessedFlagListValueId { get; set; } = Guid.Empty;
 }

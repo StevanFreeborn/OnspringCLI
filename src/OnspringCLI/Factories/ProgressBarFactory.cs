@@ -1,8 +1,8 @@
 namespace OnspringCLI.Factories;
 
-public class ProgressBarFactory
+public class ProgressBarFactory : IProgressBarFactory
 {
-  public static IProgressBar Create(int maxTicks, string initialMessage)
+  public IProgressBar Create(int maxTicks, string initialMessage)
   {
     var options = new ProgressBarOptions
     {

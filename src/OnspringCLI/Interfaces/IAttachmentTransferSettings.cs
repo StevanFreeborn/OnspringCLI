@@ -11,4 +11,6 @@ public interface IAttachmentTransferSettings
   int ProcessFlagFieldId { get; set; }
   string ProcessFlagValue { get; set; }
   string ProcessedFlagValue { get; set; }
+  Guid ProcessFlagListValueId { get; set; }
+  Guid ProcessedFlagListValueId { get; set; }
 }
