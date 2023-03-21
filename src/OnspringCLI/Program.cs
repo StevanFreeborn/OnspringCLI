@@ -3,17 +3,9 @@
 )
 .AddOptions()
 .AddSubCommands()
-.Create()
-.UseHost(
-  _ =>
-    Host.CreateDefaultBuilder(args),
-    host =>
-      host
-      .AddServices()
-      .AddSerilog()
-      .AddCommandHandlers()
-)
+.CreateBuilder()
+.AddHost(args)
 .UseDefaults()
-.AddHelpFigletText()
+.AddFiglet("OnspringCLI")
 .Build()
 .InvokeAsync(args);

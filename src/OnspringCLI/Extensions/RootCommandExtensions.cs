@@ -2,7 +2,7 @@ namespace OnspringCLI.Extensions;
 
 static class RootCommandExtensions
 {
-  public static CommandLineBuilder Create(this RootCommand root)
+  public static CommandLineBuilder CreateBuilder(this RootCommand root)
   {
     return new CommandLineBuilder(root);
   }
