@@ -9,6 +9,7 @@ global using Onspring.API.SDK.Enums;
 global using Onspring.API.SDK.Models;
 
 global using OnspringCLI.Interfaces;
+global using OnspringCLI.Models;
 global using OnspringCLI.Services;
 global using OnspringCLI.Tests.TestData;
 

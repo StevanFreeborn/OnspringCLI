@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace OnspringCLI.Services;
 
 public class OnspringService : IOnspringService
@@ -470,7 +472,9 @@ public class OnspringService : IOnspringService
       {
         response = await func();
 
-        if (response.IsSuccessful is true)
+        if (
+          NeedsToBeRetried(response) is false
+        )
         {
           return response;
         }
@@ -539,7 +543,9 @@ public class OnspringService : IOnspringService
       {
         response = await func();
 
-        if (response.IsSuccessful is true)
+        if (
+          NeedsToBeRetried(response) is false
+        )
         {
           return response;
         }
@@ -591,6 +597,26 @@ public class OnspringService : IOnspringService
     );
 
     return response;
+  }
+
+  [ExcludeFromCodeCoverage]
+  private static bool NeedsToBeRetried(ApiResponse response)
+  {
+    return response.IsSuccessful is false &&
+    CanBeRetried(response.StatusCode);
+  }
+
+  [ExcludeFromCodeCoverage]
+  private static bool CanBeRetried(HttpStatusCode statusCode)
+  {
+    return statusCode switch
+    {
+      HttpStatusCode.BadRequest => false,
+      HttpStatusCode.Unauthorized => false,
+      HttpStatusCode.Forbidden => false,
+      HttpStatusCode.NotFound => false,
+      _ => true
+    };
   }
 
   [ExcludeFromCodeCoverage]

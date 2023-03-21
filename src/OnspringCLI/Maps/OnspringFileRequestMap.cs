@@ -1,5 +1,6 @@
 namespace OnspringCLI.Maps;
 
+[ExcludeFromCodeCoverage]
 public class OnspringFileRequestMap : ClassMap<OnspringFileRequest>
 {
   public OnspringFileRequestMap()

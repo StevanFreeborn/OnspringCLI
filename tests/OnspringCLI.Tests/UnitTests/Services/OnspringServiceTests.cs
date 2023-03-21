@@ -39,11 +39,13 @@ public class OnspringServiceTests
   [Fact]
   public async Task GetAllFields_WhenCalledAndNoFieldsAreFound_ItShouldReturnAnEmptyList()
   {
-    var apiResponse = FieldDataFactory.GetSuccessfulPagedFieldResponse(
-      new List<Field>(),
-      0,
-      0,
-      1
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      new GetPagedFieldsResponse
+      {
+        Items = new List<Field>()
+      }
     );
 
     _mockClient
@@ -79,14 +81,13 @@ public class OnspringServiceTests
     MemberType = typeof(FieldDataFactory)
   )]
   public async Task GetAllFields_WhenCalledAndOnePageOfFieldsAreFound_ItShouldReturnAListOfFields(
-    List<Field> fields
+    GetPagedFieldsResponse pagedFieldsResponse
   )
   {
-    var apiResponse = FieldDataFactory.GetSuccessfulPagedFieldResponse(
-      fields,
-      1,
-      3,
-      1
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      pagedFieldsResponse
     );
 
     _mockClient
@@ -105,9 +106,9 @@ public class OnspringServiceTests
       It.IsAny<int>()
     );
 
-    result.Should().HaveCount(fields.Count);
+    result.Should().HaveCount(pagedFieldsResponse.Items.Count);
     result.Should().BeOfType<List<Field>>();
-    result.Should().BeEquivalentTo(fields);
+    result.Should().BeEquivalentTo(pagedFieldsResponse.Items);
 
     _mockClient.Verify(
       m => m.GetFieldsForAppAsync(
@@ -124,22 +125,20 @@ public class OnspringServiceTests
     MemberType = typeof(FieldDataFactory)
   )]
   public async Task GetAllFields_WhenCalledAndMultiplePagesOfFieldsAreFound_ItShouldReturnAListOfFields(
-    List<Field> fieldsPageOne,
-    List<Field> fieldsPageTwo
+    GetPagedFieldsResponse pageTwo,
+    GetPagedFieldsResponse pageOne
   )
   {
-    var pageOneRes = FieldDataFactory.GetSuccessfulPagedFieldResponse(
-      fieldsPageOne,
-      2,
-      6,
-      1
+    var pageOneRes = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      pageOne
     );
 
-    var pageTwoRes = FieldDataFactory.GetSuccessfulPagedFieldResponse(
-      fieldsPageTwo,
-      2,
-      6,
-      2
+    var pageTwoRes = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      pageTwo
     );
 
     _mockClient
@@ -158,11 +157,11 @@ public class OnspringServiceTests
     );
 
     result.Should().HaveCount(
-      fieldsPageOne.Count + fieldsPageTwo.Count
+      pageOne.Items.Count + pageTwo.Items.Count
     );
     result.Should().BeOfType<List<Field>>();
     result.Should().BeEquivalentTo(
-      fieldsPageOne.Concat(fieldsPageTwo)
+      pageOne.Items.Concat(pageTwo.Items)
     );
 
     _mockClient.Verify(
@@ -176,21 +175,20 @@ public class OnspringServiceTests
 
   [Theory]
   [MemberData(
-    nameof(FieldDataFactory.GetOnePageOfFields),
+    nameof(FieldDataFactory.GetFirstPageOfFields),
     MemberType = typeof(FieldDataFactory)
   )]
   public async Task GetAllFields_WhenCalledAndMultiplePagesOfFieldsAreFoundAndOnePageReturnsAnError_ItShouldReturnAListOfFieldsAfterRetryingFailedPageThreeTimes(
-    List<Field> fieldsPageOne
+    GetPagedFieldsResponse pageOne
   )
   {
-    var pageOneRes = FieldDataFactory.GetSuccessfulPagedFieldResponse(
-      fieldsPageOne,
-      2,
-      6,
-      1
+    var pageOneRes = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      pageOne
     );
 
-    var pageTwoRes = FieldDataFactory.GetFailedPagedFieldResponse(
+    var pageTwoRes = ApiResponseFactory.GetApiResponse<GetPagedFieldsResponse>(
       HttpStatusCode.InternalServerError,
       "Internal Server Error"
     );
@@ -212,12 +210,19 @@ public class OnspringServiceTests
       It.IsAny<int>()
     );
 
-    result.Should().HaveCount(fieldsPageOne.Count);
+    result.Should().HaveCount(
+      pageOne.Items.Count
+    );
     result.Should().BeOfType<List<Field>>();
-    result.Should().BeEquivalentTo(fieldsPageOne);
+    result.Should().BeEquivalentTo(
+      pageOne.Items
+    );
 
     _mockClient.Verify(
-      m => m.GetFieldsForAppAsync(It.IsAny<int>(), It.IsAny<PagingRequest>()),
+      m => m.GetFieldsForAppAsync(
+        It.IsAny<int>(),
+        It.IsAny<PagingRequest>()
+      ),
       Times.Exactly(4)
     );
   }
@@ -290,18 +295,13 @@ public class OnspringServiceTests
     MemberType = typeof(RecordDataFactory)
   )]
   public async Task GetAPageOfRecords_WhenCalledAndOnePageOfRecordsAreFound_ItShouldAPagedResponseWithAListOfRecords(
-    List<ResultRecord> records
+    GetPagedRecordsResponse recordsResponse
   )
   {
-    var totalPages = 1;
-    var totalRecords = 2;
-    var pageNumber = 1;
-
-    var apiResponse = RecordDataFactory.GetSuccessfulPagedRecordResponse(
-      records,
-      totalPages,
-      totalRecords,
-      pageNumber
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      recordsResponse
     );
 
     _mockClient
@@ -329,12 +329,12 @@ public class OnspringServiceTests
       return;
     }
 
-    result.TotalPages.Should().Be(totalPages);
-    result.TotalRecords.Should().Be(totalRecords);
-    result.PageNumber.Should().Be(pageNumber);
-    result.Items.Should().HaveCount(records.Count);
+    result.TotalPages.Should().Be(recordsResponse.TotalPages);
+    result.TotalRecords.Should().Be(recordsResponse.TotalRecords);
+    result.PageNumber.Should().Be(recordsResponse.PageNumber);
+    result.Items.Should().HaveCount(recordsResponse.Items.Count);
     result.Items.Should().BeOfType<List<ResultRecord>>();
-    result.Items.Should().BeEquivalentTo(records);
+    result.Items.Should().BeEquivalentTo(recordsResponse.Items);
 
     _mockClient.Verify(
       m => m.GetRecordsForAppAsync(
@@ -347,7 +347,7 @@ public class OnspringServiceTests
   [Fact]
   public async Task GetAPageOfRecords_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnNullAfterRetryingThreeTimes()
   {
-    var apiResponse = RecordDataFactory.GetFailedPagedRecordResponse(
+    var apiResponse = ApiResponseFactory.GetApiResponse<GetPagedRecordsResponse>(
       HttpStatusCode.InternalServerError,
       "Internal Server Error"
     );
@@ -379,18 +379,23 @@ public class OnspringServiceTests
     );
   }
 
-  [Fact]
-  public async Task GetAPageOfRecords_WhenCalledAndNoRecordsAreFound_ItShouldReturnAPagedResponseWithAnEmptyListOfRecords()
+  [Theory]
+  [MemberData(
+    nameof(RecordDataFactory.GetEmptyPageOfRecords),
+    MemberType = typeof(RecordDataFactory)
+  )]
+  public async Task GetAPageOfRecords_WhenCalledAndNoRecordsAreFound_ItShouldReturnAPagedResponseWithAnEmptyListOfRecords(
+    GetPagedRecordsResponse recordsResponse
+  )
   {
     var totalPages = 1;
     var totalRecords = 0;
     var pageNumber = 1;
 
-    var apiResponse = RecordDataFactory.GetSuccessfulPagedRecordResponse(
-      new List<ResultRecord>(),
-      totalPages,
-      totalRecords,
-      pageNumber
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      recordsResponse
     );
 
     _mockClient
@@ -486,6 +491,785 @@ public class OnspringServiceTests
     _mockClient.Verify(
       m => m.GetRecordsForAppAsync(
         It.IsAny<GetRecordsByAppRequest>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FileDataFactory.GetFileResponse),
+    MemberType = typeof(FileDataFactory)
+  )]
+  public async Task GetFile_WhenCalledAndFileIsFound_ItShouldReturnAFile(
+    GetFileResponse fileResponse
+  )
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      fileResponse
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var fileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFile(
+      It.IsAny<string>(),
+      fileRequest
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<GetFileResponse>();
+
+    if (result is null)
+    {
+      return;
+    }
+
+    result.FileName.Should().Be(fileResponse.FileName);
+    result.ContentLength.Should().Be(fileResponse.ContentLength);
+    result.ContentType.Should().Be(fileResponse.ContentType);
+    result.Stream.Should().NotBeNull();
+  }
+
+  [Fact]
+  public async Task GetFile_WhenCalledAndFileIsNotFound_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<GetFileResponse>(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var fileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFile(
+      It.IsAny<string>(),
+      fileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task GetFile_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+    .Setup(
+      m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var fileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFile(
+      It.IsAny<string>(),
+      fileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetFile_WhenCalledAndHttpRequestOrTaskCanceledExceptionIsThrown_ItShouldReturnNullAfterAttemptingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new TaskCanceledException());
+
+    var fileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFile(
+      It.IsAny<string>(),
+      fileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FieldDataFactory.GetField),
+    MemberType = typeof(FieldDataFactory)
+  )]
+  public async Task GetField_WhenCalledAndFieldIsFound_ItShouldReturnAField(
+    Field field
+  )
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      field
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var result = await _onspringService.GetField(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<Field>();
+
+    if (result is null)
+    {
+      return;
+    }
+
+    result.Id.Should().Be(field.Id);
+    result.Name.Should().Be(field.Name);
+    result.Type.Should().Be(field.Type);
+
+    _mockClient.Verify(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetField_WhenCalledAndFieldIsNotFound_ItShouldReturnNull()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<Field>(
+      HttpStatusCode.NotFound,
+      "Not Found"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var result = await _onspringService.GetField(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetField_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+    .Setup(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var result = await _onspringService.GetField(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetField_WhenCalledAndHttpRequestOrTaskCanceledExceptionIsThrown_ItShouldReturnNullAfterAttemptingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new TaskCanceledException());
+
+    var result = await _onspringService.GetField(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task GetField_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnNullAfterAttemptingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<Field>(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var result = await _onspringService.GetField(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFieldAsync(
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FileDataFactory.GetFileInfoResponse),
+    MemberType = typeof(FileDataFactory)
+  )]
+  public async Task GetFileInfo_WhenCalledAndFileInfoIsFound_ItShouldReturnAFileInfo(
+    GetFileInfoResponse fileInfo
+  )
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      fileInfo
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFileInfo(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<GetFileInfoResponse>();
+    result.Should().BeEquivalentTo(fileInfo);
+
+    _mockClient.Verify(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetFileInfo_WhenCalledAndFileInfoIsNotFound_ItShouldReturnNull()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<GetFileInfoResponse>(
+      HttpStatusCode.NotFound,
+      "Not Found"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFileInfo(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetFileInfo_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+    .Setup(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFileInfo(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetFileInfo_WhenCalledAndHttpRequestOrTaskCanceledExceptionIsThrown_ItShouldReturnNullAfterAttemptingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new TaskCanceledException());
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFileInfo(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task GetFileInfo_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnNullAfterAttemptingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<GetFileInfoResponse>(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.GetFileInfo(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetFileInfoAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+  nameof(RecordDataFactory.GetOnePageOfRecords),
+  MemberType = typeof(RecordDataFactory)
+)]
+  public async Task GetAPageOfRecordsByQuery_WhenCalledAndOnePageOfRecordsAreFound_ItShouldAPagedResponseWithAListOfRecords(
+  GetPagedRecordsResponse recordsResponse
+)
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      recordsResponse
+    );
+
+    _mockClient
+    .Setup(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var result = await _onspringService.GetAPageOfRecordsByQuery(
+      It.IsAny<string>(),
+      It.IsAny<int>(),
+      It.IsAny<List<int>>(),
+      It.IsAny<string>(),
+      It.IsAny<PagingRequest>()
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<GetPagedRecordsResponse>();
+
+    if (result is null)
+    {
+      return;
+    }
+
+    result.TotalPages.Should().Be(recordsResponse.TotalPages);
+    result.TotalRecords.Should().Be(recordsResponse.TotalRecords);
+    result.PageNumber.Should().Be(recordsResponse.PageNumber);
+    result.Items.Should().HaveCount(recordsResponse.Items.Count);
+    result.Items.Should().BeOfType<List<ResultRecord>>();
+    result.Items.Should().BeEquivalentTo(recordsResponse.Items);
+
+    _mockClient.Verify(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetAPageOfRecordsByQuery_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<GetPagedRecordsResponse>(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .SetupSequence(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(apiResponse)
+    .ReturnsAsync(apiResponse)
+    .ReturnsAsync(apiResponse);
+
+    var result = await _onspringService.GetAPageOfRecordsByQuery(
+      It.IsAny<string>(),
+      It.IsAny<int>(),
+      It.IsAny<List<int>>(),
+      It.IsAny<string>(),
+      It.IsAny<PagingRequest>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(RecordDataFactory.GetEmptyPageOfRecords),
+    MemberType = typeof(RecordDataFactory)
+  )]
+  public async Task GetAPageOfRecordsByQuery_WhenCalledAndNoRecordsAreFound_ItShouldReturnAPagedResponseWithAnEmptyListOfRecords(
+    GetPagedRecordsResponse recordsResponse
+  )
+  {
+    var totalPages = 1;
+    var totalRecords = 0;
+    var pageNumber = 1;
+
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      recordsResponse
+    );
+
+    _mockClient
+    .Setup(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var result = await _onspringService.GetAPageOfRecordsByQuery(
+      It.IsAny<string>(),
+      It.IsAny<int>(),
+      It.IsAny<List<int>>(),
+      It.IsAny<string>(),
+      It.IsAny<PagingRequest>()
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<GetPagedRecordsResponse>();
+
+    if (result is null)
+    {
+      return;
+    }
+
+    result.TotalPages.Should().Be(totalPages);
+    result.TotalRecords.Should().Be(totalRecords);
+    result.PageNumber.Should().Be(pageNumber);
+    result.Items.Should().BeEmpty();
+    result.Items.Should().BeOfType<List<ResultRecord>>();
+
+    _mockClient.Verify(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetAPageOfRecordsByQuery_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+    .Setup(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var result = await _onspringService.GetAPageOfRecordsByQuery(
+      It.IsAny<string>(),
+      It.IsAny<int>(),
+      It.IsAny<List<int>>(),
+      It.IsAny<string>(),
+      It.IsAny<PagingRequest>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetAPageOfRecordsByQuery_WhenCalledAndHttpRequestOrTaskExceptionIsThrown_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new HttpRequestException());
+
+    var result = await _onspringService.GetAPageOfRecordsByQuery(
+      It.IsAny<string>(),
+      It.IsAny<int>(),
+      It.IsAny<List<int>>(),
+      It.IsAny<string>(),
+      It.IsAny<PagingRequest>()
+    );
+
+    result.Should().BeNull();
+    _mockClient.Verify(
+      m => m.QueryRecordsAsync(
+        It.IsAny<QueryRecordsRequest>(),
+        It.IsAny<PagingRequest>()
       ),
       Times.Exactly(3)
     );

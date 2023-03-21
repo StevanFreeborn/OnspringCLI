@@ -1,5 +1,6 @@
 namespace OnspringCLI.Maps;
 
+[ExcludeFromCodeCoverage]
 public class OnspringFileResultMap : ClassMap<OnspringFileResult>
 {
   public OnspringFileResultMap()

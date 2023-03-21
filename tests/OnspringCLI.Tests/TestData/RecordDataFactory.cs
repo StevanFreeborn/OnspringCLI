@@ -2,46 +2,40 @@ namespace OnspringCLI.Tests.TestData;
 
 public static class RecordDataFactory
 {
-  public static ApiResponse<GetPagedRecordsResponse> GetSuccessfulPagedRecordResponse(
-    List<ResultRecord> records,
-    int totalPages,
-    int totalRecords,
-    int pageNumber
-  )
-  {
-    return new ApiResponse<GetPagedRecordsResponse>
-    {
-      StatusCode = HttpStatusCode.OK,
-      Message = "OK",
-      Value = new GetPagedRecordsResponse
-      {
-        Items = records,
-        TotalPages = totalPages,
-        TotalRecords = totalRecords,
-        PageNumber = pageNumber,
-      }
-    };
-  }
-
-  public static ApiResponse<GetPagedRecordsResponse> GetFailedPagedRecordResponse(
-    HttpStatusCode statusCode,
-    string message
-  )
-  {
-    return new ApiResponse<GetPagedRecordsResponse>
-    {
-      StatusCode = statusCode,
-      Message = message,
-    };
-  }
-
   public static IEnumerable<object[]> GetOnePageOfRecords =>
   new List<object[]>
   {
     new object[]
     {
-      PageOneRecords,
+      PageOfRecords,
     },
+  };
+
+  public static IEnumerable<object[]> GetEmptyPageOfRecords =>
+  new List<object[]>
+  {
+    new object[]
+    {
+      EmptyPageOfRecords,
+    },
+  };
+
+  public static GetPagedRecordsResponse EmptyPageOfRecords =>
+  new()
+  {
+    PageNumber = 1,
+    TotalPages = 1,
+    TotalRecords = 0,
+    Items = new List<ResultRecord>(),
+  };
+
+  public static GetPagedRecordsResponse PageOfRecords =>
+  new()
+  {
+    PageNumber = 1,
+    TotalPages = 1,
+    TotalRecords = 3,
+    Items = PageOneRecords,
   };
 
   public static List<ResultRecord> PageOneRecords =>
