@@ -1,0 +1,13 @@
+{
+  "SourceAppId": 394,
+  "TargetAppId": 253,
+  "SourceMatchFieldId": 12251,
+  "TargetMatchFieldID": 8729,
+  "AttachmentFieldMappings": {
+    "12250": 8728,
+    "12252": 8730
+  },
+  "ProcessFlagFieldId": 12254,
+  "ProcessFlagValue": "No",
+  "ProcessedFlagValue": "Yes"
+}

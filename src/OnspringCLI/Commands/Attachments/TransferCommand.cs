@@ -95,7 +95,7 @@ public class TransferCommand : Command
         return 2;
       }
 
-      _logger.Information("Onspring Attachment Transferer Started");
+      _logger.Information("Onspring Attachment Transferrer Started");
 
       if (ReportFilter is not 0)
       {
@@ -158,7 +158,7 @@ public class TransferCommand : Command
 
       _logger.Information("Attachments transferred.");
 
-      _logger.Information("Onspring Attachment Transferer finished");
+      _logger.Information("Onspring Attachment Transferrer finished");
 
       await Log.CloseAndFlushAsync();
 
