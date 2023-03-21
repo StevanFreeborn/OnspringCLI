@@ -588,11 +588,14 @@ class AttachmentsProcessor : IAttachmentsProcessor
       return;
     }
 
+    var queryFields = new List<int> { settings.TargetMatchFieldId };
+    var queryFilter = $"{settings.TargetMatchFieldId} eq '{matchValue.GetValue()}'";
+
     var targetRecords = await _onspringService.GetRecordsByQuery(
       _globalOptions.Value.TargetApiKey,
       settings.TargetAppId,
-      new List<int> { settings.TargetMatchFieldId },
-      $"{settings.TargetMatchFieldId} eq '{matchValue.GetValue()}'"
+      queryFields,
+      queryFilter
     );
 
     if (targetRecords.Count == 0)
