@@ -1,6 +1,6 @@
 namespace OnspringCLI.Services;
 
-class OnspringService : IOnspringService
+public class OnspringService : IOnspringService
 {
   private readonly ILogger _logger;
   private readonly IOnspringClientFactory _clientFactory;
