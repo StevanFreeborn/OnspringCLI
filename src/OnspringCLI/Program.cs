@@ -4,8 +4,8 @@
 .AddOptions()
 .AddSubCommands()
 .CreateBuilder()
-.AddHost(args)
 .UseDefaults()
 .AddFiglet("OnspringCLI")
+.AddHost(args)
 .Build()
 .InvokeAsync(args);
