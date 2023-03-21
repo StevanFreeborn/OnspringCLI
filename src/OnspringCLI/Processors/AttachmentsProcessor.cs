@@ -588,14 +588,129 @@ class AttachmentsProcessor : IAttachmentsProcessor
       return;
     }
 
-    var targetRecord = _onspringService.GetRecordsByQuery(
+    var targetRecords = await _onspringService.GetRecordsByQuery(
+      _globalOptions.Value.TargetApiKey,
       settings.TargetAppId,
       new List<int> { settings.TargetMatchFieldId },
       $"{settings.TargetMatchFieldId} eq '{matchValue.GetValue()}'"
     );
+
+    if (targetRecords.Count == 0)
+    {
+      _logger.Warning(
+        "No Target Record found for Source Record {SourceRecordId} in Source App {SourceAppId}.",
+        sourceRecord.RecordId,
+        sourceRecord.AppId
+      );
+
+      return;
+    }
+
+    if (targetRecords.Count > 1)
+    {
+      _logger.Warning(
+        "Multiple Target Records found for Source Record {SourceRecordId} in Source App {SourceAppId}.",
+        sourceRecord.RecordId,
+        sourceRecord.AppId
+      );
+
+      return;
+    }
+
+    var targetRecordId = targetRecords[0].RecordId;
+
+    var sourceAttachmentFieldIds = settings
+    .AttachmentFieldIdMappings
+    .Keys
+    .ToList();
+
+    foreach (var sourceAttachmentFieldId in sourceAttachmentFieldIds)
+    {
+      await TransferAttachmentsForFieldId(
+        sourceRecord,
+        targetRecordId,
+        sourceAttachmentFieldId
+      );
+    }
+
+    var updateResponse = await _onspringService.UpdateRecord();
+
+    if (updateResponse is null)
+    {
+      _logger.Warning(
+        "Failed to update Source Record {SourceRecordId} in Source App {SourceAppId} as processed.",
+        sourceRecord.RecordId,
+        sourceRecord.AppId
+      );
+    }
+
+    _logger.Debug(
+      "Finished processing Source Record {SourceRecordId} in Source App {SourceAppId}.",
+      sourceRecord.RecordId,
+      sourceRecord.AppId
+    );
   }
 
-  private static RecordFieldValue? GetRecordFieldValue(
+  internal async Task TransferAttachmentsForFieldId(
+    ResultRecord sourceRecord,
+    int targetRecordId,
+    int attachmentFieldId
+  )
+  {
+    var attachmentFieldValue = GetRecordFieldValue(
+      sourceRecord,
+      attachmentFieldId
+    );
+
+    if (attachmentFieldValue is null)
+    {
+      _logger.Warning(
+        "No field data found in Source Attachment Field {AttachmentFieldId} for Source Record {SourceRecordId} in Source App {SourceAppId}.",
+        attachmentFieldId,
+        sourceRecord.RecordId,
+        sourceRecord.AppId
+      );
+
+      return;
+    }
+
+    var fileIds = GetFileIds(attachmentFieldValue);
+
+    foreach (var fileId in fileIds)
+    {
+      await TransferAttachment(
+        sourceRecord,
+        targetRecordId,
+        attachmentFieldId,
+        fileId
+      );
+    }
+  }
+
+  internal async Task TransferAttachment(
+    ResultRecord sourceRecord,
+    int targetRecordId,
+    int attachmentFieldId,
+    int fileId
+  )
+  {
+    throw new NotImplementedException();
+  }
+
+  internal static List<int> GetFileIds(RecordFieldValue attachmentFieldData)
+  {
+    return attachmentFieldData.Type switch
+    {
+      ResultValueType.FileList => attachmentFieldData.AsFileList(),
+      _ => attachmentFieldData
+      .AsAttachmentList()
+      .Where(attachment => attachment.StorageLocation is FileStorageSite.Internal)
+      .Select(attachment => attachment.FileId)
+      .ToList(),
+    };
+  }
+
+  internal static RecordFieldValue? GetRecordFieldValue(
     ResultRecord record,
     int fieldId
   )

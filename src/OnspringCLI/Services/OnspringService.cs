@@ -211,6 +211,52 @@ class OnspringService : IOnspringService
     }
   }
 
+  public async Task<List<ResultRecord>> GetRecordsByQuery(
+    string apiKey,
+    int targetAppId,
+    List<int> list,
+    string queryFilter
+  )
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+
+      var request = new QueryRecordsRequest
+      {
+        AppId = targetAppId,
+        FieldIds = list,
+        Filter = queryFilter
+      };
+
+      var res = await ExecuteRequest(
+        async () => await client.QueryRecordsAsync(request)
+      );
+
+      if (res.IsSuccessful is true)
+      {
+        return res.Value.Items;
+      }
+
+      _logger.Error(
+        "Unable to get records by query. {StatusCode} - {Message}.",
+        res.StatusCode,
+        res.Message
+      );
+
+      return new List<ResultRecord>();
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Unable to get records by query."
+      );
+
+      return new List<ResultRecord>();
+    }
+  }
+
   public async Task<ReportData?> GetReport(
     string apiKey,
     int reportId

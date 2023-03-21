@@ -31,5 +31,11 @@ namespace OnspringCLI.Interfaces
       string apiKey,
       int fieldId
     );
+    Task<List<ResultRecord>> GetRecordsByQuery(
+      string apiKey,
+      int targetAppId,
+      List<int> list,
+      string queryFilter
+    );
   }
 }
