@@ -7,6 +7,8 @@ public class OnspringFileRequest
   public int FileId { get; set; }
   public string FieldName { get; set; } = string.Empty;
 
+  public OnspringFileRequest() { }
+
   public OnspringFileRequest(
     int recordId,
     int fieldId,

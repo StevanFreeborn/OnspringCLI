@@ -26,7 +26,10 @@ public class ReportService : IReportService
 
     using var csv = new CsvWriter(writer, config);
 
-    csv.Context.RegisterClassMap(mapType);
+    if (mapType != null)
+    {
+      csv.Context.RegisterClassMap(mapType);
+    }
 
     _logger.Debug("Writing report to {FileName}.", fileName);
 
