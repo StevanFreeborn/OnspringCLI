@@ -1,6 +1,10 @@
 $RootPath = Split-Path $PSScriptRoot -Parent
+$CoveragePath = "$RootPath\TestResults\coveragereport"
 
-Remove-Item -Path $RootPath\TestResults\* -Recurse -Force
+if (Test-Path $CoveragePath) 
+{ 
+  Remove-Item $RootPath\TestResults\coveragereport -Recurse -Force; 
+}
 
 dotnet test --environment ENVIRONMENT=testing --collect:"XPlat Code Coverage;Include=[OnspringCLI]*;ExcludeByFile=**/program.cs"
 
