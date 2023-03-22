@@ -1,5 +1,6 @@
 namespace OnspringCLI.Extensions;
 
+[ExcludeFromCodeCoverage]
 public static class ArgumentResultExtensions
 {
   public static List<int> ParseToIntegerList(this ArgumentResult result)

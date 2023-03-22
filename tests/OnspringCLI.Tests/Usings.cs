@@ -12,6 +12,8 @@ global using Onspring.API.SDK;
 global using Onspring.API.SDK.Enums;
 global using Onspring.API.SDK.Models;
 
+global using OnspringCLI.Commands;
+global using OnspringCLI.Commands.Attachments;
 global using OnspringCLI.Factories;
 global using OnspringCLI.Interfaces;
 global using OnspringCLI.Maps;

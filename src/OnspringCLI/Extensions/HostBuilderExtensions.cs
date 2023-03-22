@@ -1,5 +1,6 @@
 namespace OnspringCLI.Extensions;
 
+[ExcludeFromCodeCoverage]
 static class HostBuilderExtensions
 {
   public static IHostBuilder AddSerilog(this IHostBuilder hostBuilder)

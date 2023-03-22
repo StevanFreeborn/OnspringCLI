@@ -1,5 +1,6 @@
 namespace OnspringCLI.Extensions;
 
+[ExcludeFromCodeCoverage]
 public static class CommandLineBuilderExtensions
 {
   public static CommandLineBuilder AddHost(
