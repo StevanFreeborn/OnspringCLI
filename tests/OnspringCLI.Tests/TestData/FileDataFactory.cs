@@ -20,7 +20,16 @@ public class FileDataFactory
     },
   };
 
-  public static GetFileResponse FileResponse =>
+  public static IEnumerable<object[]> GetCreatedWithIdResponse =>
+  new List<object[]>
+  {
+    new object[]
+    {
+      CreatedWithIdResponse,
+    },
+  };
+
+  private static GetFileResponse FileResponse =>
   new()
   {
     FileName = "test.txt",
@@ -29,7 +38,7 @@ public class FileDataFactory
     Stream = new MemoryStream(),
   };
 
-  public static GetFileInfoResponse FileInfoResponse =>
+  private static GetFileInfoResponse FileInfoResponse =>
   new()
   {
     Name = "test.txt",
@@ -40,5 +49,11 @@ public class FileDataFactory
     ModifiedDate = DateTime.Now,
     Owner = "test owner",
     FileHref = "https://test.com",
+  };
+
+  private static CreatedWithIdResponse<int> CreatedWithIdResponse =>
+  new()
+  {
+    Id = 1,
   };
 }

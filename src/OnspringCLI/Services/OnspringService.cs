@@ -599,15 +599,13 @@ public class OnspringService : IOnspringService
     return response;
   }
 
-  [ExcludeFromCodeCoverage]
-  private static bool NeedsToBeRetried(ApiResponse response)
+  internal static bool NeedsToBeRetried(ApiResponse response)
   {
     return response.IsSuccessful is false &&
     CanBeRetried(response.StatusCode);
   }
 
-  [ExcludeFromCodeCoverage]
-  private static bool CanBeRetried(HttpStatusCode statusCode)
+  internal static bool CanBeRetried(HttpStatusCode statusCode)
   {
     return statusCode switch
     {

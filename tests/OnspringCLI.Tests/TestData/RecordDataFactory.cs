@@ -20,7 +20,16 @@ public static class RecordDataFactory
     },
   };
 
-  public static GetPagedRecordsResponse EmptyPageOfRecords =>
+  public static IEnumerable<object[]> GetSaveRecordResponse =>
+  new List<object[]>
+  {
+    new object[]
+    {
+      SaveRecordResponse,
+    },
+  };
+
+  private static GetPagedRecordsResponse EmptyPageOfRecords =>
   new()
   {
     PageNumber = 1,
@@ -29,7 +38,7 @@ public static class RecordDataFactory
     Items = new List<ResultRecord>(),
   };
 
-  public static GetPagedRecordsResponse PageOfRecords =>
+  private static GetPagedRecordsResponse PageOfRecords =>
   new()
   {
     PageNumber = 1,
@@ -38,7 +47,7 @@ public static class RecordDataFactory
     Items = PageOneRecords,
   };
 
-  public static List<ResultRecord> PageOneRecords =>
+  private static List<ResultRecord> PageOneRecords =>
   new()
   {
     new ResultRecord
@@ -67,5 +76,11 @@ public static class RecordDataFactory
         },
       },
     },
+  };
+
+  private static SaveRecordResponse SaveRecordResponse =>
+  new()
+  {
+    Id = 1,
   };
 }

@@ -38,7 +38,7 @@ public class FieldDataFactory
     },
   };
 
-  public static GetPagedFieldsResponse PageOfFields =>
+  private static GetPagedFieldsResponse PageOfFields =>
   new()
   {
     PageNumber = 1,
@@ -47,7 +47,7 @@ public class FieldDataFactory
     Items = PageOneFields,
   };
 
-  public static GetPagedFieldsResponse PageOneOfFields =>
+  private static GetPagedFieldsResponse PageOneOfFields =>
   new()
   {
     PageNumber = 1,
@@ -56,7 +56,7 @@ public class FieldDataFactory
     Items = PageOneFields,
   };
 
-  public static GetPagedFieldsResponse PageTwoOfFields =>
+  private static GetPagedFieldsResponse PageTwoOfFields =>
   new()
   {
     PageNumber = 2,
@@ -65,7 +65,7 @@ public class FieldDataFactory
     Items = PageTwoFields,
   };
 
-  public static List<Field> PageOneFields =>
+  private static List<Field> PageOneFields =>
   new()
   {
     Field1,
@@ -83,7 +83,7 @@ public class FieldDataFactory
     },
   };
 
-  public static List<Field> PageTwoFields =>
+  private static List<Field> PageTwoFields =>
   new()
   {
     new Field
@@ -106,7 +106,7 @@ public class FieldDataFactory
     },
   };
 
-  public static Field Field1 =>
+  private static Field Field1 =>
   new()
   {
     Id = 1,

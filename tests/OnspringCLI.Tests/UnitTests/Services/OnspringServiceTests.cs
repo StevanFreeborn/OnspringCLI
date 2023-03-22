@@ -1274,4 +1274,687 @@ public class OnspringServiceTests
       Times.Exactly(3)
     );
   }
+
+  [Theory]
+  [MemberData(
+    nameof(ReportDataFactory.GetReportData),
+    MemberType = typeof(ReportDataFactory)
+  )]
+  public async Task GetReport_WhenCalledAndReportIsFound_ItShouldReturnReportData(
+    ReportData reportData
+  )
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      reportData
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var result = await _onspringService.GetReport(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<ReportData>();
+    result.Should().BeEquivalentTo(reportData);
+
+    _mockClient.Verify(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetReport_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<ReportData>(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      )
+    )
+    .ReturnsAsync(apiResponse);
+
+    var result = await _onspringService.GetReport(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task GetReport_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+    .Setup(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var result = await _onspringService.GetReport(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetReport_WhenCalledAndHttpRequestOrTaskExceptionIsThrown_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new HttpRequestException());
+
+    var result = await _onspringService.GetReport(
+      It.IsAny<string>(),
+      It.IsAny<int>()
+    );
+
+    result.Should().BeNull();
+    _mockClient.Verify(
+      m => m.GetReportAsync(
+        It.IsAny<int>(),
+        It.IsAny<ReportDataType>(),
+        It.IsAny<DataFormat>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FileDataFactory.GetCreatedWithIdResponse),
+    MemberType = typeof(FileDataFactory)
+  )]
+  public async Task SaveFile_WhenCalledAndFileIsSaved_ItShouldReturnACreatedWithIdResponse(
+    CreatedWithIdResponse<int> createdWithIdResponse
+  )
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "OK",
+      createdWithIdResponse
+    );
+
+    _mockClient
+    .Setup(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var saveFileRequest = new SaveFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      Notes = "Notes",
+      FileName = "FileName",
+      ModifiedDate = DateTime.Now,
+      ContentType = "ContentType",
+      FileStream = new MemoryStream()
+    };
+
+    var result = await _onspringService.SaveFile(
+      It.IsAny<string>(),
+      saveFileRequest
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<CreatedWithIdResponse<int>>();
+    result.Should().BeEquivalentTo(createdWithIdResponse);
+
+    _mockClient.Verify(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task SaveFile_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<CreatedWithIdResponse<int>>(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      )
+    )
+    .ReturnsAsync(apiResponse);
+
+    var saveFileRequest = new SaveFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      Notes = "Notes",
+      FileName = "FileName",
+      ModifiedDate = DateTime.Now,
+      ContentType = "ContentType",
+      FileStream = new MemoryStream()
+    };
+
+    var result = await _onspringService.SaveFile(
+      It.IsAny<string>(),
+      saveFileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task SaveFile_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+    .Setup(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var saveFileRequest = new SaveFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      Notes = "Notes",
+      FileName = "FileName",
+      ModifiedDate = DateTime.Now,
+      ContentType = "ContentType",
+      FileStream = new MemoryStream()
+    };
+
+    var result = await _onspringService.SaveFile(
+      It.IsAny<string>(),
+      saveFileRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task SaveFile_WhenCalledAndHttpRequestOrTaskExceptionIsThrown_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new HttpRequestException());
+
+    var saveFileRequest = new SaveFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      Notes = "Notes",
+      FileName = "FileName",
+      ModifiedDate = DateTime.Now,
+      ContentType = "ContentType",
+      FileStream = new MemoryStream()
+    };
+
+    var result = await _onspringService.SaveFile(
+      It.IsAny<string>(),
+      saveFileRequest
+    );
+
+    result.Should().BeNull();
+    _mockClient.Verify(
+      m => m.SaveFileAsync(
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task TryDeleteFile_WhenCalledAndFileIsDeleted_ItShouldReturnTrue()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.NoContent,
+      "No Content"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.TryDeleteFile(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeTrue();
+
+    _mockClient.Verify(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task TryDeleteFile_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnFalseAfterRetryingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(apiResponse);
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.TryDeleteFile(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeFalse();
+
+    _mockClient.Verify(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task TryDeleteFile_WhenCalledAndExceptionIsThrown_ItShouldReturnFalse()
+  {
+    _mockClient
+    .Setup(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.TryDeleteFile(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeFalse();
+
+    _mockClient.Verify(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task TryDeleteFile_WhenCalledAndHttpRequestOrTaskExceptionIsThrown_ItShouldReturnFalseAfterRetryingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new HttpRequestException());
+
+    var onspringFileRequest = new OnspringFileRequest(
+      1,
+      1,
+      1
+    );
+
+    var result = await _onspringService.TryDeleteFile(
+      It.IsAny<string>(),
+      onspringFileRequest
+    );
+
+    result.Should().BeFalse();
+    _mockClient.Verify(
+      m => m.DeleteFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(RecordDataFactory.GetSaveRecordResponse),
+    MemberType = typeof(RecordDataFactory)
+  )]
+  public async Task UpdateRecord_WhenCalledAndRecordIsUpdated_ItShouldReturnACreatedWithIdResponse(
+    SaveRecordResponse saveRecordResponse
+  )
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse(
+      HttpStatusCode.OK,
+      "Ok",
+      saveRecordResponse
+    );
+
+    _mockClient
+    .Setup(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      )
+    )
+    .ReturnsAsync(
+      apiResponse
+    );
+
+    var updateRecordRequest = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>()
+    };
+
+    var result = await _onspringService.UpdateRecord(
+      It.IsAny<string>(),
+      updateRecordRequest
+    );
+
+    result.Should().BeEquivalentTo(saveRecordResponse);
+
+    _mockClient.Verify(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task UpdateRecord_WhenCalledAndRequestIsUnsuccessful_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    var apiResponse = ApiResponseFactory.GetApiResponse<SaveRecordResponse>(
+      HttpStatusCode.InternalServerError,
+      "Internal Server Error"
+    );
+
+    _mockClient
+    .Setup(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      )
+    )
+    .ReturnsAsync(apiResponse);
+
+    var updateRecordRequest = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>()
+    };
+
+    var result = await _onspringService.UpdateRecord(
+      It.IsAny<string>(),
+      updateRecordRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Fact]
+  public async Task UpdateRecord_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+    .Setup(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      )
+    )
+    .Throws(
+      new Exception()
+    );
+
+    var updateRecordRequest = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>()
+    };
+
+    var result = await _onspringService.UpdateRecord(
+      It.IsAny<string>(),
+      updateRecordRequest
+    );
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task UpdateRecord_WhenCalledAndHttpRequestOrTaskExceptionIsThrown_ItShouldReturnNullAfterRetryingThreeTimes()
+  {
+    _mockClient
+    .SetupSequence(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      )
+    )
+    .Throws(new HttpRequestException())
+    .Throws(new TaskCanceledException())
+    .Throws(new HttpRequestException());
+
+    var updateRecordRequest = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>()
+    };
+
+    var result = await _onspringService.UpdateRecord(
+      It.IsAny<string>(),
+      updateRecordRequest
+    );
+
+    result.Should().BeNull();
+    _mockClient.Verify(
+      m => m.SaveRecordAsync(
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Exactly(3)
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(ApiResponseFactory.GetResponsesThatNeedToBeRetried),
+    MemberType = typeof(ApiResponseFactory)
+  )]
+  public void NeedsToBeRetried_WhenCalledAndStatusCodeCanBeRetried_ItShouldReturnTrue(
+    ApiResponse response
+  )
+  {
+    var result = OnspringService.NeedsToBeRetried(response);
+    result.Should().BeTrue();
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(ApiResponseFactory.GetResponsesThatShouldNotBeRetried),
+    MemberType = typeof(ApiResponseFactory)
+  )]
+  public void NeedsToBeRetried_WhenCalledAndStatusCodeCannotBeRetried_ItShouldReturnFalse(
+    ApiResponse response
+  )
+  {
+    var result = OnspringService.NeedsToBeRetried(response);
+    result.Should().BeFalse();
+  }
+
+  [Theory]
+  [InlineData(HttpStatusCode.InternalServerError)]
+  [InlineData(HttpStatusCode.BadGateway)]
+  [InlineData(HttpStatusCode.ServiceUnavailable)]
+  [InlineData(HttpStatusCode.GatewayTimeout)]
+  [InlineData(HttpStatusCode.RequestTimeout)]
+  [InlineData(HttpStatusCode.TooManyRequests)]
+  public void CanBeRetried_WhenCalledAndStatusCodeCanBeRetried_ItShouldReturnTrue(
+    HttpStatusCode statusCode
+  )
+  {
+    var result = OnspringService.CanBeRetried(statusCode);
+    result.Should().BeTrue();
+  }
+
+  [Theory]
+  [InlineData(HttpStatusCode.NotFound)]
+  [InlineData(HttpStatusCode.BadRequest)]
+  [InlineData(HttpStatusCode.Unauthorized)]
+  [InlineData(HttpStatusCode.Forbidden)]
+  public void CanBeRetried_WhenCalledAndStatusCodeCannotBeRetried_ItShouldReturnFalse(
+    HttpStatusCode statusCode
+  )
+  {
+    var result = OnspringService.CanBeRetried(statusCode);
+    result.Should().BeFalse();
+  }
 }
