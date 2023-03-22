@@ -1,5 +1,6 @@
 namespace OnspringCLI.Validators;
 
+[ExcludeFromCodeCoverage]
 public class FileInfoOptionValidator
 {
   public static void Validate(OptionResult result)

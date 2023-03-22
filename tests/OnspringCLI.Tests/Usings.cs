@@ -19,5 +19,6 @@ global using OnspringCLI.Services;
 global using OnspringCLI.Tests.TestData;
 
 global using Serilog;
+global using Serilog.Events;
 
 global using Xunit;
