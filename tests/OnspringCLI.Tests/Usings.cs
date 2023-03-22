@@ -1,3 +1,5 @@
+global using System.CommandLine;
+global using System.CommandLine.Invocation;
 global using System.Globalization;
 global using System.Net;
 

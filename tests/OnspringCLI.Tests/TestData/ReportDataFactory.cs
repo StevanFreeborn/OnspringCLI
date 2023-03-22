@@ -3,42 +3,42 @@ namespace OnspringCLI.Tests.TestData;
 public class ReportDataFactory
 {
   public static IEnumerable<object[]> GetReportData =>
-  new List<object[]>
-  {
-    new object[]
+    new List<object[]>
     {
-      ReportData,
-    },
-  };
+      new object[]
+      {
+        ReportData,
+      },
+    };
 
   private static ReportData ReportData =>
-  new()
-  {
-    Columns = new List<string>
+    new()
     {
-      "Column 1",
-      "Column 2",
-    },
-    Rows = new List<ReportDataRow>
-    {
-      new()
+      Columns = new List<string>
       {
-        RecordId = 1,
-        Cells = new List<object>
-        {
-          "Cell 1",
-          "Cell 2",
-        },
+        "Column 1",
+        "Column 2",
       },
-      new()
+      Rows = new List<ReportDataRow>
       {
-        RecordId = 2,
-        Cells = new List<object>
+        new()
         {
-          "Cell 1",
-          "Cell 2",
+          RecordId = 1,
+          Cells = new List<object>
+          {
+            "Cell 1",
+            "Cell 2",
+          },
         },
-      }
-    },
-  };
+        new()
+        {
+          RecordId = 2,
+          Cells = new List<object>
+          {
+            "Cell 1",
+            "Cell 2",
+          },
+        }
+      },
+    };
 }

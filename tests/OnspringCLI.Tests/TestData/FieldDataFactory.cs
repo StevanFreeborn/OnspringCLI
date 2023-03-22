@@ -3,114 +3,115 @@ namespace OnspringCLI.Tests.TestData;
 public class FieldDataFactory
 {
   public static IEnumerable<object[]> GetOnePageOfFields =>
-  new List<object[]>
-  {
-    new object[]
+    new List<object[]>
     {
-      PageOfFields,
-    },
-  };
+      new object[]
+      {
+        PageOfFields,
+      },
+    };
 
   public static IEnumerable<object[]> GetFirstPageOfFields =>
-  new List<object[]>
-  {
-    new object[]
+    new List<object[]>
     {
-      PageOneOfFields,
-    },
-  };
+      new object[]
+      {
+        PageOneOfFields,
+      },
+    };
 
   public static IEnumerable<object[]> GetTwoPagesOfFields =>
-  new List<object[]>
-  {
-    new object[]
+    new List<object[]>
     {
-      PageOneOfFields,
-      PageTwoOfFields,
-    },
-  };
+      new object[]
+      {
+        PageOneOfFields,
+        PageTwoOfFields,
+      },
+    };
 
-  public static IEnumerable<object[]> GetField => new List<object[]>
-  {
-    new object[]
+  public static IEnumerable<object[]> GetField =>
+    new List<object[]>
     {
-      Field1,
-    },
-  };
+      new object[]
+      {
+        Field1,
+      },
+    };
 
   private static GetPagedFieldsResponse PageOfFields =>
-  new()
-  {
-    PageNumber = 1,
-    TotalPages = 1,
-    TotalRecords = 3,
-    Items = PageOneFields,
-  };
+    new()
+    {
+      PageNumber = 1,
+      TotalPages = 1,
+      TotalRecords = 3,
+      Items = PageOneFields,
+    };
 
   private static GetPagedFieldsResponse PageOneOfFields =>
-  new()
-  {
-    PageNumber = 1,
-    TotalPages = 2,
-    TotalRecords = 6,
-    Items = PageOneFields,
-  };
+    new()
+    {
+      PageNumber = 1,
+      TotalPages = 2,
+      TotalRecords = 6,
+      Items = PageOneFields,
+    };
 
   private static GetPagedFieldsResponse PageTwoOfFields =>
-  new()
-  {
-    PageNumber = 2,
-    TotalPages = 2,
-    TotalRecords = 6,
-    Items = PageTwoFields,
-  };
+    new()
+    {
+      PageNumber = 2,
+      TotalPages = 2,
+      TotalRecords = 6,
+      Items = PageTwoFields,
+    };
 
   private static List<Field> PageOneFields =>
-  new()
-  {
-    Field1,
-    new Field
+    new()
     {
-      Id = 2,
-      Name = "Field 2",
-      Type = FieldType.Attachment,
-    },
-    new Field
-    {
-      Id = 3,
-      Name = "Field 3",
-      Type = FieldType.Attachment,
-    },
-  };
+      Field1,
+      new Field
+      {
+        Id = 2,
+        Name = "Field 2",
+        Type = FieldType.Attachment,
+      },
+      new Field
+      {
+        Id = 3,
+        Name = "Field 3",
+        Type = FieldType.Attachment,
+      },
+    };
 
   private static List<Field> PageTwoFields =>
-  new()
-  {
-    new Field
+    new()
     {
-      Id = 4,
-      Name = "Field 4",
-      Type = FieldType.Attachment,
-    },
-    new Field
-    {
-      Id = 5,
-      Name = "Field 5",
-      Type = FieldType.Attachment,
-    },
-    new Field
-    {
-      Id = 6,
-      Name = "Field 6",
-      Type = FieldType.Attachment,
-    },
-  };
+      new Field
+      {
+        Id = 4,
+        Name = "Field 4",
+        Type = FieldType.Attachment,
+      },
+      new Field
+      {
+        Id = 5,
+        Name = "Field 5",
+        Type = FieldType.Attachment,
+      },
+      new Field
+      {
+        Id = 6,
+        Name = "Field 6",
+        Type = FieldType.Attachment,
+      },
+    };
 
   private static Field Field1 =>
-  new()
-  {
-    Id = 1,
-    Name = "Field 1",
-    Type = FieldType.Attachment,
-  };
+    new()
+    {
+      Id = 1,
+      Name = "Field 1",
+      Type = FieldType.Attachment,
+    };
 }

@@ -7,12 +7,19 @@ public class DownloadCommandTests
   [Fact]
   public void DownloadCommand_WhenCalled_ReturnsNewInstance()
   {
-    var deleteCommand = new DownloadCommand();
+    var downloadCommand = new DownloadCommand();
 
-    deleteCommand.Should().NotBeNull();
-    deleteCommand.Name.Should().Be("download");
-    deleteCommand.Description.Should().Be("Download attachments");
-    deleteCommand.Subcommands.FirstOrDefault(
+    downloadCommand.Should().NotBeNull();
+    downloadCommand.Name.Should().Be("download");
+    downloadCommand.Description.Should().Be("Download attachments");
+  }
+
+  [Fact]
+  public void DownloadCommand_WhenCalled_ItShouldHaveABulkCommand()
+  {
+    var downloadCommand = new DownloadCommand();
+
+    downloadCommand.Subcommands.FirstOrDefault(
       x => x.Name == "bulk"
     ).Should().NotBeNull().And.BeOfType<BulkCommand>();
   }
