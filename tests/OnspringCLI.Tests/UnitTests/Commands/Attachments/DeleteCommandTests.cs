@@ -1,6 +1,6 @@
 using BulkCommand = OnspringCLI.Commands.Attachments.Delete.BulkCommand;
 
-namespace OnspringCLI.Tests.UnitTests.Commands;
+namespace OnspringCLI.Tests.UnitTests.Commands.Attachments;
 
 public class DeleteCommandTests
 {

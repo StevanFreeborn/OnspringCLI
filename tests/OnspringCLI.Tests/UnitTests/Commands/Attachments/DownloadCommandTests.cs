@@ -1,6 +1,6 @@
 using BulkCommand = OnspringCLI.Commands.Attachments.Download.BulkCommand;
 
-namespace OnspringCLI.Tests.UnitTests.Commands.Download;
+namespace OnspringCLI.Tests.UnitTests.Commands.Attachments;
 
 public class DownloadCommandTests
 {

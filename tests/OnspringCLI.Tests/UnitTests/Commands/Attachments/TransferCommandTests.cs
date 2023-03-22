@@ -1,4 +1,4 @@
-namespace OnspringCLI.Tests.UnitTests.Commands;
+namespace OnspringCLI.Tests.UnitTests.Commands.Attachments;
 
 public class TransferCommandTests
 {
