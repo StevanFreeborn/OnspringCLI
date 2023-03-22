@@ -1,0 +1,13 @@
+{
+  "SourceAppId": 1,
+  "TargetAppId": 1,
+  "SourceMatchFieldId": 1,
+  "TargetMatchFieldID": 1,
+  "AttachmentFieldMappings": {
+    "1": 1,
+    "2": 1
+  },
+  "ProcessFlagFieldId": 1,
+  "ProcessFlagValue": "no",
+  "ProcessedFlagValue": "yes"
+}
