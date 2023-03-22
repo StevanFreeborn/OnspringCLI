@@ -580,6 +580,51 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
   public async Task TransferAttachments(
     IAttachmentTransferSettings settings,
+    List<ResultRecord> sourceRecords
+  )
+  {
+    _logger.Debug(
+      "Transferring attachments for {Count} records.",
+      sourceRecords.Count
+    );
+
+    using var pBar = _progressBarFactory.Create(
+      sourceRecords.Count,
+      "Transferring attachments"
+    );
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Fatal;
+
+    await Parallel.ForEachAsync(
+      sourceRecords,
+      async (sourceRecord, token) =>
+      {
+        pBar.Message = $"Transferring attachments for record {sourceRecord.RecordId}";
+
+        await TransferRecordAttachments(
+          settings,
+          sourceRecord
+        );
+
+        pBar.Tick($"Transferred attachments for record {sourceRecord.RecordId}");
+
+        _logger.Debug(
+          "Transferred attachments for record {RecordId}.",
+          sourceRecord.RecordId
+        );
+      }
+    );
+
+    pBar.Message = "Transferred attachments";
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Information;
+
+    _logger.Debug(
+      "Finished transferring attachments for {Count} records.",
+      sourceRecords.Count
+    );
+  }
+
+  public async Task TransferRecordAttachments(
+    IAttachmentTransferSettings settings,
     ResultRecord sourceRecord
   )
   {

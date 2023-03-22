@@ -174,7 +174,7 @@ public class TransferCommandTests
       .Verify(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         ),
         Times.Never
       );
@@ -242,7 +242,7 @@ public class TransferCommandTests
       .Verify(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         ),
         Times.Never
       );
@@ -321,7 +321,7 @@ public class TransferCommandTests
       .Verify(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         ),
         Times.Never
       );
@@ -364,7 +364,7 @@ public class TransferCommandTests
       .Setup(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         )
       );
 
@@ -411,7 +411,7 @@ public class TransferCommandTests
       .Verify(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         ),
         Times.Once
       );
@@ -467,7 +467,7 @@ public class TransferCommandTests
       .Setup(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         )
       );
 
@@ -518,7 +518,7 @@ public class TransferCommandTests
       .Verify(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         ),
         Times.Once
       );
@@ -574,7 +574,7 @@ public class TransferCommandTests
       .Setup(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         )
       );
 
@@ -624,7 +624,7 @@ public class TransferCommandTests
       .Verify(
         x => x.TransferAttachments(
           It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<ResultRecord>()
+          It.IsAny<List<ResultRecord>>()
         ),
         Times.Once
       );

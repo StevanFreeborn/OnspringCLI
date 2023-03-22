@@ -25,14 +25,23 @@ static class HostBuilderExtensions
         .MinimumLevel.Verbose()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
-        .WriteTo.File(
-          new CompactJsonFormatter(),
-          logFilePath,
-          options.LogLevel
+        .WriteTo.Logger(
+          lc =>
+            lc
+            .MinimumLevel.Verbose()
+            .WriteTo.File(
+              new CompactJsonFormatter(),
+              logFilePath,
+              options.LogLevel
+            )
         )
-        .WriteTo.Console(
-          restrictedToMinimumLevel: logLevelSwitch.MinimumLevel,
-          theme: AnsiConsoleTheme.Code
+        .WriteTo.Logger(
+          lc =>
+            lc
+            .MinimumLevel.ControlledBy(logLevelSwitch)
+            .WriteTo.Console(
+              theme: AnsiConsoleTheme.Code
+            )
         );
       }
     );

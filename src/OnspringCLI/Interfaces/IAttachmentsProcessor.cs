@@ -46,6 +46,11 @@ public interface IAttachmentsProcessor
 
   Task TransferAttachments(
     IAttachmentTransferSettings settings,
+    List<ResultRecord> sourceRecord
+  );
+
+  Task TransferRecordAttachments(
+    IAttachmentTransferSettings settings,
     ResultRecord sourceRecord
   );
 
