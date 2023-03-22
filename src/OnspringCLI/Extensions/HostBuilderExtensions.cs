@@ -22,7 +22,6 @@ static class HostBuilderExtensions
           new OnspringFileRequestDestructuringPolicy(),
           new OnspringSaveFileRequestDestructuringPolicy()
         )
-        .MinimumLevel.Verbose()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
         .WriteTo.Logger(
