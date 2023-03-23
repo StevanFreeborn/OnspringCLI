@@ -136,7 +136,7 @@ public class ReportCommand : Command
       return 0;
     }
 
-    internal List<int> GetFilesFilterList()
+    private List<int> GetFilesFilterList()
     {
       var filesFilterList = new List<int>();
 
