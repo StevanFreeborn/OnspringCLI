@@ -504,5 +504,15 @@ public class ReportCommandTests
         Times.Once
       );
     }
+
+    [Fact]
+    public void Invoke_WhenCalled_ItShouldThrowException()
+    {
+      var action = () => _handler.Invoke(
+        It.IsAny<InvocationContext>()
+      );
+
+      action.Should().Throw<NotImplementedException>();
+    }
   }
 }
