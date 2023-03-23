@@ -2,6 +2,208 @@ namespace OnspringCLI.Tests.TestData;
 
 public class FieldDataFactory
 {
+  public static IEnumerable<object[]> ValidFlagFields()
+  {
+    var processGuid = Guid.NewGuid();
+    var processedGuid = Guid.NewGuid();
+
+    return new List<object[]>
+    {
+      new object[]
+      {
+        new AttachmentTransferSettings
+        {
+          ProcessFlagFieldId = 1,
+          ProcessFlagValue = "Test1",
+          ProcessedFlagValue = "Test2",
+        },
+        new ListField
+        {
+          Id = 1,
+          Name = "test",
+          Type = FieldType.List,
+          Multiplicity = Multiplicity.SingleSelect,
+          Values = new List<ListValue>
+          {
+            new ListValue
+            {
+              Id = processGuid,
+              Name = "Test1"
+            },
+            new ListValue
+            {
+              Id = processedGuid,
+              Name = "Test2"
+            },
+          },
+        },
+      },
+      new object[]
+      {
+        new AttachmentTransferSettings
+        {
+          ProcessFlagFieldId = 1,
+          ProcessFlagValue = processGuid.ToString(),
+          ProcessedFlagValue = processedGuid.ToString(),
+        },
+        new ListField
+        {
+          Id = 1,
+          Name = "test",
+          Type = FieldType.List,
+          Multiplicity = Multiplicity.SingleSelect,
+          Values = new List<ListValue>
+          {
+            new ListValue
+            {
+              Id = processGuid,
+              Name = "Test1"
+            },
+            new ListValue
+            {
+              Id = processedGuid,
+              Name = "Test2"
+            },
+          },
+        },
+      },
+    };
+  }
+
+  public static IEnumerable<object[]> InvalidFlagFields =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new AttachmentTransferSettings { ProcessFlagFieldId = 1 },
+        null!,
+      },
+      new object[]
+      {
+        new AttachmentTransferSettings { ProcessFlagFieldId = 1 },
+        new Field
+        {
+          Id = 1,
+          Name = "test",
+          Type = FieldType.Text,
+        },
+      },
+      new object[]
+      {
+        new AttachmentTransferSettings { ProcessFlagFieldId = 1 },
+        new ListField
+        {
+          Id = 1,
+          Name = "test",
+          Type = FieldType.List,
+          Multiplicity = Multiplicity.MultiSelect,
+        },
+      },
+      new object[]
+      {
+        new AttachmentTransferSettings
+        {
+          ProcessFlagFieldId = 1,
+          ProcessFlagValue = "Test1",
+          ProcessedFlagValue = "Test2",
+        },
+        new ListField
+        {
+          Id = 1,
+          Name = "test",
+          Type = FieldType.List,
+          Multiplicity = Multiplicity.SingleSelect,
+          Values = new List<ListValue>
+          {
+            new ListValue
+            {
+              Id = Guid.NewGuid(),
+              Name = "Test1"
+            },
+          },
+        },
+      },
+      new object[]
+      {
+        new AttachmentTransferSettings
+        {
+          ProcessFlagFieldId = 1,
+          ProcessFlagValue = "Test1",
+          ProcessedFlagValue = "Test2",
+        },
+        new ListField
+        {
+          Id = 1,
+          Name = "test",
+          Type = FieldType.List,
+          Multiplicity = Multiplicity.SingleSelect,
+          Values = new List<ListValue>
+          {
+            new ListValue
+            {
+              Id = Guid.NewGuid(),
+              Name = "Test2"
+            },
+          },
+        },
+      },
+    };
+
+  public static IEnumerable<object[]> InvalidMatchFields =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        null!,
+        new Field { Id = 1, Name = "test", Type = FieldType.Text },
+      },
+      new object[]
+      {
+        new Field { Id = 1, Name = "test", Type = FieldType.Text },
+        null!,
+      },
+      new object[]
+      {
+        new Field { Id = 1, Name = "test", Type = FieldType.Attachment },
+        new Field { Id = 2, Name = "test", Type = FieldType.Text },
+      },
+      new object[]
+      {
+        new Field { Id = 1, Name = "test", Type = FieldType.Text },
+        new Field { Id = 2, Name = "test", Type = FieldType.Attachment },
+      },
+    };
+
+  public static IEnumerable<object[]> ValidMatchFields =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new Field { Id = 1, Name = "test", Type = FieldType.Text },
+        new Field { Id = 2, Name = "test", Type = FieldType.Text },
+      },
+      new object[]
+      {
+        new Field { Id = 1, Name = "test", Type = FieldType.Number },
+        new Field { Id = 2, Name = "test", Type = FieldType.Number },
+      },
+      new object[]
+      {
+        new Field { Id = 1, Name = "test", Type = FieldType.AutoNumber },
+        new Field { Id = 2, Name = "test", Type = FieldType.AutoNumber },
+      },
+      new object[]
+      {
+        new Field { Id = 1, Name = "test", Type = FieldType.Date },
+        new Field { Id = 2, Name = "test", Type = FieldType.Date },
+      },
+      new object[]
+      {
+        new FormulaField { Id = 1, Name = "test", Type = FieldType.Formula, OutputType = FormulaOutputType.Text },
+        new FormulaField { Id = 2, Name = "test", Type = FieldType.Formula, OutputType = FormulaOutputType.Text },
+      },
+    };
+
   public static IEnumerable<object[]> GetOnePageOfFields =>
     new List<object[]>
     {

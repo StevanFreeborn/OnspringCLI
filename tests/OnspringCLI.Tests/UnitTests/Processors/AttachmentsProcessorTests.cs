@@ -684,4 +684,302 @@ public class AttachmentsProcessorTests
       Times.Once
     );
   }
+
+  [Theory]
+  [MemberData(
+    nameof(FileDataFactory.GetFileResponse),
+    MemberType = typeof(FileDataFactory)
+  )]
+  public async Task TryDownloadFiles_WhenCalledAndNoErrorsOccur_ItShouldReturnAnEmptyList(
+    GetFileResponse getFileResponse
+  )
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      getFileResponse
+    );
+
+    var fileRequest = new OnspringFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      FieldName = "test1",
+      FileId = 1,
+    };
+
+    var result = await _attachmentsProcessor.TryDownloadFiles(
+      new List<OnspringFileRequest> { fileRequest },
+      "output"
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<List<OnspringFileRequest>>();
+    result.Should().BeEmpty();
+
+    _onspringServiceMock.Verify(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TryDownloadFiles_WhenCalledAndNoFileFound_ItShouldReturnAListOfErroredRequests()
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      (GetFileResponse?)null
+    );
+
+    var fileRequest = new OnspringFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      FieldName = "test1",
+      FileId = 1,
+    };
+
+    var result = await _attachmentsProcessor.TryDownloadFiles(
+      new List<OnspringFileRequest> { fileRequest },
+      "output"
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<List<OnspringFileRequest>>();
+    result.Should().BeEquivalentTo(
+      new List<OnspringFileRequest> { fileRequest }
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TryDeleteFiles_WhenCalledAndNoErrorsOccur_ItShouldReturnAnEmptyList()
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.TryDeleteFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      true
+    );
+
+    var fileRequest = new OnspringFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      FieldName = "test1",
+      FileId = 1,
+    };
+
+    var result = await _attachmentsProcessor.TryDeleteFiles(
+      new List<OnspringFileRequest> { fileRequest }
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<List<OnspringFileRequest>>();
+    result.Should().BeEmpty();
+
+    _onspringServiceMock.Verify(
+      m => m.TryDeleteFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TryDeleteFiles_WhenCalledAndNoFileFound_ItShouldReturnAListOfErroredRequests()
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.TryDeleteFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      false
+    );
+
+    var fileRequest = new OnspringFileRequest
+    {
+      RecordId = 1,
+      FieldId = 1,
+      FieldName = "test1",
+      FileId = 1,
+    };
+
+    var result = await _attachmentsProcessor.TryDeleteFiles(
+      new List<OnspringFileRequest> { fileRequest }
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<List<OnspringFileRequest>>();
+    result.Should().BeEquivalentTo(
+      new List<OnspringFileRequest> { fileRequest }
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.TryDeleteFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FieldDataFactory.InvalidMatchFields),
+    MemberType = typeof(FieldDataFactory)
+  )]
+  public async Task ValidateMatchFields_WhenCalledAndMatchFieldsAreInvalid_ItShouldReturnFalse(
+    Field? sourceMatchField,
+    Field? targetMatchField
+  )
+  {
+    _onspringServiceMock
+    .SetupSequence(
+      m => m.GetField(
+        It.IsAny<string>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      sourceMatchField
+    )
+    .ReturnsAsync(
+      targetMatchField
+    );
+
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      TargetMatchFieldId = 1,
+    };
+
+    var result = await _attachmentsProcessor.ValidateMatchFields(
+      settings
+    );
+
+    result.Should().BeFalse();
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FieldDataFactory.ValidMatchFields),
+    MemberType = typeof(FieldDataFactory)
+  )]
+  public async Task ValidateMatchFields_WhenCalledAndMatchFieldsAreValid_ItShouldReturnTrue(
+    Field? sourceMatchField,
+    Field? targetMatchField
+  )
+  {
+    _onspringServiceMock
+    .SetupSequence(
+      m => m.GetField(
+        It.IsAny<string>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      sourceMatchField
+    )
+    .ReturnsAsync(
+      targetMatchField
+    );
+
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      TargetMatchFieldId = 1,
+    };
+
+    var result = await _attachmentsProcessor.ValidateMatchFields(
+      settings
+    );
+
+    result.Should().BeTrue();
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FieldDataFactory.InvalidFlagFields),
+    MemberType = typeof(FieldDataFactory)
+  )]
+  public async Task ValidateFlagFieldIdAndValues_WhenCalledAndFlagFieldIsInvalid_ItShouldReturnFalse(
+    AttachmentTransferSettings settings,
+    Field? flagField
+  )
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.GetField(
+        It.IsAny<string>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      flagField
+    );
+
+    var result = await _attachmentsProcessor.ValidateFlagFieldIdAndValues(
+      settings
+    );
+
+    result.Should().BeFalse();
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FieldDataFactory.ValidFlagFields),
+    MemberType = typeof(FieldDataFactory)
+  )]
+  public async Task ValidateFlagFieldIdAndValues_WhenCalledAndFlagFieldIsValid_ItShouldReturnTrue(
+    AttachmentTransferSettings settings,
+    Field? flagField
+  )
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.GetField(
+        It.IsAny<string>(),
+        It.IsAny<int>()
+      )
+    )
+    .ReturnsAsync(
+      flagField
+    );
+
+    var result = await _attachmentsProcessor.ValidateFlagFieldIdAndValues(
+      settings
+    );
+
+    result.Should().BeTrue();
+  }
 }

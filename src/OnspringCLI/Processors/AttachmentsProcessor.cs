@@ -672,7 +672,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  internal async Task<bool> TryDeleteFile(
+  [ExcludeFromCodeCoverage]
+  private async Task<bool> TryDeleteFile(
     OnspringFileRequest fileRequest
   )
   {
@@ -1163,7 +1164,8 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  internal static bool IsValidMatchFieldType(Field field)
+  [ExcludeFromCodeCoverage]
+  private static bool IsValidMatchFieldType(Field field)
   {
     var isSupportedField = field.Type is
     FieldType.Text or
