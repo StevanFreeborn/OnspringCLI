@@ -67,4 +67,17 @@ public static class OptionsFactory
       "--files-filter-csv",
       "TestData/Files/testFilesFilter.csv"
     };
+
+  public static string[] AllBulkDeleteOptions =>
+    new string[]
+    {
+      "--app-id",
+      "123",
+      "--field-filter",
+      "1,2",
+      "--records-filter",
+      "1,2",
+      "--report-filter",
+      "1"
+    };
 }

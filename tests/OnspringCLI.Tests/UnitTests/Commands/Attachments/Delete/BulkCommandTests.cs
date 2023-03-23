@@ -96,5 +96,451 @@ public class BulkCommandTests
       _command = new BulkCommand();
       _command.SetHandler(_handler.InvokeAsync);
     }
+
+    [Fact]
+    public async Task InvokeAsync_WhenCalledAndNoFileFieldsAreFound_ItShouldReturnNonZeroValue()
+    {
+      _processorMock
+      .Setup(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<Field>()
+      );
+
+      var options = OptionsFactory.AllBulkDeleteOptions;
+      var result = await _command.InvokeAsync(options);
+
+      result.Should().Be(1);
+
+      _processorMock
+      .Verify(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetRecordIdsFromReport(
+          It.IsAny<int>()
+        ),
+        Times.Never
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        ),
+        Times.Never
+      );
+
+      _processorMock
+      .Verify(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        ),
+        Times.Never
+      );
+
+      _processorMock
+      .Verify(
+        m => m.WriteFileRequestErrorReport(
+          It.IsAny<List<OnspringFileRequest>>(),
+          It.IsAny<string>()
+        ),
+        Times.Never
+      );
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WhenCalledAndNoFileRequestsAreFound_ItShouldReturnNonZeroValue()
+    {
+      _processorMock
+      .Setup(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<Field>
+        {
+          new Field()
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<OnspringFileRequest>()
+      );
+
+      var options = OptionsFactory.AllBulkDeleteOptions;
+      var result = await _command.InvokeAsync(options);
+
+      result.Should().Be(2);
+
+      _processorMock
+      .Verify(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetRecordIdsFromReport(
+          It.IsAny<int>()
+        ),
+        Times.Never
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        ),
+        Times.Never
+      );
+
+      _processorMock
+      .Verify(
+        m => m.WriteFileRequestErrorReport(
+          It.IsAny<List<OnspringFileRequest>>(),
+          It.IsAny<string>()
+        ),
+        Times.Never
+      );
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WhenCalledAndFileRequestsAreFound_ItShouldReturnZero()
+    {
+      _processorMock
+      .Setup(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<Field>
+        {
+          new Field()
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<OnspringFileRequest>
+        {
+          new OnspringFileRequest()
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<OnspringFileRequest>()
+      );
+
+      var options = OptionsFactory.AllBulkDeleteOptions;
+      var result = await _command.InvokeAsync(options);
+
+      result.Should().Be(0);
+
+      _processorMock
+      .Verify(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetRecordIdsFromReport(
+          It.IsAny<int>()
+        ),
+        Times.Never
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.WriteFileRequestErrorReport(
+          It.IsAny<List<OnspringFileRequest>>(),
+          It.IsAny<string>()
+        ),
+        Times.Never
+      );
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WhenCalledAndFileRequestsAreFoundAndSomeRequestsError_ItShouldReturnZeroAndWriteErrorReport()
+    {
+      _processorMock
+      .Setup(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<Field>
+        {
+          new Field()
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<OnspringFileRequest>
+        {
+          new OnspringFileRequest()
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<OnspringFileRequest>
+        {
+          new OnspringFileRequest()
+        }
+      );
+
+      var options = OptionsFactory.AllBulkDeleteOptions;
+      var result = await _command.InvokeAsync(options);
+
+      result.Should().Be(0);
+
+      _processorMock
+      .Verify(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetRecordIdsFromReport(
+          It.IsAny<int>()
+        ),
+        Times.Never
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.WriteFileRequestErrorReport(
+          It.IsAny<List<OnspringFileRequest>>(),
+          It.IsAny<string>()
+        ),
+        Times.Once
+      );
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WhenCalledAndReportFilterIsGiven_ItShouldAddReportRecordIdsToRecordsFilter()
+    {
+      _processorMock
+      .Setup(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<Field>
+        {
+          new Field()
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.GetRecordIdsFromReport(
+          It.IsAny<int>()
+        )
+      )
+      .ReturnsAsync(
+        new List<int>
+        {
+          1
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<OnspringFileRequest>
+        {
+          new OnspringFileRequest()
+        }
+      );
+
+      _processorMock
+      .Setup(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        )
+      )
+      .ReturnsAsync(
+        new List<OnspringFileRequest>()
+      );
+
+      _handler.ReportFilter = 1;
+      var options = OptionsFactory.AllBulkDeleteOptions;
+      var result = await _command.InvokeAsync(options);
+      _handler.RecordsFilter.Should().BeEquivalentTo(new List<int> { 1 });
+
+      result.Should().Be(0);
+
+      _processorMock
+      .Verify(
+        m => m.GetFileFields(
+          It.IsAny<int>(),
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetRecordIdsFromReport(
+          It.IsAny<int>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.GetFileRequests(
+          It.IsAny<int>(),
+          It.IsAny<List<Field>>(),
+          null,
+          It.IsAny<List<int>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.TryDeleteFiles(
+          It.IsAny<List<OnspringFileRequest>>()
+        ),
+        Times.Once
+      );
+
+      _processorMock
+      .Verify(
+        m => m.WriteFileRequestErrorReport(
+          It.IsAny<List<OnspringFileRequest>>(),
+          It.IsAny<string>()
+        ),
+        Times.Never
+      );
+    }
   }
 }
