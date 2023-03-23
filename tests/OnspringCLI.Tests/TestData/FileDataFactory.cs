@@ -29,6 +29,67 @@ public class FileDataFactory
       },
     };
 
+  public static IEnumerable<object[]> FileRequests =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new List<OnspringFileRequest>
+        {
+          new OnspringFileRequest(1, 1, "test", 1),
+          new OnspringFileRequest(1, 1, "test", 2),
+          new OnspringFileRequest(1, 2, "test", 3),
+          new OnspringFileRequest(1, 2, "test", 4),
+        },
+      },
+    };
+
+  public static IEnumerable<object[]> FileRequestsWithResponses =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new List<OnspringFileRequest>
+        {
+          new OnspringFileRequest(1, 1, "test", 1),
+          new OnspringFileRequest(1, 1, "test", 2),
+          new OnspringFileRequest(1, 2, "test", 3),
+          new OnspringFileRequest(1, 2, "test", 4),
+        },
+        new List<GetFileResponse?>
+        {
+          new GetFileResponse
+          {
+            Stream = new MemoryStream(),
+            FileName = "test1",
+            ContentType = "text/plain",
+            ContentLength = 100,
+          },
+          new GetFileResponse
+          {
+            Stream = new MemoryStream(),
+            FileName = "test1",
+            ContentType = "text/plain",
+            ContentLength = 100,
+          },
+          new GetFileResponse
+          {
+            Stream = new MemoryStream(),
+            FileName = "test1",
+            ContentType = "text/plain",
+            ContentLength = 100,
+          },
+          new GetFileResponse
+          {
+            Stream = new MemoryStream(),
+            FileName = "test1",
+            ContentType = "text/plain",
+            ContentLength = 100,
+          },
+        },
+      },
+    };
+
   private static GetFileResponse FileResponse =>
     new()
     {

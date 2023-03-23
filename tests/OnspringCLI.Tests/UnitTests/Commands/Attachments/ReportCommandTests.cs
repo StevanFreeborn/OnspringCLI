@@ -119,7 +119,7 @@ public class ReportCommandTests
         new List<Field>()
       );
 
-      var options = OptionsFactory.AllReportOptions;
+      var options = OptionsFactory.RequiredReportOptions;
       var result = await _command.InvokeAsync(options);
 
       result.Should().Be(1);

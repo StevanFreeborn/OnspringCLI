@@ -21,8 +21,9 @@ public class AttachmentTransferSettingsTests
       TargetMatchFieldId = 4,
       AttachmentFieldMappings = new Dictionary<string, int>
       {
-          { "1", 2 },
-          { "3", 4 },
+        { "1", 2 },
+        { "3", 4 },
+        { "invalid", 6 },
       },
       ProcessFlagFieldId = 5,
       ProcessFlagValue = "6",
@@ -40,6 +41,7 @@ public class AttachmentTransferSettingsTests
       {
         { "1", 2 },
         { "3", 4 },
+        { "invalid", 6 },
       }
     );
     settings.AttachmentFieldIdMappings.Should().BeEquivalentTo(
@@ -47,6 +49,7 @@ public class AttachmentTransferSettingsTests
       {
         { 1, 2 },
         { 3, 4 },
+        { 0, 6 },
       }
     );
     settings.ProcessFlagFieldId.Should().Be(5);

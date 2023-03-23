@@ -2,6 +2,90 @@ namespace OnspringCLI.Tests.TestData;
 
 public static class RecordDataFactory
 {
+  public static List<ResultRecord> GetPageOfFileFieldValues(
+    Field attachmentField,
+    Field imageField
+  ) =>
+    new()
+    {
+      new ResultRecord
+      {
+        AppId = 1,
+        RecordId = 1,
+        FieldData = new List<RecordFieldValue>
+        {
+          new AttachmentListFieldValue
+          {
+            FieldId = attachmentField.Id,
+            Value = new List<AttachmentFile>
+            {
+              new AttachmentFile
+              {
+                FileId = 1,
+                FileName = "attachment1",
+                Notes = "notes1",
+                StorageLocation = FileStorageSite.Internal,
+                DownloadLink = "downloadLink1",
+                QuickEditLink = "quickEditLink1",
+              },
+              new AttachmentFile
+              {
+                FileId = 2,
+                FileName = "attachment1",
+                Notes = "notes1",
+                StorageLocation = FileStorageSite.Internal,
+                DownloadLink = "downloadLink1",
+                QuickEditLink = "quickEditLink1",
+              }
+            }
+          },
+          new FileListFieldValue
+          {
+            FieldId = imageField.Id,
+            Value = new List<int> { 3, 4, }
+          }
+        }
+      },
+      new ResultRecord
+      {
+        AppId = 1,
+        RecordId = 2,
+        FieldData = new List<RecordFieldValue>
+        {
+          new AttachmentListFieldValue
+          {
+            FieldId = attachmentField.Id,
+            Value = new List<AttachmentFile>
+            {
+              new AttachmentFile
+              {
+                FileId = 5,
+                FileName = "attachment1",
+                Notes = "notes1",
+                StorageLocation = FileStorageSite.Internal,
+                DownloadLink = "downloadLink1",
+                QuickEditLink = "quickEditLink1",
+              },
+              new AttachmentFile
+              {
+                FileId = 6,
+                FileName = "attachment1",
+                Notes = "notes1",
+                StorageLocation = FileStorageSite.Internal,
+                DownloadLink = "downloadLink1",
+                QuickEditLink = "quickEditLink1",
+              }
+            }
+          },
+          new FileListFieldValue
+          {
+            FieldId = imageField.Id,
+            Value = new List<int> { 7, 8, }
+          }
+        }
+      }
+    };
+
   public static IEnumerable<object[]> GetOnePageOfRecords =>
     new List<object[]>
     {

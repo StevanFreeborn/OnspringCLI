@@ -111,6 +111,11 @@ public class BulkCommandTests
         new List<Field>()
       );
 
+      _handler.AppId = 1;
+      _handler.FieldFilter = new List<int> { 1, 2 };
+      _handler.RecordsFilter = new List<int> { 1, 2 };
+      _handler.ReportFilter = 1;
+
       var options = OptionsFactory.AllBulkDeleteOptions;
       var result = await _command.InvokeAsync(options);
 
@@ -541,6 +546,16 @@ public class BulkCommandTests
         ),
         Times.Never
       );
+    }
+
+    [Fact]
+    public void Invoke_WhenCalled_ItShouldThrowAnException()
+    {
+      var action = () => _handler.Invoke(
+        It.IsAny<InvocationContext>()
+      );
+
+      action.Should().Throw<NotImplementedException>();
     }
   }
 }

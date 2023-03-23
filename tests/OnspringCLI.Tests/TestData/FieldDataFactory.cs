@@ -39,6 +39,72 @@ public class FieldDataFactory
       },
     };
 
+  public static IEnumerable<object[]> NoFileFields =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new List<Field>
+        {
+          new Field { Id = 1, Name = "test", Type = FieldType.Text },
+          new Field { Id = 2, Name = "test2", Type = FieldType.Text }
+        },
+      },
+    };
+
+  public static IEnumerable<object[]> HasImageField =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new List<Field>
+        {
+          new Field { Id = 1, Name = "test", Type = FieldType.Text },
+          new Field { Id = 2, Name = "test2", Type = FieldType.Image }
+        },
+      },
+    };
+
+  public static IEnumerable<object[]> HasAttachmentField =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new List<Field>
+        {
+          new Field { Id = 1, Name = "test", Type = FieldType.Text },
+          new Field { Id = 2, Name = "test2", Type = FieldType.Attachment }
+        },
+      },
+    };
+
+  public static IEnumerable<object[]> HasImageAndAttachmentField =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new List<Field>
+        {
+          new Field { Id = 1, Name = "test", Type = FieldType.Text },
+          new Field { Id = 2, Name = "test2", Type = FieldType.Image },
+          new Field { Id = 3, Name = "test3", Type = FieldType.Attachment }
+        },
+      },
+    };
+
+  public static IEnumerable<object[]> FileFields =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new List<Field>
+        {
+          new Field { Id = 1, Name = "attachment", Type = FieldType.Image },
+          new Field { Id = 2, Name = "image", Type = FieldType.Attachment }
+        },
+      },
+    };
+
   private static GetPagedFieldsResponse PageOfFields =>
     new()
     {

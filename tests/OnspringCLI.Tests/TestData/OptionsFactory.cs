@@ -55,6 +55,13 @@ public static class OptionsFactory
       "1"
     };
 
+  public static string[] RequiredReportOptions =>
+    new string[]
+    {
+      "--app-id",
+      "123",
+    };
+
   public static string[] AllReportOptions =>
     new string[]
     {
