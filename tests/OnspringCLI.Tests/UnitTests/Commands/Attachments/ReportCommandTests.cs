@@ -1,23 +1,23 @@
-using BulkCommand = OnspringCLI.Commands.Attachments.Download.BulkCommand;
+namespace OnspringCLI.Tests.UnitTests.Commands.Attachments;
 
-namespace OnspringCLI.Tests.UnitTests.Commands.Attachments.Download;
-
-public class BulkCommandTests
+public class ReportCommandTests
 {
   [Fact]
-  public void BulkCommand_WhenCalled_ItShouldCreateANewInstance()
+  public void ReportCommand_WhenCalled_ItShouldCreateANewInstance()
   {
-    var bulkCommand = new BulkCommand();
-    bulkCommand.Should().NotBeNull();
-    bulkCommand.Name.Should().Be("bulk");
-    bulkCommand.Description.Should().Be("Download attachments in bulk");
+    var command = new ReportCommand();
+
+    command.Should().NotBeNull();
+    command.Name.Should().Be("report");
+    command.Description.Should().Be("Report on the attachments in an Onspring app.");
   }
 
   [Fact]
-  public void BulkCommand_WhenCalled_ItShouldHaveARequiredAppIdOption()
+  public void ReportCommand_WhenCalled_ItShouldHaveARequiredAppIdOption()
   {
-    var bulkCommand = new BulkCommand();
-    var appIdOption = bulkCommand
+    var command = new ReportCommand();
+
+    var appIdOption = command
     .Options
     .FirstOrDefault(
       o => o.Name == "app-id"
@@ -29,10 +29,11 @@ public class BulkCommandTests
   }
 
   [Fact]
-  public void BulkCommand_WhenCalled_ItShouldHaveAnOutputDirectoryOption()
+  public void ReportCommand_WhenCalled_ItShouldHaveAnOutputDirectoryOption()
   {
-    var bulkCommand = new BulkCommand();
-    var outputDirectoryOption = bulkCommand
+    var command = new ReportCommand();
+
+    var outputDirectoryOption = command
     .Options
     .FirstOrDefault(
       o => o.Name == "output-directory"
@@ -44,56 +45,43 @@ public class BulkCommandTests
   }
 
   [Fact]
-  public void BulkCommand_WhenCalled_ItShouldHaveAFieldFilterOption()
+  public void ReportCommand_WhenCalled_ItShouldHaveAFilesFilterOption()
   {
-    var bulkCommand = new BulkCommand();
-    var fieldFilterOption = bulkCommand
+    var command = new ReportCommand();
+
+    var filesFilterOption = command
     .Options
     .FirstOrDefault(
-      o => o.Name == "field-filter"
+      o => o.Name == "files-filter"
     );
 
-    fieldFilterOption.Should().NotBeNull();
-    fieldFilterOption.Should().BeOfType<Option<List<int>>>();
-    fieldFilterOption!.IsRequired.Should().BeFalse();
+    filesFilterOption.Should().NotBeNull();
+    filesFilterOption.Should().BeOfType<Option<List<int>>>();
+    filesFilterOption!.IsRequired.Should().BeFalse();
   }
 
   [Fact]
-  public void BulkCommand_WhenCalled_ItShouldHaveARecordsFilterOption()
+  public void ReportCommand_WhenCalled_ItShouldHaveAFilesFilterCsvOption()
   {
-    var bulkCommand = new BulkCommand();
-    var recordsFilterOption = bulkCommand
+    var command = new ReportCommand();
+
+    var filesFilterCsvOption = command
     .Options
     .FirstOrDefault(
-      o => o.Name == "records-filter"
+      o => o.Name == "files-filter-csv"
     );
 
-    recordsFilterOption.Should().NotBeNull();
-    recordsFilterOption.Should().BeOfType<Option<List<int>>>();
-    recordsFilterOption!.IsRequired.Should().BeFalse();
-  }
-
-  [Fact]
-  public void BulkCommand_WhenCalled_ItShouldHaveAReportFilterOption()
-  {
-    var bulkCommand = new BulkCommand();
-    var reportFilterOption = bulkCommand
-    .Options
-    .FirstOrDefault(
-      o => o.Name == "report-filter"
-    );
-
-    reportFilterOption.Should().NotBeNull();
-    reportFilterOption.Should().BeOfType<Option<int>>();
-    reportFilterOption!.IsRequired.Should().BeFalse();
+    filesFilterCsvOption.Should().NotBeNull();
+    filesFilterCsvOption.Should().BeOfType<Option<FileInfo>>();
+    filesFilterCsvOption!.IsRequired.Should().BeFalse();
   }
 
   public class HandlerTests
   {
     private readonly Mock<ILogger> _loggerMock;
     private readonly Mock<IAttachmentsProcessor> _processorMock;
-    private readonly BulkCommand.Handler _handler;
-    private readonly BulkCommand _command;
+    private readonly ReportCommand.Handler _handler;
+    private readonly ReportCommand _command;
 
     public HandlerTests()
     {
@@ -102,36 +90,36 @@ public class BulkCommandTests
 
       _loggerMock
       .Setup(
-        m => m.ForContext<It.IsAnyType>()
+        l => l.ForContext<It.IsAnyType>()
       )
       .Returns(
         _loggerMock.Object
       );
 
-      _handler = new BulkCommand.Handler(
+      _handler = new ReportCommand.Handler(
         _loggerMock.Object,
         _processorMock.Object
       );
 
-      _command = new BulkCommand();
+      _command = new ReportCommand();
       _command.SetHandler(_handler.InvokeAsync);
     }
 
     [Fact]
-    public async Task InvokeAsync_WhenCalledAndNoFileFilesAreFound_ItShouldReturnNonZeroValue()
+    public async Task InvokeAsync_WhenCalledAndNoFileFieldsAreFound_ItShouldReturnNonZeroValue()
     {
       _processorMock
       .Setup(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         )
       )
       .ReturnsAsync(
         new List<Field>()
       );
 
-      var options = OptionsFactory.RequiredBulkDownloadOptions;
+      var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
 
       result.Should().Be(1);
@@ -140,17 +128,9 @@ public class BulkCommandTests
       .Verify(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         ),
         Times.Once
-      );
-
-      _processorMock
-      .Verify(
-        m => m.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
       );
 
       _processorMock
@@ -166,17 +146,16 @@ public class BulkCommandTests
 
       _processorMock
       .Verify(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         ),
         Times.Never
       );
 
       _processorMock
       .Verify(
-        m => m.WriteFileRequestErrorReport(
-          It.IsAny<List<OnspringFileRequest>>(),
+        m => m.WriteFileInfoReport(
+          It.IsAny<List<OnspringFileInfoResult>>(),
           It.IsAny<string>()
         ),
         Times.Never
@@ -190,7 +169,7 @@ public class BulkCommandTests
       .Setup(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         )
       )
       .ReturnsAsync(
@@ -205,15 +184,15 @@ public class BulkCommandTests
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         )
       )
       .ReturnsAsync(
         new List<OnspringFileRequest>()
       );
 
-      var options = OptionsFactory.RequiredBulkDownloadOptions;
+      var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
 
       result.Should().Be(2);
@@ -222,17 +201,9 @@ public class BulkCommandTests
       .Verify(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         ),
         Times.Once
-      );
-
-      _processorMock
-      .Verify(
-        m => m.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
       );
 
       _processorMock
@@ -240,25 +211,24 @@ public class BulkCommandTests
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         ),
         Times.Once
       );
 
       _processorMock
       .Verify(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         ),
         Times.Never
       );
 
       _processorMock
       .Verify(
-        m => m.WriteFileRequestErrorReport(
-          It.IsAny<List<OnspringFileRequest>>(),
+        m => m.WriteFileInfoReport(
+          It.IsAny<List<OnspringFileInfoResult>>(),
           It.IsAny<string>()
         ),
         Times.Never
@@ -266,13 +236,13 @@ public class BulkCommandTests
     }
 
     [Fact]
-    public async Task InvokeAsync_WhenCalledAndFileRequestsAreFound_ItShouldReturnZeroValue()
+    public async Task InvokeAsync_WhenCalledAndNoFileInfosAreFound_ItShouldReturnNonZeroValue()
     {
       _processorMock
       .Setup(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         )
       )
       .ReturnsAsync(
@@ -287,8 +257,8 @@ public class BulkCommandTests
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         )
       )
       .ReturnsAsync(
@@ -300,35 +270,26 @@ public class BulkCommandTests
 
       _processorMock
       .Setup(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         )
       )
       .ReturnsAsync(
-        new List<OnspringFileRequest>()
+        new List<OnspringFileInfoResult>()
       );
 
-      var options = OptionsFactory.RequiredBulkDownloadOptions;
+      var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
 
-      result.Should().Be(0);
+      result.Should().Be(3);
 
       _processorMock
       .Verify(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         ),
         Times.Once
-      );
-
-      _processorMock
-      .Verify(
-        m => m.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
       );
 
       _processorMock
@@ -336,25 +297,24 @@ public class BulkCommandTests
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         ),
         Times.Once
       );
 
       _processorMock
       .Verify(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         ),
         Times.Once
       );
 
       _processorMock
       .Verify(
-        m => m.WriteFileRequestErrorReport(
-          It.IsAny<List<OnspringFileRequest>>(),
+        m => m.WriteFileInfoReport(
+          It.IsAny<List<OnspringFileInfoResult>>(),
           It.IsAny<string>()
         ),
         Times.Never
@@ -362,13 +322,13 @@ public class BulkCommandTests
     }
 
     [Fact]
-    public async Task InvokeAsync_WhenCalledAndFileRequestsResultInError_ItShouldWriteFileRequestErrorReport()
+    public async Task InvokeAsync_WhenCalledAndFileInfosAreFound_ItShouldReturnZeroValue()
     {
       _processorMock
       .Setup(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         )
       )
       .ReturnsAsync(
@@ -383,8 +343,8 @@ public class BulkCommandTests
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         )
       )
       .ReturnsAsync(
@@ -396,20 +356,18 @@ public class BulkCommandTests
 
       _processorMock
       .Setup(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         )
       )
       .ReturnsAsync(
-        new List<OnspringFileRequest>
+        new List<OnspringFileInfoResult>
         {
-          new OnspringFileRequest()
+          new OnspringFileInfoResult()
         }
       );
 
-
-      var options = OptionsFactory.RequiredBulkDownloadOptions;
+      var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
 
       result.Should().Be(0);
@@ -418,17 +376,9 @@ public class BulkCommandTests
       .Verify(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         ),
         Times.Once
-      );
-
-      _processorMock
-      .Verify(
-        m => m.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
       );
 
       _processorMock
@@ -436,25 +386,24 @@ public class BulkCommandTests
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         ),
         Times.Once
       );
 
       _processorMock
       .Verify(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         ),
         Times.Once
       );
 
       _processorMock
       .Verify(
-        m => m.WriteFileRequestErrorReport(
-          It.IsAny<List<OnspringFileRequest>>(),
+        m => m.WriteFileInfoReport(
+          It.IsAny<List<OnspringFileInfoResult>>(),
           It.IsAny<string>()
         ),
         Times.Once
@@ -462,13 +411,13 @@ public class BulkCommandTests
     }
 
     [Fact]
-    public async Task InvokeAsync_WhenCalledAndReportFilterOptionIsGiven_ItShouldAddReportRecordIdsToRecordFilter()
+    public async Task InvokeAsync_WhenCalledAndFilesFilterCsvOptionIsGiven_ItShouldAddFileIdsFromCsvToFilesFilter()
     {
       _processorMock
       .Setup(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
+          null
         )
       )
       .ReturnsAsync(
@@ -480,24 +429,11 @@ public class BulkCommandTests
 
       _processorMock
       .Setup(
-        m => m.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        )
-      )
-      .ReturnsAsync(
-        new List<int>
-        {
-          1
-        }
-      );
-
-      _processorMock
-      .Setup(
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         )
       )
       .ReturnsAsync(
@@ -509,35 +445,33 @@ public class BulkCommandTests
 
       _processorMock
       .Setup(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         )
       )
       .ReturnsAsync(
-        new List<OnspringFileRequest>()
+        new List<OnspringFileInfoResult>
+        {
+          new OnspringFileInfoResult()
+        }
       );
 
-      _handler.ReportFilter = 1;
-      var options = OptionsFactory.AllBulkDownloadOptions;
+      var filesFilterCsvPath = TestFilesPathFactory.GetTestFilesFilterCsvPath();
+      _handler.FilesFilterCsv = new FileInfo(filesFilterCsvPath);
+
+      var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
-      _handler.RecordsFilter.Should().BeEquivalentTo(new List<int> { 1 });
 
       result.Should().Be(0);
+      _handler.FilesFilterList.Should().NotBeEmpty();
+      _handler.FilesFilterList.Should().HaveCount(3);
+      _handler.FilesFilterList.Should().BeEquivalentTo(new List<int> { 1, 2, 3 });
 
       _processorMock
       .Verify(
         m => m.GetFileFields(
           It.IsAny<int>(),
-          It.IsAny<List<int>>()
-        ),
-        Times.Once
-      );
-
-      _processorMock
-      .Verify(
-        m => m.GetRecordIdsFromReport(
-          It.IsAny<int>()
+          null
         ),
         Times.Once
       );
@@ -547,40 +481,28 @@ public class BulkCommandTests
         m => m.GetFileRequests(
           It.IsAny<int>(),
           It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
+          It.IsAny<List<int>>(),
+          null
         ),
         Times.Once
       );
 
       _processorMock
       .Verify(
-        m => m.TryDownloadFiles(
-          It.IsAny<List<OnspringFileRequest>>(),
-          It.IsAny<string>()
+        m => m.GetFileInfos(
+          It.IsAny<List<OnspringFileRequest>>()
         ),
         Times.Once
       );
 
       _processorMock
       .Verify(
-        m => m.WriteFileRequestErrorReport(
-          It.IsAny<List<OnspringFileRequest>>(),
+        m => m.WriteFileInfoReport(
+          It.IsAny<List<OnspringFileInfoResult>>(),
           It.IsAny<string>()
         ),
-        Times.Never
+        Times.Once
       );
     }
-
-    [Fact]
-    public void Invoke_WhenCalled_ItShouldThrowException()
-    {
-      var action = () => _handler.Invoke(
-        It.IsAny<InvocationContext>()
-      );
-
-      action.Should().Throw<NotImplementedException>();
-    }
-
   }
 }

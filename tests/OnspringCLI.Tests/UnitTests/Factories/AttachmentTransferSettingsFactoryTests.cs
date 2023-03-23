@@ -13,7 +13,7 @@ public class AttachmentTransferSettingsFactoryTests
   [Fact]
   public void Create_WhenCalled_ReturnsNewInstance()
   {
-    var settingsFilePath = TestSettingsFileFactory.GetTestTransferSettingsFilePath();
+    var settingsFilePath = TestFilesPathFactory.GetTestTransferSettingsFilePath();
     var settingsFile = new FileInfo(settingsFilePath);
 
     var attachmentTransferSettingsFactory = new AttachmentTransferSettingsFactory();

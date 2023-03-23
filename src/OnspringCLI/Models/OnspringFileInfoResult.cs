@@ -10,6 +10,10 @@ public class OnspringFileInfoResult : OnspringFile
   public decimal FileSizeInGB => Math.Round(FileSizeInBytes / 1000000000, 4);
   public decimal FileSizeInGiB => Math.Round(FileSizeInBytes / 1073741824, 4);
 
+  public OnspringFileInfoResult()
+  {
+  }
+
   public OnspringFileInfoResult(
     int recordId,
     int fieldId,

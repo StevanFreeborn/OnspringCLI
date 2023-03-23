@@ -1,6 +1,6 @@
 namespace OnspringCLI.Tests.TestData;
 
-public static class TestSettingsFileFactory
+public static class TestFilesPathFactory
 {
   public static string GetTestTransferSettingsFilePath() =>
     Path.Combine(
@@ -8,5 +8,13 @@ public static class TestSettingsFileFactory
       "TestData",
       "Files",
       "transfer.json"
+    );
+
+  public static string GetTestFilesFilterCsvPath() =>
+    Path.Combine(
+      AppDomain.CurrentDomain.BaseDirectory,
+      "TestData",
+      "Files",
+      "testFilesFilter.csv"
     );
 }

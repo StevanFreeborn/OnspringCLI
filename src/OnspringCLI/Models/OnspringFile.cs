@@ -8,6 +8,10 @@ public class OnspringFile
   public int FileId { get; set; }
   public string? FileName { get; set; }
 
+  public OnspringFile()
+  {
+  }
+
   public OnspringFile(
     int recordId,
     int fieldId,

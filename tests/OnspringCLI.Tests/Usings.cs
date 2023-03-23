@@ -16,6 +16,8 @@ global using Onspring.API.SDK.Models;
 
 global using OnspringCLI.Commands;
 global using OnspringCLI.Commands.Attachments;
+global using OnspringCLI.Commands.Attachments.Delete;
+global using OnspringCLI.Commands.Attachments.Download;
 global using OnspringCLI.Factories;
 global using OnspringCLI.Interfaces;
 global using OnspringCLI.Maps;
