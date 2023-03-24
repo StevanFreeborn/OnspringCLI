@@ -1995,4 +1995,71 @@ public class AttachmentsProcessorTests
       new List<int> { 1, 3, 5 }
     );
   }
+
+  [Fact]
+  public void IsAllAttachmentsField_WhenCalledAndOneAttachmentFieldAndTheAllAttachmentFieldAreReturned_ItShouldReturnFalse()
+  {
+    var record = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>
+      {
+        new AttachmentListFieldValue
+        {
+          FieldId = 1,
+          Value = new List<AttachmentFile>
+          {
+            new AttachmentFile
+            {
+              FileId = 2,
+            },
+          },
+        },
+        new AttachmentListFieldValue
+        {
+          FieldId = 2,
+          Value = new List<AttachmentFile>
+          {
+            new AttachmentFile
+            {
+              FileId = 2,
+            },
+          },
+        },
+      },
+    };
+
+    var fields = new List<Field>
+    {
+      new Field
+      {
+        Id = 1,
+        Name = "Attachment",
+        Type = FieldType.Attachment,
+      },
+      new Field
+      {
+        Id = 2,
+        Name = "All Attachments",
+        Type = FieldType.Attachment,
+      },
+    };
+
+    var attachmentFieldValue = new List<AttachmentFile>
+    {
+      new AttachmentFile
+      {
+        FileId = 2,
+      },
+    };
+
+    var result = AttachmentsProcessor.IsAllAttachmentsField(
+      record,
+      fields,
+      attachmentFieldValue
+    );
+
+    result.Should().BeFalse();
+  }
 }

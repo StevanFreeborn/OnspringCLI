@@ -1115,7 +1115,9 @@ class AttachmentsProcessor : IAttachmentsProcessor
   )
   {
     var attachmentFieldIds = fileFields
-    .Where(f => f.Type == FieldType.Attachment)
+    .Where(
+      f => f.Type == FieldType.Attachment
+    )
     .Select(f => f.Id)
     .ToList();
 
@@ -1138,7 +1140,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     .Distinct()
     .ToList();
 
-    return attachmentFieldValue
+    var containsAllFileIds = attachmentFieldValue
     .Select(
       f => f.FileId
     )
@@ -1146,6 +1148,23 @@ class AttachmentsProcessor : IAttachmentsProcessor
     .SequenceEqual(
       attachmentIds
     );
+
+
+    // If there are just two attachment fields
+    // then one could possibly be the "All Attachments" field.
+    // In the case that one attachment field has files
+    // and the other does not so it was not included in the api response
+    // in this case we want to go ahead and process both attachment fields
+    // in order to avoid missing files.
+    if (
+      containsAllFileIds is true &&
+      attachmentFieldIds.Count is 2
+    )
+    {
+      return false;
+    }
+
+    return containsAllFileIds;
   }
 
   private static bool IsValidMatchFieldType(Field field)

@@ -81,7 +81,7 @@ public static class RecordDataFactory
               }
             ),
             new AttachmentListFieldValue(
-              4,
+              5,
               new List<AttachmentFile>
               {
                 new AttachmentFile
@@ -142,7 +142,7 @@ public static class RecordDataFactory
           {
             Id = 5,
             Name = "Test",
-            Type = FieldType.Image,
+            Type = FieldType.Attachment,
           },
         },
         new List<int>
