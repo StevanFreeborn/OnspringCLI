@@ -629,7 +629,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
         sourceAttachmentFieldId
       );
 
-      await TransferAttachmentsForFieldId(
+      await TransferAttachmentsForField(
         sourceRecord,
         targetRecordId,
         sourceAttachmentFieldId,
@@ -672,51 +672,26 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  [ExcludeFromCodeCoverage]
   private async Task<bool> TryDeleteFile(
     OnspringFileRequest fileRequest
   )
   {
-    try
+    _logger.Debug(
+      "Deleting file {FileId} for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
+      fileRequest.RecordId,
+      fileRequest.FieldId
+    );
+
+    var isDeleted = await _onspringService.TryDeleteFile(
+      _globalOptions.Value.SourceApiKey,
+      fileRequest
+    );
+
+    if (isDeleted is false)
     {
-      _logger.Debug(
-        "Deleting file {FileId} for record {RecordId} in field {FieldId}.",
-        fileRequest.FileId,
-        fileRequest.RecordId,
-        fileRequest.FieldId
-      );
-
-      var isDeleted = await _onspringService.TryDeleteFile(
-        _globalOptions.Value.SourceApiKey,
-        fileRequest
-      );
-
-      if (isDeleted is false)
-      {
-        _logger.Warning(
-          "Unable to delete file {FileId} for record {RecordId} in field {FieldId}.",
-          fileRequest.FileId,
-          fileRequest.RecordId,
-          fileRequest.FieldId
-        );
-
-        return false;
-      }
-
-      _logger.Debug(
-        "File {FileId} deleted for record {RecordId} in field {FieldId}.",
-        fileRequest.FileId,
-        fileRequest.RecordId,
-        fileRequest.FieldId
-      );
-
-      return true;
-    }
-    catch (Exception ex)
-    {
-      _logger.Error(
-        ex,
-        "Error deleting file {FileId} for record {RecordId} in field {FieldId}.",
+      _logger.Warning(
+        "Unable to delete file {FileId} for record {RecordId} in field {FieldId}.",
         fileRequest.FileId,
         fileRequest.RecordId,
         fileRequest.FieldId
@@ -724,6 +699,15 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
       return false;
     }
+
+    _logger.Debug(
+      "File {FileId} deleted for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
+      fileRequest.RecordId,
+      fileRequest.FieldId
+    );
+
+    return true;
   }
 
   internal async Task<OnspringFileResult?> GetFile(
@@ -847,7 +831,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     }
   }
 
-  internal async Task TransferAttachmentsForFieldId(
+  internal async Task TransferAttachmentsForField(
     ResultRecord sourceRecord,
     int targetRecordId,
     int sourceAttachmentFieldId,
@@ -1164,7 +1148,6 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  [ExcludeFromCodeCoverage]
   private static bool IsValidMatchFieldType(Field field)
   {
     var isSupportedField = field.Type is

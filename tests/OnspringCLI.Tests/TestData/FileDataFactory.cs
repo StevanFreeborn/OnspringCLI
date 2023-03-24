@@ -2,6 +2,35 @@ namespace OnspringCLI.Tests.TestData;
 
 public class FileDataFactory
 {
+  public static IEnumerable<object[]> InvalidOnspringFileResults =>
+    new List<object[]>
+    {
+      new object[]
+      {
+        new OnspringFileResult(
+          1,
+          1,
+          "test",
+          1,
+          "test",
+          null,
+          new MemoryStream()
+        ),
+      },
+      new object[]
+      {
+        new OnspringFileResult(
+          1,
+          1,
+          "test",
+          1,
+          "test",
+          "/",
+          new MemoryStream()
+        ),
+      },
+    };
+
   public static IEnumerable<object[]> GetFileResponse =>
     new List<object[]>
     {

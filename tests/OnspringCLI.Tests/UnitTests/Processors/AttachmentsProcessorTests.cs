@@ -293,7 +293,7 @@ public class AttachmentsProcessorTests
       )
     )
     .ReturnsAsync(
-      (GetPagedRecordsResponse?)null
+      (GetPagedRecordsResponse?) null
     );
 
     var result = await _attachmentsProcessor.GetFileRequests(
@@ -500,7 +500,7 @@ public class AttachmentsProcessorTests
       )
     )
     .ReturnsAsync(
-      (GetFileResponse?)null
+      (GetFileResponse?) null
     );
 
     var result = await _attachmentsProcessor.GetFileInfos(
@@ -626,7 +626,7 @@ public class AttachmentsProcessorTests
       )
     )
     .ReturnsAsync(
-      (ReportData?)null
+      (ReportData?) null
     );
 
     var result = await _attachmentsProcessor.GetRecordIdsFromReport(
@@ -742,7 +742,7 @@ public class AttachmentsProcessorTests
       )
     )
     .ReturnsAsync(
-      (GetFileResponse?)null
+      (GetFileResponse?) null
     );
 
     var fileRequest = new OnspringFileRequest
@@ -770,6 +770,46 @@ public class AttachmentsProcessorTests
         It.IsAny<OnspringFileRequest>()
       ),
       Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TryDownloadFiles_WhenCalledAndFileCanNotBeSaved_ItShouldReturnAListOfErroredRequests()
+  {
+    var fileRequest = new OnspringFileRequest(1, 1, "test", 1);
+    var fileRequests = new List<OnspringFileRequest> { fileRequest };
+    var stream = new MemoryStream();
+    var getFileResponse = new GetFileResponse
+    {
+      Stream = stream,
+      FileName = "test",
+      ContentType = "test",
+      ContentLength = 1,
+    };
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      getFileResponse
+    );
+
+    stream.Dispose();
+
+    var result = await _attachmentsProcessor.TryDownloadFiles(
+      fileRequests,
+      "output"
+    );
+
+    result.Should().NotBeNull();
+    result.Should().NotBeEmpty();
+    result.Should().BeOfType<List<OnspringFileRequest>>();
+    result.Should().BeEquivalentTo(
+      fileRequests
     );
   }
 
@@ -888,6 +928,14 @@ public class AttachmentsProcessorTests
     );
 
     result.Should().BeFalse();
+
+    _onspringServiceMock.Verify(
+      m => m.GetField(
+        It.IsAny<string>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(2)
+    );
   }
 
   [Theory]
@@ -925,6 +973,14 @@ public class AttachmentsProcessorTests
     );
 
     result.Should().BeTrue();
+
+    _onspringServiceMock.Verify(
+      m => m.GetField(
+        It.IsAny<string>(),
+        It.IsAny<int>()
+      ),
+      Times.Exactly(2)
+    );
   }
 
   [Theory]
@@ -981,5 +1037,962 @@ public class AttachmentsProcessorTests
     );
 
     result.Should().BeTrue();
+  }
+
+  [Fact]
+  public async Task GetSourceRecordsToProcess_WhenCalledAndNoRecordsCanBeRetrieved_ItShouldReturnAnEmptyList()
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      (GetPagedRecordsResponse?) null
+    );
+
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      ProcessFlagFieldId = 1,
+    };
+
+    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(
+      settings
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<List<ResultRecord>>();
+    result.Should().BeEmpty();
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(RecordDataFactory.GetOnePageOfRecords),
+    MemberType = typeof(RecordDataFactory)
+  )]
+  public async Task GetSourceRecordsToProcess_WhenCalledAndRecordsAreFound_ItShouldReturnAListOfRecords(
+    GetPagedRecordsResponse response
+  )
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      response
+    );
+
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      ProcessFlagFieldId = 1,
+    };
+
+    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(
+      settings
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<List<ResultRecord>>();
+    result.Should().BeEquivalentTo(
+      response.Items
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(RecordDataFactory.GetOnePageOfRecords),
+    MemberType = typeof(RecordDataFactory)
+  )]
+  public async Task GetSourceRecordsToProcess_WhenCalledAndRecordFilterIsGiven_ItShouldReturnAListOfRecordsThatMatchTheFilter(
+    GetPagedRecordsResponse response
+  )
+  {
+    _onspringServiceMock
+    .Setup(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      response
+    );
+
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      ProcessFlagFieldId = 1,
+    };
+
+    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(
+      settings,
+      new List<int> { 1 }
+    );
+
+    result.Should().NotBeNull();
+    result.Should().BeOfType<List<ResultRecord>>();
+    result.Should().BeEquivalentTo(
+      new List<ResultRecord> { response.Items[0] }
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TransferAttachments_WhenCalledAndNoRecordsAreGiven_ItShouldNotTransferAttachments()
+  {
+    await _attachmentsProcessor.TransferAttachments(
+      new AttachmentTransferSettings(),
+      new List<ResultRecord>()
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Never
+    );
+  }
+
+  [Fact]
+  public async Task TransferAttachments_WhenCalledAndRecordsAreGiven_ItShouldTransferAttachments()
+  {
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      TargetMatchFieldId = 2,
+      ProcessFlagFieldId = 3,
+      ProcessFlagValue = "Test",
+      ProcessFlagListValueId = Guid.NewGuid(),
+      ProcessedFlagValue = "Tested",
+      ProcessedFlagListValueId = Guid.NewGuid(),
+    };
+
+    _onspringServiceMock.
+    Setup(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      (GetPagedRecordsResponse?) null
+    );
+
+    await _attachmentsProcessor.TransferAttachments(
+      settings,
+      new List<ResultRecord>
+      {
+        new ResultRecord
+        {
+          AppId = 1,
+          RecordId = 1,
+          FieldData = new List<RecordFieldValue>
+          {
+            new StringFieldValue(
+              settings.SourceMatchFieldId,
+              "Test"
+            ),
+          },
+        },
+      }
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TransferRecordAttachments_WhenCalledAndMatchValueCanNotBeFoundInSourceRecord_ItShouldReturnEarly()
+  {
+    await _attachmentsProcessor.TransferRecordAttachments(
+      RecordDataFactory.AttachmentTransferSettings,
+      new ResultRecord()
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFileInfo(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.UpdateRecord(
+        It.IsAny<string>(),
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Never
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(RecordDataFactory.GetUnTransferrableSourceRecords),
+    MemberType = typeof(RecordDataFactory)
+  )]
+  public async Task TransferRecordAttachments_WhenCalledAndSourceRecordCanNotBeTransferred_ItShouldReturnEarly(
+    AttachmentTransferSettings settings,
+    ResultRecord sourceRecord,
+    GetPagedRecordsResponse response
+  )
+  {
+    _onspringServiceMock.
+    Setup(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      response
+    );
+
+    await _attachmentsProcessor.TransferRecordAttachments(
+      settings,
+      sourceRecord
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Once
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFileInfo(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.UpdateRecord(
+        It.IsAny<string>(),
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Never
+    );
+  }
+
+  [Fact]
+  public async Task TransferRecordAttachments_WhenCalledAndTargetRecordIsFound_ItShouldTransferAttachmentAndUpdateRecord()
+  {
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      TargetMatchFieldId = 2,
+      ProcessFlagFieldId = 3,
+      ProcessFlagValue = "Test",
+      ProcessFlagListValueId = Guid.NewGuid(),
+      ProcessedFlagValue = "Tested",
+      ProcessedFlagListValueId = Guid.NewGuid(),
+      AttachmentFieldMappings = new Dictionary<string, int>
+      {
+        { "4", 4 },
+      }
+    };
+
+    var sourceRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>
+      {
+        new StringFieldValue(
+          settings.SourceMatchFieldId,
+          "Test"
+        ),
+        new AttachmentListFieldValue(
+          4,
+          new List<AttachmentFile>
+          {
+            new AttachmentFile
+            {
+              FileId = 4,
+              FileName = "Test",
+              Notes = "Test",
+              StorageLocation = FileStorageSite.Internal,
+            },
+          }
+        ),
+      },
+    };
+
+    var targetRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 2,
+      FieldData = new List<RecordFieldValue>
+      {
+        new StringFieldValue(
+          settings.TargetMatchFieldId,
+          "Test"
+        ),
+      },
+    };
+
+    _onspringServiceMock.
+    Setup(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new GetPagedRecordsResponse
+      {
+        Items = new List<ResultRecord> { targetRecord },
+      }
+    );
+
+    _onspringServiceMock
+    .Setup(
+      m => m.UpdateRecord(
+        It.IsAny<string>(),
+        It.IsAny<ResultRecord>()
+      )
+    )
+    .ReturnsAsync(
+      new CreatedWithIdResponse<int>
+      {
+        Id = 1,
+      }
+    );
+
+    await _attachmentsProcessor.TransferRecordAttachments(
+      settings,
+      sourceRecord
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Once
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.UpdateRecord(
+        It.IsAny<string>(),
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TransferRecordAttachment_WhenCalledAndTargetRecordIsFoundButCannotUpdateSourceRecord_ItShouldLogAWarning()
+  {
+    var settings = new AttachmentTransferSettings
+    {
+      SourceMatchFieldId = 1,
+      TargetMatchFieldId = 2,
+      ProcessFlagFieldId = 3,
+      ProcessFlagValue = "Test",
+      ProcessFlagListValueId = Guid.NewGuid(),
+      ProcessedFlagValue = "Tested",
+      ProcessedFlagListValueId = Guid.NewGuid(),
+      AttachmentFieldMappings = new Dictionary<string, int>
+      {
+        { "4", 4 },
+      }
+    };
+
+    var sourceRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>
+      {
+        new StringFieldValue(
+          settings.SourceMatchFieldId,
+          "Test"
+        ),
+        new AttachmentListFieldValue(
+          4,
+          new List<AttachmentFile>
+          {
+            new AttachmentFile
+            {
+              FileId = 4,
+              FileName = "Test",
+              Notes = "Test",
+              StorageLocation = FileStorageSite.Internal,
+            },
+          }
+        ),
+      },
+    };
+
+    var targetRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 2,
+      FieldData = new List<RecordFieldValue>
+      {
+        new StringFieldValue(
+          settings.TargetMatchFieldId,
+          "Test"
+        ),
+      },
+    };
+
+    _onspringServiceMock.
+    Setup(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new GetPagedRecordsResponse
+      {
+        Items = new List<ResultRecord> { targetRecord },
+      }
+    );
+
+    _onspringServiceMock
+    .Setup(
+      m => m.UpdateRecord(
+        It.IsAny<string>(),
+        It.IsAny<ResultRecord>()
+      )
+    )
+    .ReturnsAsync(
+      (CreatedWithIdResponse<int>?) null
+    );
+
+    await _attachmentsProcessor.TransferRecordAttachments(
+      settings,
+      sourceRecord
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetAPageOfRecordsByQuery(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<string>(),
+        It.IsAny<PagingRequest>()
+      ),
+      Times.Once
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.UpdateRecord(
+        It.IsAny<string>(),
+        It.IsAny<ResultRecord>()
+      ),
+      Times.Once
+    );
+
+    _loggerMock.Verify(
+      m => m.Warning(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(FileDataFactory.InvalidOnspringFileResults),
+    MemberType = typeof(FileDataFactory)
+  )]
+  public async Task TrySveFile_WhenCalledAndOnspringFileResultCanNotBeSaved_ItShouldReturnFalse(
+    OnspringFileResult fileResult
+  )
+  {
+    var result = await _attachmentsProcessor.TrySaveFile(
+      fileResult
+    );
+
+    result.Should().BeFalse();
+  }
+
+  [Fact]
+  public async Task TrySveFile_WhenCalledAndOnspringFileResultCanBeSaved_ItShouldReturnTrue()
+  {
+    var fileResult = new OnspringFileResult(
+      1,
+      1,
+      "Test",
+      1,
+      "Test",
+      "TestData/Test",
+      new MemoryStream()
+    );
+
+    var result = await _attachmentsProcessor.TrySaveFile(
+      fileResult
+    );
+
+    result.Should().BeTrue();
+  }
+
+  [Fact]
+  public async Task TrySaveFile_WhenCalledAndAnExceptionIsThrown_ItShouldReturnFalse()
+  {
+    var stream = new MemoryStream();
+
+    var fileResult = new OnspringFileResult(
+      1,
+      1,
+      "Test",
+      1,
+      "Test",
+      "TestData/Test",
+      stream
+    );
+
+    stream.Dispose();
+
+    var result = await _attachmentsProcessor.TrySaveFile(
+      fileResult
+    );
+
+    result.Should().BeFalse();
+  }
+
+  [Fact]
+  public async Task TransferAttachmentsForField_WhenCalledAndAttachmentFieldValueCanNotBeFound_ItShouldReturnEarly()
+  {
+    var sourceRecord = new ResultRecord();
+
+    await _attachmentsProcessor.TransferAttachmentsForField(
+      sourceRecord,
+      1,
+      1,
+      1
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFileInfo(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Never
+    );
+  }
+
+  [Fact]
+  public async Task TransferAttachment_WhenCalledAndSourceFileInfoCanNotBeFound_ItShouldReturnEarly()
+  {
+    var sourceRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>(),
+    };
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFileInfo(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      (GetFileInfoResponse?) null
+    );
+
+    await _attachmentsProcessor.TransferAttachment(
+      sourceRecord,
+      1,
+      1,
+      1,
+      1
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      ),
+      Times.Never
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Never
+    );
+  }
+
+  [Fact]
+  public async Task TransferAttachment_WhenCalledAndSourceFileCanNotBeFound_ItShouldReturnEarly()
+  {
+    var sourceRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>(),
+    };
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFileInfo(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new GetFileInfoResponse()
+    );
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      (GetFileResponse?) null
+    );
+
+    await _attachmentsProcessor.TransferAttachment(
+      sourceRecord,
+      1,
+      1,
+      1,
+      1
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Never
+    );
+  }
+
+  [Theory]
+  [InlineData("Test")]
+  [InlineData(null)]
+  public async Task TransferAttachment_WhenCalledAndSourceFileAndFileInfoCanBeFound_ItShouldSaveTheFile(
+    string? notes
+  )
+  {
+    var sourceRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>(),
+    };
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFileInfo(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new GetFileInfoResponse
+      {
+        Name = "Test",
+        CreatedDate = DateTime.Now,
+        ModifiedDate = DateTime.Now,
+        Owner = "Test",
+        Notes = notes,
+        FileHref = "TestData/Test",
+      }
+    );
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new GetFileResponse
+      {
+        Stream = new MemoryStream(),
+        FileName = "Test",
+        ContentType = "Test",
+        ContentLength = 1,
+      }
+    );
+
+    _onspringServiceMock
+    .Setup(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new CreatedWithIdResponse<int>
+      {
+        Id = 1,
+      }
+    );
+
+    await _attachmentsProcessor.TransferAttachment(
+      sourceRecord,
+      1,
+      1,
+      1,
+      1
+    );
+
+    _onspringServiceMock.Verify(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task TransferAttachment_WhenCalledAndSourceFileAndFileInfoCanBeFoundButFileCanNotBeSaved_ItShouldLogAWarning()
+  {
+    var sourceRecord = new ResultRecord
+    {
+      AppId = 1,
+      RecordId = 1,
+      FieldData = new List<RecordFieldValue>(),
+    };
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFileInfo(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new GetFileInfoResponse
+      {
+        Name = "Test",
+        CreatedDate = DateTime.Now,
+        ModifiedDate = DateTime.Now,
+        Owner = "Test",
+        Notes = "Test",
+        FileHref = "TestData/Test",
+      }
+    );
+
+    _onspringServiceMock
+    .Setup(
+      m => m.GetFile(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      new GetFileResponse
+      {
+        Stream = new MemoryStream(),
+        FileName = "Test",
+        ContentType = "Test",
+        ContentLength = 1,
+      }
+    );
+
+    _onspringServiceMock
+    .Setup(
+      m => m.SaveFile(
+        It.IsAny<string>(),
+        It.IsAny<SaveFileRequest>()
+      )
+    )
+    .ReturnsAsync(
+      (CreatedWithIdResponse<int>?) null
+    );
+
+    await _attachmentsProcessor.TransferAttachment(
+      sourceRecord,
+      1,
+      1,
+      1,
+      1
+    );
+
+    _loggerMock.Verify(
+      m => m.Warning(
+        It.IsAny<string>(),
+        It.IsAny<OnspringFileRequest>(),
+        It.IsAny<SaveFileRequest>()
+      ),
+      Times.Once
+    );
+  }
+
+  [Theory]
+  [MemberData(
+    nameof(RecordDataFactory.GetRecordWithFileToBeRequested),
+    MemberType = typeof(RecordDataFactory)
+  )]
+  public void GetFileRequestsFromRecord_WhenCalled_ItShouldReturnAListOfFileRequests(
+    ResultRecord record,
+    List<Field> fields,
+    List<int> filesFilter
+  )
+  {
+    var fileRequests = AttachmentsProcessor.GetFileRequestsFromRecord(
+      record,
+      fields,
+      filesFilter
+    );
+
+    fileRequests.Should().NotBeNull();
+    fileRequests.Should().NotBeEmpty();
+    fileRequests.Should().BeOfType<List<OnspringFileRequest>>();
+    fileRequests.Should().HaveCount(3);
+    fileRequests.Select(r => r.FileId).Should().BeEquivalentTo(
+      new List<int> { 1, 3, 5 }
+    );
   }
 }
