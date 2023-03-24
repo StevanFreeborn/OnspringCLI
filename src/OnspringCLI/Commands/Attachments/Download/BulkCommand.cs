@@ -127,51 +127,10 @@ public class BulkCommand : Command
 
       _logger.Information("Downloading files.");
 
-      var outputDirectory = Path.Combine(
-        AppDomain.CurrentDomain.BaseDirectory,
+      var erroredRequests = await _processor.TryDownloadFiles(
+        fileRequests,
         OutputDirectory
       );
-
-      Directory.CreateDirectory(outputDirectory);
-
-      var fileName = Path.Combine(
-        outputDirectory,
-        "file-list.csv"
-      );
-
-      using var writer = new StreamWriter(fileName);
-      using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-      csv.Context.RegisterClassMap<OnspringFileResultMap>();
-
-      csv.WriteHeader<OnspringFileResult>();
-      csv.NextRecord();
-
-      var erroredRequests = new List<OnspringFileRequest>();
-
-      foreach (var fileRequest in fileRequests)
-      {
-        var file = await _processor.GetFile(
-          fileRequest,
-          OutputDirectory
-        );
-
-        if (file is null)
-        {
-          erroredRequests.Add(fileRequest);
-          continue;
-        }
-
-        var isSaved = await _processor.TrySaveFile(file);
-
-        if (isSaved is false)
-        {
-          erroredRequests.Add(fileRequest);
-          continue;
-        }
-
-        csv.WriteRecord(file);
-        csv.NextRecord();
-      }
 
       if (erroredRequests.Any() is true)
       {
@@ -180,9 +139,14 @@ public class BulkCommand : Command
           OutputDirectory
         );
 
+        var outputDirectoryPath = Path.Combine(
+          AppDomain.CurrentDomain.BaseDirectory,
+          OutputDirectory
+        );
+
         _logger.Warning(
           "Some files were not deleted. You can find a list of the files that were not deleted in the output directory: {OutputDirectory}",
-          outputDirectory
+          outputDirectoryPath
         );
       }
 

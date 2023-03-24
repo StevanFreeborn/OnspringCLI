@@ -1,6 +1,8 @@
+using System.Net;
+
 namespace OnspringCLI.Services;
 
-class OnspringService : IOnspringService
+public class OnspringService : IOnspringService
 {
   private readonly ILogger _logger;
   private readonly IOnspringClientFactory _clientFactory;
@@ -470,7 +472,9 @@ class OnspringService : IOnspringService
       {
         response = await func();
 
-        if (response.IsSuccessful is true)
+        if (
+          NeedsToBeRetried(response) is false
+        )
         {
           return response;
         }
@@ -539,7 +543,9 @@ class OnspringService : IOnspringService
       {
         response = await func();
 
-        if (response.IsSuccessful is true)
+        if (
+          NeedsToBeRetried(response) is false
+        )
         {
           return response;
         }
@@ -593,9 +599,29 @@ class OnspringService : IOnspringService
     return response;
   }
 
+  internal static bool NeedsToBeRetried(ApiResponse response)
+  {
+    return response.IsSuccessful is false &&
+    CanBeRetried(response.StatusCode);
+  }
+
+  internal static bool CanBeRetried(HttpStatusCode statusCode)
+  {
+    return statusCode switch
+    {
+      HttpStatusCode.BadRequest => false,
+      HttpStatusCode.Unauthorized => false,
+      HttpStatusCode.Forbidden => false,
+      HttpStatusCode.NotFound => false,
+      _ => true
+    };
+  }
+
   [ExcludeFromCodeCoverage]
   private async Task Wait(int retryAttempt)
   {
+    var isTesting = Environment.GetEnvironmentVariable("ENVIRONMENT") == "testing";
+
     var wait = 1000 * retryAttempt;
 
     _logger.Debug(
@@ -603,7 +629,10 @@ class OnspringService : IOnspringService
       wait
     );
 
-    await Task.Delay(wait);
+    if (isTesting is false)
+    {
+      await Task.Delay(wait);
+    }
 
     _logger.Debug(
       "Retrying request. {Attempt} of {AttemptLimit}",

@@ -114,19 +114,9 @@ public class BulkCommand : Command
 
       _logger.Information("Deleting files.");
 
-      var erroredRequests = new List<OnspringFileRequest>();
-
-      foreach (var fileRequest in fileRequests)
-      {
-        var isDeleted = await _processor.TryDeleteFile(
-          fileRequest
-        );
-
-        if (isDeleted is false)
-        {
-          erroredRequests.Add(fileRequest);
-        }
-      }
+      var erroredRequests = await _processor.TryDeleteFiles(
+        fileRequests
+      );
 
       if (erroredRequests.Any() is true)
       {

@@ -18,15 +18,13 @@ public interface IAttachmentsProcessor
     List<OnspringFileRequest> fileRequests
   );
 
-  Task<OnspringFileResult?> GetFile(
-    OnspringFileRequest fileRequest,
+  Task<List<OnspringFileRequest>> TryDownloadFiles(
+    List<OnspringFileRequest> fileRequests,
     string outputDirectory
   );
 
-  Task<bool> TrySaveFile(OnspringFileResult file);
-
-  Task<bool> TryDeleteFile(
-    OnspringFileRequest fileRequest
+  Task<List<OnspringFileRequest>> TryDeleteFiles(
+    List<OnspringFileRequest> fileRequest
   );
 
   Task<List<int>> GetRecordIdsFromReport(int reportId);
@@ -45,6 +43,11 @@ public interface IAttachmentsProcessor
   );
 
   Task TransferAttachments(
+    IAttachmentTransferSettings settings,
+    List<ResultRecord> sourceRecord
+  );
+
+  Task TransferRecordAttachments(
     IAttachmentTransferSettings settings,
     ResultRecord sourceRecord
   );

@@ -1,5 +1,6 @@
 namespace OnspringCLI.Extensions;
 
+[ExcludeFromCodeCoverage]
 static class HostBuilderExtensions
 {
   public static IHostBuilder AddSerilog(this IHostBuilder hostBuilder)
@@ -21,17 +22,25 @@ static class HostBuilderExtensions
           new OnspringFileRequestDestructuringPolicy(),
           new OnspringSaveFileRequestDestructuringPolicy()
         )
-        .MinimumLevel.Verbose()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
-        .WriteTo.File(
-          new CompactJsonFormatter(),
-          logFilePath,
-          options.LogLevel
+        .WriteTo.Logger(
+          lc =>
+            lc
+            .MinimumLevel.Verbose()
+            .WriteTo.File(
+              new CompactJsonFormatter(),
+              logFilePath,
+              options.LogLevel
+            )
         )
-        .WriteTo.Console(
-          restrictedToMinimumLevel: logLevelSwitch.MinimumLevel,
-          theme: AnsiConsoleTheme.Code
+        .WriteTo.Logger(
+          lc =>
+            lc
+            .MinimumLevel.ControlledBy(logLevelSwitch)
+            .WriteTo.Console(
+              theme: AnsiConsoleTheme.Code
+            )
         );
       }
     );

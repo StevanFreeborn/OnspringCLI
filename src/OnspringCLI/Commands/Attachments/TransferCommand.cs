@@ -134,13 +134,9 @@ public class TransferCommand : Command
 
       _logger.Information("Begin transferring attachments.");
 
-      await Parallel.ForEachAsync(
-        sourceRecords,
-        async (record, token) =>
-          await _processor.TransferAttachments(
-            AttachmentTransferSettings,
-            record
-          )
+      await _processor.TransferAttachments(
+        AttachmentTransferSettings,
+        sourceRecords
       );
 
       _logger.Information("Attachments transferred.");

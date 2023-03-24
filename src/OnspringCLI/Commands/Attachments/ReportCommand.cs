@@ -136,7 +136,7 @@ public class ReportCommand : Command
       return 0;
     }
 
-    internal List<int> GetFilesFilterList()
+    private List<int> GetFilesFilterList()
     {
       var filesFilterList = new List<int>();
 
@@ -148,8 +148,15 @@ public class ReportCommand : Command
       }
 
       using var reader = new StreamReader(FilesFilterCsv.FullName);
-      using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+      var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+      {
+        HasHeaderRecord = false,
+      };
+
+      using var csv = new CsvReader(reader, config);
       var files = csv.GetRecords<int>().ToList();
+
       filesFilterList.AddRange(files);
 
       return filesFilterList;

@@ -1,5 +1,6 @@
 namespace OnspringCLI.Logging;
 
+[ExcludeFromCodeCoverage]
 public class OnspringFileRequestDestructuringPolicy : IDestructuringPolicy
 {
   public bool TryDestructure(

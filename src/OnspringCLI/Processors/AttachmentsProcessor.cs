@@ -235,178 +235,105 @@ class AttachmentsProcessor : IAttachmentsProcessor
     .ToList();
   }
 
-  public async Task<OnspringFileResult?> GetFile(
-    OnspringFileRequest fileRequest,
+  public async Task<List<OnspringFileRequest>> TryDownloadFiles(
+    List<OnspringFileRequest> fileRequests,
     string outputDirectory
   )
   {
-    _logger.Debug(
-      "Retrieving file {FileId} for record {RecordId} in field {FieldId}.",
-      fileRequest.FileId,
-      fileRequest.RecordId,
-      fileRequest.FieldId
-    );
-
-    var res = await _onspringService.GetFile(
-      _globalOptions.Value.SourceApiKey,
-      fileRequest
-    );
-
-    if (res == null)
-    {
-      _logger.Warning(
-        "Unable to get file {FileId} for record {RecordId} in field {FieldId}.",
-        fileRequest.FileId,
-        fileRequest.RecordId,
-        fileRequest.FieldId
+    var outputPath = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory,
+        outputDirectory
       );
 
-      return null;
-    }
+    Directory.CreateDirectory(outputPath);
 
-    _logger.Debug(
-      "File {FileId} retrieved for record {RecordId} in field {FieldId}.",
-      fileRequest.FileId,
-      fileRequest.RecordId,
-      fileRequest.FieldId
+    var fileName = Path.Combine(
+      outputPath,
+      "file-list.csv"
     );
 
-    var fileName = res.FileName.Trim('"');
+    using var writer = new StreamWriter(fileName);
+    using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+    csv.Context.RegisterClassMap<OnspringFileResultMap>();
 
-    var filePath = Path.Combine(
-      AppDomain.CurrentDomain.BaseDirectory,
-      outputDirectory,
-      "files",
-      $"{fileRequest.RecordId}-{fileRequest.FieldId}-{fileRequest.FileId}-{fileName}"
+    csv.WriteHeader<OnspringFileResult>();
+    csv.NextRecord();
+
+    using var pBar = _progressBarFactory.Create(
+      fileRequests.Count,
+      "Downloading files"
     );
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Fatal;
 
-    return new OnspringFileResult(
-      fileRequest.RecordId,
-      fileRequest.FieldId,
-      fileRequest.FieldName,
-      fileRequest.FileId,
-      fileName,
-      filePath,
-      res.Stream
-    );
-  }
+    var erroredRequests = new List<OnspringFileRequest>();
 
-  public async Task<bool> TrySaveFile(OnspringFileResult file)
-  {
-    try
+    foreach (var fileRequest in fileRequests)
     {
-      _logger.Debug(
-        "Saving file {FileName} for record {RecordId}, field {FieldId}, file {FileId}.",
-        file.FileName,
-        file.RecordId,
-        file.FieldId,
-        file.FileId
+      pBar.Message = $"Downloading file {fileRequest.FileId} in field {fileRequest.FieldId} for record {fileRequest.RecordId}";
+
+      var file = await GetFile(
+        fileRequest,
+        outputDirectory
       );
 
-      if (file.FilePath is null)
+      if (file is null)
       {
-        _logger.Warning(
-          "Unable to save file. File path is null for record {RecordId}, field {FieldId}, file {FileId}.",
-          file.RecordId,
-          file.FieldId,
-          file.FileId
-        );
-
-        return false;
+        erroredRequests.Add(fileRequest);
+        continue;
       }
 
-      var fileDirectory = Path.GetDirectoryName(file.FilePath);
+      var isSaved = await TrySaveFile(file);
 
-      if (fileDirectory is null)
+      if (isSaved is false)
       {
-        _logger.Warning(
-          "Unable to save file. File directory is null for record {RecordId}, field {FieldId}, file {FileId}.",
-          file.RecordId,
-          file.FieldId,
-          file.FileId
-        );
-
-        return false;
+        erroredRequests.Add(fileRequest);
+        continue;
       }
 
-      Directory.CreateDirectory(fileDirectory);
-      await using var fileStream = File.Create(file.FilePath);
-      await file.Stream.CopyToAsync(fileStream);
+      csv.WriteRecord(file);
+      csv.NextRecord();
 
-      _logger.Debug(
-        "File {FileId} saved for record {RecordId} in field {FieldId}.",
-        file.FileId,
-        file.RecordId,
-        file.FieldId
-      );
-
-      return true;
+      pBar.Tick($"Downloaded file {fileRequest.FileId} in field {fileRequest.FieldId} for record {fileRequest.RecordId}");
     }
-    catch (Exception ex)
-    {
-      _logger.Error(
-        ex,
-        "Error saving file {FileId} for record {RecordId} in field {FieldId}.",
-        file.FileId,
-        file.RecordId,
-        file.FieldId
-      );
 
-      return false;
-    }
+    pBar.Message = "Downloaded files";
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Information;
+
+    return erroredRequests;
   }
 
-  public async Task<bool> TryDeleteFile(
-    OnspringFileRequest fileRequest
+  public async Task<List<OnspringFileRequest>> TryDeleteFiles(
+    List<OnspringFileRequest> fileRequests
   )
   {
-    try
-    {
-      _logger.Debug(
-        "Deleting file {FileId} for record {RecordId} in field {FieldId}.",
-        fileRequest.FileId,
-        fileRequest.RecordId,
-        fileRequest.FieldId
-      );
+    using var pBar = _progressBarFactory.Create(
+      fileRequests.Count,
+      "Deleting files"
+    );
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Fatal;
 
-      var isDeleted = await _onspringService.TryDeleteFile(
-        _globalOptions.Value.SourceApiKey,
+    var erroredRequests = new List<OnspringFileRequest>();
+
+    foreach (var fileRequest in fileRequests)
+    {
+      pBar.Message = $"Deleting file {fileRequest.FileId} in field {fileRequest.FieldId} for record {fileRequest.RecordId}";
+
+      var isDeleted = await TryDeleteFile(
         fileRequest
       );
 
       if (isDeleted is false)
       {
-        _logger.Warning(
-          "Unable to delete file {FileId} for record {RecordId} in field {FieldId}.",
-          fileRequest.FileId,
-          fileRequest.RecordId,
-          fileRequest.FieldId
-        );
-
-        return false;
+        erroredRequests.Add(fileRequest);
       }
 
-      _logger.Debug(
-        "File {FileId} deleted for record {RecordId} in field {FieldId}.",
-        fileRequest.FileId,
-        fileRequest.RecordId,
-        fileRequest.FieldId
-      );
-
-      return true;
+      pBar.Tick($"Deleted file {fileRequest.FileId} in field {fileRequest.FieldId} for record {fileRequest.RecordId}");
     }
-    catch (Exception ex)
-    {
-      _logger.Error(
-        ex,
-        "Error deleting file {FileId} for record {RecordId} in field {FieldId}.",
-        fileRequest.FileId,
-        fileRequest.RecordId,
-        fileRequest.FieldId
-      );
 
-      return false;
-    }
+    pBar.Message = "Deleted files";
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Information;
+
+    return erroredRequests;
   }
 
   public async Task<bool> ValidateMatchFields(
@@ -580,6 +507,51 @@ class AttachmentsProcessor : IAttachmentsProcessor
 
   public async Task TransferAttachments(
     IAttachmentTransferSettings settings,
+    List<ResultRecord> sourceRecords
+  )
+  {
+    _logger.Debug(
+      "Transferring attachments for {Count} records.",
+      sourceRecords.Count
+    );
+
+    using var pBar = _progressBarFactory.Create(
+      sourceRecords.Count,
+      "Transferring attachments"
+    );
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Fatal;
+
+    await Parallel.ForEachAsync(
+      sourceRecords,
+      async (sourceRecord, token) =>
+      {
+        pBar.Message = $"Transferring attachments for record {sourceRecord.RecordId}";
+
+        await TransferRecordAttachments(
+          settings,
+          sourceRecord
+        );
+
+        pBar.Tick($"Transferred attachments for record {sourceRecord.RecordId}");
+
+        _logger.Debug(
+          "Transferred attachments for record {RecordId}.",
+          sourceRecord.RecordId
+        );
+      }
+    );
+
+    pBar.Message = "Transferred attachments";
+    _logLevelSwitch.MinimumLevel = LogEventLevel.Information;
+
+    _logger.Debug(
+      "Finished transferring attachments for {Count} records.",
+      sourceRecords.Count
+    );
+  }
+
+  public async Task TransferRecordAttachments(
+    IAttachmentTransferSettings settings,
     ResultRecord sourceRecord
   )
   {
@@ -657,7 +629,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
         sourceAttachmentFieldId
       );
 
-      await TransferAttachmentsForFieldId(
+      await TransferAttachmentsForField(
         sourceRecord,
         targetRecordId,
         sourceAttachmentFieldId,
@@ -700,7 +672,166 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  internal async Task TransferAttachmentsForFieldId(
+  private async Task<bool> TryDeleteFile(
+    OnspringFileRequest fileRequest
+  )
+  {
+    _logger.Debug(
+      "Deleting file {FileId} for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
+      fileRequest.RecordId,
+      fileRequest.FieldId
+    );
+
+    var isDeleted = await _onspringService.TryDeleteFile(
+      _globalOptions.Value.SourceApiKey,
+      fileRequest
+    );
+
+    if (isDeleted is false)
+    {
+      _logger.Warning(
+        "Unable to delete file {FileId} for record {RecordId} in field {FieldId}.",
+        fileRequest.FileId,
+        fileRequest.RecordId,
+        fileRequest.FieldId
+      );
+
+      return false;
+    }
+
+    _logger.Debug(
+      "File {FileId} deleted for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
+      fileRequest.RecordId,
+      fileRequest.FieldId
+    );
+
+    return true;
+  }
+
+  internal async Task<OnspringFileResult?> GetFile(
+    OnspringFileRequest fileRequest,
+    string outputDirectory
+  )
+  {
+    _logger.Debug(
+      "Retrieving file {FileId} for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
+      fileRequest.RecordId,
+      fileRequest.FieldId
+    );
+
+    var res = await _onspringService.GetFile(
+      _globalOptions.Value.SourceApiKey,
+      fileRequest
+    );
+
+    if (res == null)
+    {
+      _logger.Warning(
+        "Unable to get file {FileId} for record {RecordId} in field {FieldId}.",
+        fileRequest.FileId,
+        fileRequest.RecordId,
+        fileRequest.FieldId
+      );
+
+      return null;
+    }
+
+    _logger.Debug(
+      "File {FileId} retrieved for record {RecordId} in field {FieldId}.",
+      fileRequest.FileId,
+      fileRequest.RecordId,
+      fileRequest.FieldId
+    );
+
+    var fileName = res.FileName.Trim('"');
+
+    var filePath = Path.Combine(
+      AppDomain.CurrentDomain.BaseDirectory,
+      outputDirectory,
+      "files",
+      $"{fileRequest.RecordId}-{fileRequest.FieldId}-{fileRequest.FileId}-{fileName}"
+    );
+
+    return new OnspringFileResult(
+      fileRequest.RecordId,
+      fileRequest.FieldId,
+      fileRequest.FieldName,
+      fileRequest.FileId,
+      fileName,
+      filePath,
+      res.Stream
+    );
+  }
+
+  internal async Task<bool> TrySaveFile(OnspringFileResult file)
+  {
+    try
+    {
+      _logger.Debug(
+        "Saving file {FileName} for record {RecordId}, field {FieldId}, file {FileId}.",
+        file.FileName,
+        file.RecordId,
+        file.FieldId,
+        file.FileId
+      );
+
+      if (file.FilePath is null)
+      {
+        _logger.Warning(
+          "Unable to save file. File path is null for record {RecordId}, field {FieldId}, file {FileId}.",
+          file.RecordId,
+          file.FieldId,
+          file.FileId
+        );
+
+        return false;
+      }
+
+      var fileDirectory = Path.GetDirectoryName(file.FilePath);
+
+      if (fileDirectory is null)
+      {
+        _logger.Warning(
+          "Unable to save file. File directory is null for record {RecordId}, field {FieldId}, file {FileId}.",
+          file.RecordId,
+          file.FieldId,
+          file.FileId
+        );
+
+        return false;
+      }
+
+      Directory.CreateDirectory(fileDirectory);
+      await using var fileStream = File.Create(file.FilePath);
+      await file.Stream.CopyToAsync(fileStream);
+
+      _logger.Debug(
+        "File {FileId} saved for record {RecordId} in field {FieldId}.",
+        file.FileId,
+        file.RecordId,
+        file.FieldId
+      );
+
+      return true;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(
+        ex,
+        "Error saving file {FileId} for record {RecordId} in field {FieldId}.",
+        file.FileId,
+        file.RecordId,
+        file.FieldId
+      );
+
+      return false;
+    }
+  }
+
+  internal async Task TransferAttachmentsForField(
     ResultRecord sourceRecord,
     int targetRecordId,
     int sourceAttachmentFieldId,
@@ -1017,7 +1148,7 @@ class AttachmentsProcessor : IAttachmentsProcessor
     );
   }
 
-  internal static bool IsValidMatchFieldType(Field field)
+  private static bool IsValidMatchFieldType(Field field)
   {
     var isSupportedField = field.Type is
     FieldType.Text or
