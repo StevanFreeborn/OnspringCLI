@@ -1,0 +1,83 @@
+name: build_test
+on:
+  workflow_dispatch:
+  pull_request:
+    paths-ignore:
+      - "**/README.md"
+      - "**/.gitignore"
+      - "**/.gitmodules"
+      - "**/.editorconfig"
+      - "**/OnspringCLI.sln"
+      - .github/**
+      - .vscode/**
+      - README/**
+    branches:
+      - main
+      - beta
+jobs:
+  build_and_test:
+    name: build_and_test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ACTIONS_PAT }}
+          submodules: "recursive"
+      - name: Setup .NET 7
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build on ${{ matrix.os }}
+        run: dotnet build --no-restore
+      - name: Test on ${{ matrix.os }}
+        run: dotnet test --environment ENVIRONMENT=testing --collect:"XPlat Code Coverage;Include=[OnspringCLI]*;ExcludeByFile=**/program.cs" --no-build --verbosity normal
+      - name: Attempt to create coverage directory on linux or mac-os
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        run: mkdir -p tests/OnspringCLI.Tests/TestResults/coverage
+      - name: Attempt to create coverage directory on windows
+        if: matrix.os == 'windows-latest'
+        run: mkdir -force tests/OnspringCLI.Tests/TestResults/coverage
+      - name: Rename test coverage report
+        run: mv tests/OnspringCLI.Tests/TestResults/*/coverage.cobertura.xml tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
+      - name: Upload test coverage report for ${{ matrix.os }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-coverage-${{ matrix.os }}
+          path: tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
+  test_coverage:
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ACTIONS_PAT }}
+          submodules: "recursive"
+      - name: Download ubuntu-latest report
+        uses: actions/download-artifact@v3
+        with:
+          name: test-coverage-ubuntu-latest
+          path: ./coverage
+      - name: Download windows-latest report
+        uses: actions/download-artifact@v3
+        with:
+          name: test-coverage-windows-latest
+          path: ./coverage
+      - name: Download macos-latest report
+        uses: actions/download-artifact@v3
+        with:
+          name: test-coverage-macos-latest
+          path: ./coverage
+      - name: Upload test coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
