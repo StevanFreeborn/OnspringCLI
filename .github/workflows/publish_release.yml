@@ -96,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: change-log
-          path: src/CHANGELOG.md
+          path: src/OnspringCLI/CHANGELOG.md
       - name: Run versionize for beta
         id: versionize-beta
         if: steps.branch-name.outputs.ref_branch == 'beta'
