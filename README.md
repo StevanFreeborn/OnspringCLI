@@ -1,18 +1,35 @@
 # Onspring CLI
 
-OnspringCLI is a command line app for interacting with an [Onspring](https://onspring.com/) instance. The app does provides a set of commands that can be run from the command line. The commands use the [Onspring API](https://api.onspring.com/swagger/index.html) to execute actions.
+OnspringCLI is a command line app for interacting with an [Onspring](https://onspring.com/) instance. The app provides a set of commands that can be run from the command line. The commands use the [Onspring API](https://api.onspring.com/swagger/index.html) to execute actions against content in an Onspring instance.
 
 ![Onspring CLI](README/onspring_cli.png)
+
+## Installation
+
+The app is published [here](https://github.com/StevanFreeborn/OnspringCLI/releases) on Github as a release where you can download it as a single executable file for the following operating systems:
+
+- win-x64
+- linux-x64
+- osx-x64 (Minimum OS version is macOS 10.12 Sierra)
+
+**Notes:**
+
+- After downloading the executable you may need to run `chmod +x` to give the executable execute permissions on your machine.
+- After downloading the executable you may need to provide permission for the application to run via the your systems settings.
+
+You are also welcome to clone this repository and run the app using the [.NET 7](https://dotnet.microsoft.com/en-us/download) tooling and runtime. As well as modify the app further for your specific needs.
 
 ## Commands
 
 - **Attachments** - Commands for working with attachments in an Onspring instance.
-  - **Download** - Download attachments from fields on records in an app.
-    - **Bulk** - Download all attachments from fields on records in an app.
-  - **Delete** - Delete attachments from fields on records in an app.
-    - **Bulk** - Delete all attachments from fields on records in an app.
-  - **Transfer** - Transfer attachments from fields on records in one app to fields on records in another app.
-  - **Report** - Generate a report of attachments in an app.
+  - **Download**
+    - **Bulk** - Download all attachments from fields on records in an app. See [Bulk Download Attachments](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Download-Bulk) for more information.
+  - **Delete**
+    - **Bulk** - Delete all attachments from fields on records in an app. See [Bulk Delete Attachments](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Delete-Bulk) for more information.
+  - **Transfer** - Transfer attachments from fields on records in one app to fields on records in another app. See [Transfer Attachments](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Transfer) for more information.
+  - **Report** - Generate a report of attachments in an app. See [Attachment Report](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Report) for more information.
+
+**Note:** The app will prompt you for any required information that is not provided via the command line.
 
 ## Global Options
 
@@ -24,7 +41,7 @@ OnspringCLI is a command line app for interacting with an [Onspring](https://ons
   - By default this will be set to the `Debug` level.
   - The valid levels are: `Debug` | `Error` | `Fatal` | `Information` | `Verbose` | `Warning`
 - **Help:** `--help` or `-h`
-  - Can be passed to any command to get more detail about the command and its arguments and/or options..
+  - Can be passed to any command to get more detail about the command and its arguments and/or options.
   - **Example usage:** `onspringcli.exe attachments -h`
 
 ## ApiKey
@@ -59,18 +76,6 @@ This app will make a number of api requests to Onspring in order to execute any 
 The total number of requests will vary depending on the command you are executing and the options provided.
 
 This all being shared because it is important you take into consideration the number of requests that may be made on your behalf when executing the command. If you believe the quantity is quite considerable I'd encourage you to consult with your Onspring representative to understand what if any limits there are to your usage of the Onspring API.
-
-## Installation
-
-The app is published as a release where you can download it as a single executable file for the following operating systems:
-
-- win-x64
-- linux-x64
-- osx-x64 (Minimum OS version is macOS 10.12 Sierra)
-  - Note after downloading the executable you may need to run chmod +x to give the executable execute permissions on your machine.
-  - Note after downloading the executable you may need to provide permission for the application to run via the your systems settings.
-
-You are also welcome to clone this repository and run the app using the [.NET 7](https://dotnet.microsoft.com/en-us/download) tooling and runtime. As well as modify the app further for your specific needs.
 
 ## Logging
 
