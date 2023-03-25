@@ -25,7 +25,7 @@ public class BulkCommand : Command
     AddOption(
       new Option<List<int>>(
         aliases: new[] { "--field-filter", "-ff" },
-        description: "A comma separated list of field ids to whose attachments will be downloaded.",
+        description: "A comma separated list of field ids whose attachments will be downloaded.",
         parseArgument: result => result.ParseToIntegerList()
       )
     );
