@@ -50,7 +50,7 @@ public class BulkCommandTests
     var fieldFilterOption = bulkCommand
     .Options
     .FirstOrDefault(
-      o => o.Name == "field-filter"
+      o => o.Name == "fields-filter"
     );
 
     fieldFilterOption.Should().NotBeNull();

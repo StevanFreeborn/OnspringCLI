@@ -16,7 +16,7 @@ public class BulkCommand : Command
 
     AddOption(
       new Option<List<int>>(
-        aliases: new[] { "--field-filter", "-ff" },
+        aliases: new[] { "--fields-filter", "-ff" },
         description: "A comma separated list of field ids to whose attachments will be deleted.",
         parseArgument: result => result.ParseToIntegerList()
       )
@@ -44,7 +44,7 @@ public class BulkCommand : Command
     private readonly IAttachmentsProcessor _processor;
     public int AppId { get; set; } = 0;
     public string OutputDirectory { get; set; } = "output";
-    public List<int> FieldFilter { get; set; } = new();
+    public List<int> FieldsFilter { get; set; } = new();
     public List<int> RecordsFilter { get; set; } = new();
     public int ReportFilter { get; set; } = 0;
 
@@ -65,7 +65,7 @@ public class BulkCommand : Command
 
       var fileFields = await _processor.GetFileFields(
         AppId,
-        FieldFilter
+        FieldsFilter
       );
 
       if (fileFields.Count is 0)
