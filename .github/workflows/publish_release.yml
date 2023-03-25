@@ -1,0 +1,173 @@
+name: publish_and_release
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - "**/README.md"
+      - README/**
+      - "**/.gitignore"
+      - "**/.gitmodules"
+      - "**/.editorconfig"
+      - "**/OnspringCLI.sln"
+      - "**/LICENSE.txt"
+      - .github/**
+      - .vscode/**
+      - tests/**
+      - src/OnspringCLI/OnspringCLI.csproj
+    branches:
+      - main
+      - beta
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ACTIONS_PAT }}
+          submodules: "recursive"
+      - name: Setup .NET 7
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --environment ENVIRONMENT=testing --collect:"XPlat Code Coverage;Include=[OnspringCLI]*;ExcludeByFile=**/program.cs" --no-build --verbosity normal
+      - name: Upload test coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: tests/OnspringCLI.Tests/TestResults/*/coverage.cobertura.xml
+  publish_coverage:
+    needs: [test]
+    name: publish_test_coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ACTIONS_PAT }}
+          submodules: "recursive"
+      - name: Download test coverage report
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-report
+          path: ./coverage
+      - name: Upload test coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+  version:
+    needs: [publish_coverage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ACTIONS_PAT }}
+          submodules: "recursive"
+      - name: Setup .NET 7
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.x
+      - name: Install versionize
+        run: dotnet tool install --global Versionize
+      - name: Setup git
+        run: |
+          git config --local user.email "65925598+StevanFreeborn@users.noreply.github.com"
+          git config --local user.name "Stevan Freeborn"
+      - name: Run versionize for main
+        id: versionize-main
+        if: steps.branch-name.outputs.ref_branch == 'main'
+        run: versionize -i --exit-insignificant-commits --changelog-all --workingDir ./src/OnspringCLI
+        continue-on-error: true
+      - name: Upload changelog for main
+        if: steps.versionize-main.outcome == 'success'
+        uses: actions/upload-artifact@v3
+        with:
+          name: change-log
+          path: src/CHANGELOG.md
+      - name: Run versionize for beta
+        id: versionize-beta
+        if: steps.branch-name.outputs.ref_branch == 'beta'
+        run: versionize -i --exit-insignificant-commits --changelog-all --pre-release beta --workingDir ./src/OnspringCLI
+        continue-on-error: true
+      - name: Upload changelog for beta
+        if: steps.versionize-beta.outcome == 'success'
+        uses: actions/upload-artifact@v3
+        with:
+          name: change-log
+          path: src/OnspringCLI/CHANGELOG.md
+      - name: Push changes to GitHub
+        if: steps.versionize-main.outcome == 'success' || steps.versionize-beta.outcome == 'success'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.ACTIONS_PAT }}
+          branch: ${{ github.ref }}
+          tags: true
+    outputs:
+      is_new_version: ${{ steps.versionize-main.outcome == 'success' || steps.versionize-beta.outcome == 'success' }}
+  publish:
+    needs: [version]
+    if: needs.version.outputs.is_new_version == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+          token: ${{ secrets.ACTIONS_PAT }}
+          submodules: "recursive"
+      - name: Setup .NET 7
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.x
+      - name: Publish for mac-os
+        run: dotnet publish src/OnspringCLI/OnspringCLI.csproj -c Release -r osx-x64 --self-contained -o dist/mac-os
+      - name: Rename mac-os binary
+        run: mv dist/mac-os/OnspringCLI dist/onspringcli_osx_x64
+      - name: Publish for linux-os
+        run: dotnet publish src/OnspringCLI/OnspringCLI.csproj -c Release -r linux-x64 --self-contained -o dist/linux-os
+      - name: Rename linux-os binary
+        run: mv dist/linux-os/OnspringCLI dist/onspringcli_linux_x64
+      - name: Publish for windows-os
+        run: dotnet publish src/OnspringCLI/OnspringCLI.csproj -c Release -r win-x64 --self-contained -o dist/windows-os
+      - name: Rename windows-os binary
+        run: mv dist/windows-os/OnspringCLI.exe dist/onspringcli_windows_x64.exe
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+      - name: Get project version
+        uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
+        with:
+          proj-path: src/OnspringCLI/OnspringCLI.csproj
+      - name: Download changlog
+        uses: actions/download-artifact@v3
+        with:
+          name: change-log
+          path: src/OnspringCLI
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.ACTIONS_PAT }}
+          name: OnspringCLI v${{ steps.get-version.outputs.version }}
+          tag_name: v${{ steps.get-version.outputs.version }}
+          draft: false
+          prerelease: ${{ steps.branch-name.outputs.ref_branch == 'beta' }}
+          body_path: src/OnspringCLI/CHANGELOG.md
+          files: |
+            dist/onspringcli_osx_x64
+            dist/onspringcli_linux_x64
+            dist/onspringcli_windows_x64.exe
