@@ -79,7 +79,7 @@ This all being shared because it is important you take into consideration the nu
 
 ## Logging
 
-In addition to the information the app will log out to the console as it is running and any artifacts it a particular command produces a log file will also be written to a folder named `logs`. This log can be used to review the work done and troubleshoot any issues the app may have encountered while executing a particular command. Please note that each log event is written in [Compact Log Event Format](http://clef-json.org/). You are welcome to parse the log file in the way that best suits your needs.
+In addition to the information the app will log out to the console as it is running and any artifacts a particular command produces a log file will also be written to a folder named `logs`. This log can be used to review the work done and troubleshoot any issues the app may have encountered while executing a particular command. Please note that each log event is written in [Compact Log Event Format](http://clef-json.org/). You are welcome to parse the log file in the way that best suits your needs.
 
 Various tools are available for working with the CLEF format.
 
