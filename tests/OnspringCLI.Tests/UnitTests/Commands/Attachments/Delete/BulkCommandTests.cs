@@ -38,7 +38,7 @@ public class BulkCommandTests
     var fieldFilterOption = command
     .Options
     .FirstOrDefault(
-      o => o.Name == "field-filter"
+      o => o.Name == "fields-filter"
     );
 
     fieldFilterOption.Should().NotBeNull();
@@ -112,7 +112,7 @@ public class BulkCommandTests
       );
 
       _handler.AppId = 1;
-      _handler.FieldFilter = new List<int> { 1, 2 };
+      _handler.FieldsFilter = new List<int> { 1, 2 };
       _handler.RecordsFilter = new List<int> { 1, 2 };
       _handler.ReportFilter = 1;
 

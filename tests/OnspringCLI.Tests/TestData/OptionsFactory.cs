@@ -47,7 +47,7 @@ public static class OptionsFactory
       "123",
       "--output-directory",
       "TestData/Files",
-      "--field-filter",
+      "--fields-filter",
       "1,2",
       "--records-filter",
       "1,2",
@@ -80,7 +80,7 @@ public static class OptionsFactory
     {
       "--app-id",
       "123",
-      "--field-filter",
+      "--fields-filter",
       "1,2",
       "--records-filter",
       "1,2",
