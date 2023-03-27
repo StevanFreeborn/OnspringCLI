@@ -1,5 +1,12 @@
 # Onspring CLI
 
+[![build_test](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/build_test.yml/badge.svg)](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/build_test.yml)
+[![codecov](https://codecov.io/gh/StevanFreeborn/OnspringCLI/branch/main/graph/badge.svg?token=xSm7UcxgDj)](https://codecov.io/gh/StevanFreeborn/OnspringCLI)
+[![publish_and_release](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/publish_release.yml/badge.svg)](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/publish_release.yml)
+![GitHub](https://img.shields.io/github/license/StevanFreeborn/OnspringCLI)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/StevanFreeborn/OnspringCLI)
+[![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+
 OnspringCLI is a command line app for interacting with an [Onspring](https://onspring.com/) instance. The app provides a set of commands that can be run from the command line. The commands use the [Onspring API](https://api.onspring.com/swagger/index.html) to execute actions against content in an Onspring instance.
 
 ![Onspring CLI](README/onspring_cli.png)
