@@ -40,6 +40,7 @@ You are also welcome to clone this repository and run the app using the [.NET 7]
   - Allows you to specify what the minimum level of event that will be written to the log file while the app is running.
   - By default this will be set to the `Debug` level.
   - The valid levels are: `Debug` | `Error` | `Fatal` | `Information` | `Verbose` | `Warning`
+  - **Example usage:** `onspringcli.exe -l fatal`
 - **Help:** `--help` or `-h`
   - Can be passed to any command to get more detail about the command and its arguments and/or options.
   - **Example usage:** `onspringcli.exe attachments -h`
