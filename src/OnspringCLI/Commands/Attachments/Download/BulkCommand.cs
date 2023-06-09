@@ -145,7 +145,7 @@ public class BulkCommand : Command
         );
 
         _logger.Warning(
-          "Some files were not deleted. You can find a list of the files that were not deleted in the output directory: {OutputDirectory}",
+          "Some files were not downloaded. You can find a list of the files that were not downloaded in the output directory: {OutputDirectory}",
           outputDirectoryPath
         );
       }
