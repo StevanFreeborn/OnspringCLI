@@ -39,7 +39,7 @@ jobs:
       - name: Build on ${{ matrix.os }}
         run: dotnet build --no-restore
       - name: Test on ${{ matrix.os }}
-        run: dotnet test --environment ENVIRONMENT=testing --collect:"XPlat Code Coverage;Include=[OnspringCLI]*;ExcludeByFile=**/program.cs" --no-build --verbosity normal
+        run: dotnet test --environment ENVIRONMENT=testing --no-build --verbosity normal
       - name: Attempt to create coverage directory on linux or mac-os
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         run: mkdir -p tests/OnspringCLI.Tests/TestResults/coverage
