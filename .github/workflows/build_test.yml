@@ -34,20 +34,16 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.x
+      - name: Install report generator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.0
       - name: Restore dependencies
         run: dotnet restore
       - name: Build on ${{ matrix.os }}
         run: dotnet build --no-restore
       - name: Test on ${{ matrix.os }}
         run: dotnet test --environment ENVIRONMENT=testing --no-build --verbosity normal
-      - name: Attempt to create coverage directory on linux or mac-os
-        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
-        run: mkdir -p tests/OnspringCLI.Tests/TestResults/coverage
-      - name: Attempt to create coverage directory on windows
-        if: matrix.os == 'windows-latest'
-        run: mkdir -force tests/OnspringCLI.Tests/TestResults/coverage
       - name: Rename test coverage report
-        run: mv tests/OnspringCLI.Tests/TestResults/*/coverage.cobertura.xml tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
+        run: mv tests/OnspringCLI.Tests/TestResults/coverage/report/coverage.cobertura.xml tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
       - name: Upload test coverage report for ${{ matrix.os }}
         uses: actions/upload-artifact@v3
         with:

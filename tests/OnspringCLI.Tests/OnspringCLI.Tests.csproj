@@ -37,7 +37,7 @@
   </PropertyGroup>
 
   <Target Name="GenerateHtmlCoverageReport" AfterTargets="GenerateCoverageResultAfterTest">
-    <Exec Command="$(UserProfile)/.nuget/packages/reportgenerator/5.2.0/tools/net8.0/ReportGenerator -reports:./TestResults/coverage/*.xml -targetdir:./TestResults/coverage/report/ -reporttypes:Html_Dark" />
+    <Exec Command="reportgenerator -reports:./TestResults/coverage/*.xml -targetdir:./TestResults/coverage/report/ -reporttypes:Html_Dark" />
   </Target>
 
   <ItemGroup>
