@@ -4,7 +4,7 @@
     <AssemblyTitle>OnspringCLI</AssemblyTitle>
     <Product>OnspringCLI</Product>
     <Description>A command-line interface for interacting with an Onspring instance.</Description>
-    <Version>0.0.2</Version>
+    <Version>0.1.0</Version>
     <Authors>Stevan Freeborn</Authors>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
