@@ -32,6 +32,8 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.x
+      - name: Install report generator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.0
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -42,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
-          path: tests/OnspringCLI.Tests/TestResults/*/coverage.cobertura.xml
+          path: tests/OnspringCLI.Tests/TestResults/coverage/coverage.cobertura.xml
   publish_coverage:
     needs: [test]
     name: publish_test_coverage

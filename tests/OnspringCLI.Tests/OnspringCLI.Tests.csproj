@@ -31,7 +31,7 @@
   <PropertyGroup>
     <CollectCoverage>true</CollectCoverage>
     <CoverletOutput>./TestResults/coverage/</CoverletOutput>
-    <CoverletOutputFormat>opencover</CoverletOutputFormat>
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
     <Include>[OnspringCLI]*</Include>
     <ExcludeByFile>**/program.cs</ExcludeByFile>
   </PropertyGroup>
