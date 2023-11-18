@@ -43,7 +43,7 @@ jobs:
       - name: Test on ${{ matrix.os }}
         run: dotnet test --environment ENVIRONMENT=testing --no-build --verbosity normal
       - name: Rename test coverage report
-        run: mv tests/OnspringCLI.Tests/TestResults/coverage/report/coverage.cobertura.xml tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
+        run: mv tests/OnspringCLI.Tests/TestResults/coverage/coverage.cobertura.xml tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
       - name: Upload test coverage report for ${{ matrix.os }}
         uses: actions/upload-artifact@v3
         with:
