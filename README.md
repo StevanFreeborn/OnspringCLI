@@ -25,7 +25,7 @@ The app is published [here](https://github.com/StevanFreeborn/OnspringCLI/releas
 - After downloading the executable you may need to run `chmod +x` to give the executable execute permissions on your machine.
 - After downloading the executable you may need to provide permission for the application to run via the your systems settings.
 
-You are also welcome to clone this repository and run the app using the [.NET 7](https://dotnet.microsoft.com/en-us/download) tooling and runtime. As well as modify the app further for your specific needs.
+You are also welcome to clone this repository and run the app using the [.NET 8](https://dotnet.microsoft.com/en-us/download) tooling and runtime. As well as modify the app further for your specific needs.
 
 ## Commands
 
