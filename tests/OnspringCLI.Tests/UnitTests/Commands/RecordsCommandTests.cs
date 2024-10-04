@@ -11,4 +11,15 @@ public class RecordsCommandTests
     recordsCommand.Name.Should().Be("records");
     recordsCommand.Description.Should().Be("Manage records");
   }
+
+  [Fact]
+  public void RecordsCommand_WhenCalled_ItShouldHaveAFindCommand()
+  {
+    var recordsCommand = new RecordsCommand();
+
+    recordsCommand.Subcommands
+      .FirstOrDefault(x => x.Name == "find")
+      .Should()
+      .NotBeNull().And.BeOfType<FindCommand>();
+  }
 }
