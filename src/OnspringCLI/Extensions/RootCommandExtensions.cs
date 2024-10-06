@@ -37,6 +37,10 @@ static class RootCommandExtensions
       new AttachmentsCommand()
     );
 
+    root.AddCommand(
+      new RecordsCommand()
+    );
+
     return root;
   }
 }
