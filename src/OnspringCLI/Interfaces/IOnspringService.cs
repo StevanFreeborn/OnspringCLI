@@ -2,15 +2,11 @@ namespace OnspringCLI.Interfaces
 {
   public interface IOnspringService
   {
-    Task<bool> TryDeleteFile(
-      string apiKey,
-      OnspringFileRequest fileRequest
-    );
+    Task<bool> TryDeleteFile(string apiKey, OnspringFileRequest fileRequest);
 
-    Task<List<Field>> GetAllFields(
-      string apiKey,
-      int appId
-    );
+    Task<List<Field>> GetAllFields(string apiKey, int appId);
+
+    Task<List<App>> GetApps(string apiKey);
 
     Task<GetPagedRecordsResponse?> GetAPageOfRecords(
       string apiKey,
@@ -23,14 +19,17 @@ namespace OnspringCLI.Interfaces
       string apiKey,
       OnspringFileRequest fileRequest
     );
+
     Task<ReportData?> GetReport(
       string apiKey,
       int reportId
     );
+
     Task<Field?> GetField(
       string apiKey,
       int fieldId
     );
+
     Task<GetPagedRecordsResponse?> GetAPageOfRecordsByQuery(
       string apiKey,
       int appId,
@@ -38,6 +37,7 @@ namespace OnspringCLI.Interfaces
       string queryFilter,
       PagingRequest? pagingRequest = null
     );
+
     Task<GetFileInfoResponse?> GetFileInfo(
       string apiKey,
       OnspringFileRequest fileRequest

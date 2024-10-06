@@ -16,6 +16,61 @@ public class OnspringService : IOnspringService
     _clientFactory = clientFactory;
   }
 
+  public async Task<List<App>> GetApps(string apiKey)
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+
+      var apps = new ConcurrentBag<App>();
+
+      var initialRes = await ExecuteRequest(async () => await client.GetAppsAsync());
+
+      if (initialRes.IsSuccessful is false)
+      {
+        _logger.Error(
+          "Unable to get apps. {StatusCode} - {Message}.",
+          initialRes.StatusCode,
+          initialRes.Message
+        );
+
+        return [];
+      }
+
+      initialRes.Value.Items.ForEach(apps.Add);
+
+      var remainingPageNumbers = Enumerable.Range(initialRes.Value.PageNumber + 1, initialRes.Value.TotalPages - 1);
+      var remainingPageRequests = remainingPageNumbers.Select(pageNumber => new PagingRequest() { PageNumber = pageNumber});
+      var remainingRequests = remainingPageRequests.Select(async pr => 
+      {
+        var res = await ExecuteRequest(async () => await client.GetAppsAsync(pr));
+
+        if (res.IsSuccessful is false)
+        {
+          _logger.Error(
+            "Unable to get apps for page {PageNumber}. {StatusCode} - {Message}.",
+            pr.PageNumber,
+            res.StatusCode,
+            res.Message
+          );
+          return;
+        }
+
+        res.Value.Items.ForEach(apps.Add);
+      });
+      
+      
+      await Task.WhenAll(remainingRequests);
+
+      return [.. apps];
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(ex,"Unable to get apps.");
+      return [];
+    }
+  }
+
   public async Task<List<Field>> GetAllFields(
     string apiKey,
     int appId
