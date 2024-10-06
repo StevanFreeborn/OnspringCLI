@@ -36,6 +36,9 @@ You are also welcome to clone this repository and run the app using the [.NET 8]
     - **Bulk** - Delete all attachments from fields on records in an app. See [Bulk Delete Attachments](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Delete-Bulk) for more information.
   - **Transfer** - Transfer attachments from fields on records in one app to fields on records in another app. See [Transfer Attachments](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Transfer) for more information.
   - **Report** - Generate a report of attachments in an app. See [Attachment Report](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Report) for more information.
+- **Records** - Commands for working with records in an Onspring instance.
+  - **Find**
+    - **References** - Locate all references to set of content records in one app from all other apps. See [References Find Records](https://github.com/StevanFreeborn/OnspringCLI/wiki/Records-Find-References)
 
 **Note:** The app will prompt you for any required information that is not provided via the command line.
 
