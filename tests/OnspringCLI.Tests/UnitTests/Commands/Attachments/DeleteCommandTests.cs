@@ -19,8 +19,9 @@ public class DeleteCommandTests
   {
     var deleteCommand = new DeleteCommand();
 
-    deleteCommand.Subcommands.FirstOrDefault(
-      x => x.Name == "bulk"
-    ).Should().NotBeNull().And.BeOfType<BulkCommand>();
+    deleteCommand.Subcommands
+      .FirstOrDefault(x => x.Name == "bulk")
+      .Should()
+      .NotBeNull().And.BeOfType<BulkCommand>();
   }
 }

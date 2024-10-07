@@ -14,31 +14,31 @@ public class ReportDataFactory
   private static ReportData ReportData =>
     new()
     {
-      Columns = new List<string>
-      {
+      Columns =
+      [
         "Column 1",
         "Column 2",
-      },
-      Rows = new List<ReportDataRow>
-      {
+      ],
+      Rows =
+      [
         new()
         {
           RecordId = 1,
-          Cells = new List<object>
-          {
+          Cells =
+          [
             "Cell 1",
             "Cell 2",
-          },
+          ],
         },
         new()
         {
           RecordId = 2,
-          Cells = new List<object>
-          {
+          Cells =
+          [
             "Cell 1",
             "Cell 2",
-          },
+          ],
         }
-      },
+      ],
     };
 }

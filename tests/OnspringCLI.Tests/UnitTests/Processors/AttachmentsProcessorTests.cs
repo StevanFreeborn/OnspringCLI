@@ -15,44 +15,34 @@ public class AttachmentsProcessorTests
     _globalOptionsMock = new Mock<IOptions<GlobalOptions>>();
 
     _globalOptionsMock
-    .SetupGet(
-      m => m.Value
-    )
-    .Returns(
-      new GlobalOptions
+      .SetupGet(m => m.Value)
+      .Returns(new GlobalOptions
       {
         SourceApiKey = "sourceApiKey",
         TargetApiKey = "targetApiKey",
         LogLevel = LogEventLevel.Verbose,
-      }
-    );
+      });
 
     _onspringServiceMock = new Mock<IOnspringService>();
     _reportServiceMock = new Mock<IReportService>();
     _loggerMock = new Mock<ILogger>();
 
     _loggerMock
-    .Setup(
-      m => m.ForContext<It.IsAnyType>()
-    )
-    .Returns(
-      _loggerMock.Object
-    );
+      .Setup(m => m.ForContext<It.IsAnyType>())
+      .Returns(_loggerMock.Object);
 
 
     _loggingLevelSwitch = new LoggingLevelSwitch();
     _progressBarFactoryMock = new Mock<IProgressBarFactory>();
 
     _progressBarFactoryMock
-    .Setup(
-      m => m.Create(
-        It.IsAny<int>(),
-        It.IsAny<string>()
+      .Setup(
+        m => m.Create(
+          It.IsAny<int>(),
+          It.IsAny<string>()
+        )
       )
-    )
-    .Returns(
-      new ProgressBar(1, "test", new ProgressBarOptions())
-    );
+      .Returns(new ProgressBar(1, "test", new ProgressBarOptions()));
 
     _attachmentsProcessor = new AttachmentsProcessor(
       _globalOptionsMock.Object,
@@ -65,29 +55,21 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.NoFileFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
+  [MemberData(nameof(FieldDataFactory.NoFileFields), MemberType = typeof(FieldDataFactory))]
   public async Task GetFileFields_WhenCalledAndNoFileFieldsFound_ItShouldReturnAnEmptyList(
     List<Field> fields
   )
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetAllFields(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetAllFields(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      fields
-    );
+      .ReturnsAsync(fields);
 
-    var result = await _attachmentsProcessor.GetFileFields(
-      It.IsAny<int>(),
-      It.IsAny<List<int>>()
-    );
+    var result = await _attachmentsProcessor.GetFileFields(It.IsAny<int>(), It.IsAny<List<int>>());
 
     result.Should().BeEmpty();
 
@@ -101,31 +83,21 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.HasImageField),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task GetFileFields_WhenCalledAndImageFieldIsFound_ItShouldReturnAListOfFileFields(
-    List<Field> fields
-  )
+  [MemberData(nameof(FieldDataFactory.HasImageField), MemberType = typeof(FieldDataFactory))]
+  public async Task GetFileFields_WhenCalledAndImageFieldIsFound_ItShouldReturnAListOfFileFields(List<Field> fields)
   {
     var imageField = fields.First(f => f.Type == FieldType.Image);
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetAllFields(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetAllFields(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      fields
-    );
+      .ReturnsAsync(fields);
 
-    var result = await _attachmentsProcessor.GetFileFields(
-      It.IsAny<int>(),
-      It.IsAny<List<int>>()
-    );
+    var result = await _attachmentsProcessor.GetFileFields(It.IsAny<int>(), It.IsAny<List<int>>());
 
     result.Should().HaveCount(1);
     result.First().Id.Should().Be(imageField.Id);
@@ -142,31 +114,21 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.HasAttachmentField),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task GetFileFields_WhenCalledAndAttachmentFieldIsFound_ItShouldReturnAListOfFileFields(
-    List<Field> fields
-  )
+  [MemberData(nameof(FieldDataFactory.HasAttachmentField), MemberType = typeof(FieldDataFactory))]
+  public async Task GetFileFields_WhenCalledAndAttachmentFieldIsFound_ItShouldReturnAListOfFileFields(List<Field> fields)
   {
     var attachmentField = fields.First(f => f.Type == FieldType.Attachment);
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetAllFields(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetAllFields(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      fields
-    );
+      .ReturnsAsync(fields);
 
-    var result = await _attachmentsProcessor.GetFileFields(
-      It.IsAny<int>(),
-      It.IsAny<List<int>>()
-    );
+    var result = await _attachmentsProcessor.GetFileFields(It.IsAny<int>(), It.IsAny<List<int>>());
 
     result.Should().HaveCount(1);
     result.First().Id.Should().Be(attachmentField.Id);
@@ -183,32 +145,22 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.HasImageAndAttachmentField),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task GetFileFields_WhenCalledAndBothImageAndAttachmentFieldsAreFound_ItShouldReturnAListOfFileFields(
-    List<Field> fields
-  )
+  [MemberData(nameof(FieldDataFactory.HasImageAndAttachmentField), MemberType = typeof(FieldDataFactory))]
+  public async Task GetFileFields_WhenCalledAndBothImageAndAttachmentFieldsAreFound_ItShouldReturnAListOfFileFields(List<Field> fields)
   {
     var attachmentField = fields.First(f => f.Type == FieldType.Attachment);
     var imageField = fields.First(f => f.Type == FieldType.Image);
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetAllFields(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetAllFields(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      fields
-    );
+      .ReturnsAsync(fields);
 
-    var result = await _attachmentsProcessor.GetFileFields(
-      It.IsAny<int>(),
-      It.IsAny<List<int>>()
-    );
+    var result = await _attachmentsProcessor.GetFileFields(It.IsAny<int>(), It.IsAny<List<int>>());
 
     result.Should().HaveCount(2);
     var resultImageField = result.First(f => f.Type == FieldType.Image);
@@ -231,32 +183,22 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.HasImageAndAttachmentField),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task GetFileFields_WhenCalledAndFileFilterValuesAreGiven_ItShouldReturnAListOfFileFieldsOnlyWithIdsThatMatchTheFilterValues(
-    List<Field> fields
-  )
+  [MemberData(nameof(FieldDataFactory.HasImageAndAttachmentField), MemberType = typeof(FieldDataFactory))]
+  public async Task GetFileFields_WhenCalledAndFileFilterValuesAreGiven_ItShouldReturnAListOfFileFieldsOnlyWithIdsThatMatchTheFilterValues(List<Field> fields)
   {
     var attachmentField = fields.First(f => f.Type == FieldType.Attachment);
     var imageField = fields.First(f => f.Type == FieldType.Image);
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetAllFields(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetAllFields(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      fields
-    );
+      .ReturnsAsync(fields);
 
-    var result = await _attachmentsProcessor.GetFileFields(
-      It.IsAny<int>(),
-      new List<int> { attachmentField.Id }
-    );
+    var result = await _attachmentsProcessor.GetFileFields(It.IsAny<int>(), [attachmentField.Id]);
 
     result.Should().HaveCount(1);
     var resultAttachmentField = result.First(f => f.Type == FieldType.Attachment);
@@ -275,26 +217,19 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.FileFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task GetFileRequests_WhenCalledAndNoRecordsAreFound_ItShouldReturnAnEmptyList(
-    List<Field> fileFields
-  )
+  [MemberData(nameof(FieldDataFactory.FileFields), MemberType = typeof(FieldDataFactory))]
+  public async Task GetFileRequests_WhenCalledAndNoRecordsAreFound_ItShouldReturnAnEmptyList(List<Field> fileFields)
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetAPageOfRecords(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<PagingRequest>()
+      .Setup(
+        m => m.GetAPageOfRecords(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (GetPagedRecordsResponse?) null
-    );
+      .ReturnsAsync((GetPagedRecordsResponse?) null);
 
     var result = await _attachmentsProcessor.GetFileRequests(
       It.IsAny<int>(),
@@ -318,21 +253,13 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.FileFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task GetFileRequests_WhenCalledAndRecordsAreFound_ItShouldReturnAListOfFileRequests(
-    List<Field> fileFields
-  )
+  [MemberData(nameof(FieldDataFactory.FileFields), MemberType = typeof(FieldDataFactory))]
+  public async Task GetFileRequests_WhenCalledAndRecordsAreFound_ItShouldReturnAListOfFileRequests(List<Field> fileFields)
   {
     var attachmentField = fileFields.First(f => f.Type == FieldType.Attachment);
     var imageField = fileFields.First(f => f.Type == FieldType.Image);
 
-    var records = RecordDataFactory.GetPageOfFileFieldValues(
-      attachmentField,
-      imageField
-    );
+    var records = RecordDataFactory.GetPageOfFileFieldValues(attachmentField, imageField);
 
     var res = new GetPagedRecordsResponse
     {
@@ -343,17 +270,15 @@ public class AttachmentsProcessorTests
     };
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetAPageOfRecords(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<PagingRequest>()
+      .Setup(
+        m => m.GetAPageOfRecords(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      res
-    );
+      .ReturnsAsync(res);
 
     var result = await _attachmentsProcessor.GetFileRequests(
       It.IsAny<int>(),
@@ -367,27 +292,27 @@ public class AttachmentsProcessorTests
     result.Should().BeOfType<List<OnspringFileRequest>>();
 
     result
-    .Select(f => f.RecordId)
-    .Distinct()
-    .Should().HaveCount(2);
+      .Select(f => f.RecordId)
+      .Distinct()
+      .Should().HaveCount(2);
 
     result
-    .Select(f => f.RecordId)
-    .Distinct()
-    .ToList().Should().BeEquivalentTo(new List<int> { 1, 2 });
+      .Select(f => f.RecordId)
+      .Distinct()
+      .ToList().Should().BeEquivalentTo(new List<int> { 1, 2 });
 
     result
-    .Select(f => f.FieldId)
-    .Distinct().Should().HaveCount(2);
+      .Select(f => f.FieldId)
+      .Distinct().Should().HaveCount(2);
 
     result
-    .Select(f => f.FieldId)
-    .Distinct()
-    .ToList().Should().BeEquivalentTo(new List<int> { attachmentField.Id, imageField.Id });
+      .Select(f => f.FieldId)
+      .Distinct()
+      .ToList().Should().BeEquivalentTo(new List<int> { attachmentField.Id, imageField.Id });
 
     result
-    .Select(f => f.FileId)
-    .ToList().Should().BeEquivalentTo(new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 });
+      .Select(f => f.FileId)
+      .ToList().Should().BeEquivalentTo(new List<int> { 1, 2, 3, 4, 5, 6, 7, 8 });
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecords(
@@ -401,21 +326,13 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.FileFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task GetFileRequests_WhenCalledAndRecordFilterIsGiven_ItShouldReturnAListOfFileRequestsThatOnlyIncludeRecordIdsInTheFilter(
-  List<Field> fileFields
-  )
+  [MemberData(nameof(FieldDataFactory.FileFields), MemberType = typeof(FieldDataFactory))]
+  public async Task GetFileRequests_WhenCalledAndRecordFilterIsGiven_ItShouldReturnAListOfFileRequestsThatOnlyIncludeRecordIdsInTheFilter(List<Field> fileFields)
   {
     var attachmentField = fileFields.First(f => f.Type == FieldType.Attachment);
     var imageField = fileFields.First(f => f.Type == FieldType.Image);
 
-    var records = RecordDataFactory.GetPageOfFileFieldValues(
-      attachmentField,
-      imageField
-    );
+    var records = RecordDataFactory.GetPageOfFileFieldValues(attachmentField, imageField);
 
     var res = new GetPagedRecordsResponse
     {
@@ -426,23 +343,21 @@ public class AttachmentsProcessorTests
     };
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetAPageOfRecords(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<PagingRequest>()
+      .Setup(
+        m => m.GetAPageOfRecords(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      res
-    );
+      .ReturnsAsync(res);
 
     var result = await _attachmentsProcessor.GetFileRequests(
       It.IsAny<int>(),
       fileFields,
       It.IsAny<List<int>>(),
-      new List<int> { 1 }
+      [1]
     );
 
     result.Should().NotBeNull();
@@ -450,27 +365,27 @@ public class AttachmentsProcessorTests
     result.Should().BeOfType<List<OnspringFileRequest>>();
 
     result
-    .Select(f => f.RecordId)
-    .Distinct()
-    .Should().HaveCount(1);
+      .Select(f => f.RecordId)
+      .Distinct()
+      .Should().HaveCount(1);
 
     result
-    .Select(f => f.RecordId)
-    .Distinct()
-    .ToList().First().Should().Be(1);
+      .Select(f => f.RecordId)
+      .Distinct()
+      .ToList().First().Should().Be(1);
 
     result
-    .Select(f => f.FieldId)
-    .Distinct().Should().HaveCount(2);
+      .Select(f => f.FieldId)
+      .Distinct().Should().HaveCount(2);
 
     result
-    .Select(f => f.FieldId)
-    .Distinct()
-    .ToList().Should().BeEquivalentTo(new List<int> { attachmentField.Id, imageField.Id });
+      .Select(f => f.FieldId)
+      .Distinct()
+      .ToList().Should().BeEquivalentTo(new List<int> { attachmentField.Id, imageField.Id });
 
     result
-    .Select(f => f.FileId)
-    .ToList().Should().BeEquivalentTo(new List<int> { 1, 2, 3, 4 });
+      .Select(f => f.FileId)
+      .ToList().Should().BeEquivalentTo(new List<int> { 1, 2, 3, 4 });
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecords(
@@ -484,28 +399,19 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FileDataFactory.FileRequests),
-    MemberType = typeof(FileDataFactory)
-  )]
-  public async Task GetFileInfos_WhenCalledAndNoFilesInfoIsFound_ItShouldReturnListOfFileInfosWithErrorMessages(
-    List<OnspringFileRequest> fileRequests
-  )
+  [MemberData(nameof(FileDataFactory.FileRequests), MemberType = typeof(FileDataFactory))]
+  public async Task GetFileInfos_WhenCalledAndNoFilesInfoIsFound_ItShouldReturnListOfFileInfosWithErrorMessages(List<OnspringFileRequest> fileRequests)
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (GetFileResponse?) null
-    );
+      .ReturnsAsync((GetFileResponse?) null);
 
-    var result = await _attachmentsProcessor.GetFileInfos(
-      fileRequests
-    );
+    var result = await _attachmentsProcessor.GetFileInfos(fileRequests);
 
     result.Should().NotBeNull();
     result.Should().HaveCount(4);
@@ -534,26 +440,23 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FileDataFactory.FileRequestsWithResponses),
-    MemberType = typeof(FileDataFactory)
-  )]
+  [MemberData(nameof(FileDataFactory.FileRequestsWithResponses), MemberType = typeof(FileDataFactory))]
   public async Task GetFileInfos_WhenCalledAndFilesInfoIsFound_ItShouldReturnAListOfFileInfos(
     List<OnspringFileRequest> fileRequests,
     List<GetFileResponse> getFileResponses
   )
   {
     _onspringServiceMock
-    .SetupSequence(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .SetupSequence(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(getFileResponses[0])
-    .ReturnsAsync(getFileResponses[1])
-    .ReturnsAsync(getFileResponses[2])
-    .ReturnsAsync(getFileResponses[3]);
+      .ReturnsAsync(getFileResponses[0])
+      .ReturnsAsync(getFileResponses[1])
+      .ReturnsAsync(getFileResponses[2])
+      .ReturnsAsync(getFileResponses[3]);
 
     var result = await _attachmentsProcessor.GetFileInfos(fileRequests);
 
@@ -619,19 +522,15 @@ public class AttachmentsProcessorTests
   public async Task GetRecordIdsFromReport_WhenCalledAndNoReportIsFound_ItShouldReturnAnEmptyList()
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetReport(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetReport(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (ReportData?) null
-    );
+      .ReturnsAsync((ReportData?) null);
 
-    var result = await _attachmentsProcessor.GetRecordIdsFromReport(
-      It.IsAny<int>()
-    );
+    var result = await _attachmentsProcessor.GetRecordIdsFromReport(It.IsAny<int>());
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<int>>();
@@ -647,34 +546,23 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(ReportDataFactory.GetReportData),
-    MemberType = typeof(ReportDataFactory)
-  )]
-  public async Task GetRecordIdsFromReport_WhenCalledAndReportIsFound_ItShouldReturnListOfRecordIds(
-    ReportData reportData
-  )
+  [MemberData(nameof(ReportDataFactory.GetReportData), MemberType = typeof(ReportDataFactory))]
+  public async Task GetRecordIdsFromReport_WhenCalledAndReportIsFound_ItShouldReturnListOfRecordIds(ReportData reportData)
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetReport(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetReport(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      reportData
-    );
+      .ReturnsAsync(reportData);
 
-    var result = await _attachmentsProcessor.GetRecordIdsFromReport(
-      It.IsAny<int>()
-    );
+    var result = await _attachmentsProcessor.GetRecordIdsFromReport(It.IsAny<int>());
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<int>>();
-    result.Should().BeEquivalentTo(
-      reportData.Rows.Select(r => r.RecordId)
-    );
+    result.Should().BeEquivalentTo(reportData.Rows.Select(r => r.RecordId));
 
     _onspringServiceMock.Verify(
       m => m.GetReport(
@@ -686,24 +574,17 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FileDataFactory.GetFileResponse),
-    MemberType = typeof(FileDataFactory)
-  )]
-  public async Task TryDownloadFiles_WhenCalledAndNoErrorsOccur_ItShouldReturnAnEmptyList(
-    GetFileResponse getFileResponse
-  )
+  [MemberData(nameof(FileDataFactory.GetFileResponse), MemberType = typeof(FileDataFactory))]
+  public async Task TryDownloadFiles_WhenCalledAndNoErrorsOccur_ItShouldReturnAnEmptyList(GetFileResponse getFileResponse)
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      getFileResponse
-    );
+      .ReturnsAsync(getFileResponse);
 
     var fileRequest = new OnspringFileRequest
     {
@@ -713,10 +594,7 @@ public class AttachmentsProcessorTests
       FileId = 1,
     };
 
-    var result = await _attachmentsProcessor.TryDownloadFiles(
-      new List<OnspringFileRequest> { fileRequest },
-      "output"
-    );
+    var result = await _attachmentsProcessor.TryDownloadFiles([fileRequest],"output");
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<OnspringFileRequest>>();
@@ -735,15 +613,13 @@ public class AttachmentsProcessorTests
   public async Task TryDownloadFiles_WhenCalledAndNoFileFound_ItShouldReturnAListOfErroredRequests()
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (GetFileResponse?) null
-    );
+      .ReturnsAsync((GetFileResponse?) null);
 
     var fileRequest = new OnspringFileRequest
     {
@@ -753,16 +629,11 @@ public class AttachmentsProcessorTests
       FileId = 1,
     };
 
-    var result = await _attachmentsProcessor.TryDownloadFiles(
-      new List<OnspringFileRequest> { fileRequest },
-      "output"
-    );
+    var result = await _attachmentsProcessor.TryDownloadFiles([fileRequest], "output");
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<OnspringFileRequest>>();
-    result.Should().BeEquivalentTo(
-      new List<OnspringFileRequest> { fileRequest }
-    );
+    result.Should().BeEquivalentTo(new List<OnspringFileRequest> { fileRequest });
 
     _onspringServiceMock.Verify(
       m => m.GetFile(
@@ -788,44 +659,35 @@ public class AttachmentsProcessorTests
     };
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      getFileResponse
-    );
+      .ReturnsAsync(getFileResponse);
 
     stream.Dispose();
 
-    var result = await _attachmentsProcessor.TryDownloadFiles(
-      fileRequests,
-      "output"
-    );
+    var result = await _attachmentsProcessor.TryDownloadFiles(fileRequests, "output");
 
     result.Should().NotBeNull();
     result.Should().NotBeEmpty();
     result.Should().BeOfType<List<OnspringFileRequest>>();
-    result.Should().BeEquivalentTo(
-      fileRequests
-    );
+    result.Should().BeEquivalentTo(fileRequests);
   }
 
   [Fact]
   public async Task TryDeleteFiles_WhenCalledAndNoErrorsOccur_ItShouldReturnAnEmptyList()
   {
     _onspringServiceMock
-    .Setup(
-      m => m.TryDeleteFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.TryDeleteFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      true
-    );
+      .ReturnsAsync(true);
 
     var fileRequest = new OnspringFileRequest
     {
@@ -835,9 +697,7 @@ public class AttachmentsProcessorTests
       FileId = 1,
     };
 
-    var result = await _attachmentsProcessor.TryDeleteFiles(
-      new List<OnspringFileRequest> { fileRequest }
-    );
+    var result = await _attachmentsProcessor.TryDeleteFiles([fileRequest]);
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<OnspringFileRequest>>();
@@ -856,15 +716,13 @@ public class AttachmentsProcessorTests
   public async Task TryDeleteFiles_WhenCalledAndNoFileFound_ItShouldReturnAListOfErroredRequests()
   {
     _onspringServiceMock
-    .Setup(
-      m => m.TryDeleteFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.TryDeleteFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      false
-    );
+      .ReturnsAsync(false);
 
     var fileRequest = new OnspringFileRequest
     {
@@ -874,15 +732,11 @@ public class AttachmentsProcessorTests
       FileId = 1,
     };
 
-    var result = await _attachmentsProcessor.TryDeleteFiles(
-      new List<OnspringFileRequest> { fileRequest }
-    );
+    var result = await _attachmentsProcessor.TryDeleteFiles([fileRequest]);
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<OnspringFileRequest>>();
-    result.Should().BeEquivalentTo(
-      new List<OnspringFileRequest> { fileRequest }
-    );
+    result.Should().BeEquivalentTo(new List<OnspringFileRequest> { fileRequest });
 
     _onspringServiceMock.Verify(
       m => m.TryDeleteFile(
@@ -894,28 +748,18 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.InvalidMatchFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task ValidateMatchFields_WhenCalledAndMatchFieldsAreInvalid_ItShouldReturnFalse(
-    Field? sourceMatchField,
-    Field? targetMatchField
-  )
+  [MemberData(nameof(FieldDataFactory.InvalidMatchFields), MemberType = typeof(FieldDataFactory))]
+  public async Task ValidateMatchFields_WhenCalledAndMatchFieldsAreInvalid_ItShouldReturnFalse(Field? sourceMatchField, Field? targetMatchField)
   {
     _onspringServiceMock
-    .SetupSequence(
-      m => m.GetField(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .SetupSequence(
+        m => m.GetField(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      sourceMatchField
-    )
-    .ReturnsAsync(
-      targetMatchField
-    );
+      .ReturnsAsync(sourceMatchField)
+      .ReturnsAsync(targetMatchField);
 
     var settings = new AttachmentTransferSettings
     {
@@ -923,9 +767,7 @@ public class AttachmentsProcessorTests
       TargetMatchFieldId = 1,
     };
 
-    var result = await _attachmentsProcessor.ValidateMatchFields(
-      settings
-    );
+    var result = await _attachmentsProcessor.ValidateMatchFields(settings);
 
     result.Should().BeFalse();
 
@@ -939,28 +781,18 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.ValidMatchFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task ValidateMatchFields_WhenCalledAndMatchFieldsAreValid_ItShouldReturnTrue(
-    Field? sourceMatchField,
-    Field? targetMatchField
-  )
+  [MemberData(nameof(FieldDataFactory.ValidMatchFields), MemberType = typeof(FieldDataFactory))]
+  public async Task ValidateMatchFields_WhenCalledAndMatchFieldsAreValid_ItShouldReturnTrue(Field? sourceMatchField, Field? targetMatchField)
   {
     _onspringServiceMock
-    .SetupSequence(
-      m => m.GetField(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .SetupSequence(
+        m => m.GetField(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      sourceMatchField
-    )
-    .ReturnsAsync(
-      targetMatchField
-    );
+      .ReturnsAsync(sourceMatchField)
+      .ReturnsAsync(targetMatchField);
 
     var settings = new AttachmentTransferSettings
     {
@@ -968,9 +800,7 @@ public class AttachmentsProcessorTests
       TargetMatchFieldId = 1,
     };
 
-    var result = await _attachmentsProcessor.ValidateMatchFields(
-      settings
-    );
+    var result = await _attachmentsProcessor.ValidateMatchFields(settings);
 
     result.Should().BeTrue();
 
@@ -984,57 +814,37 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.InvalidFlagFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task ValidateFlagFieldIdAndValues_WhenCalledAndFlagFieldIsInvalid_ItShouldReturnFalse(
-    AttachmentTransferSettings settings,
-    Field? flagField
-  )
+  [MemberData(nameof(FieldDataFactory.InvalidFlagFields), MemberType = typeof(FieldDataFactory))]
+  public async Task ValidateFlagFieldIdAndValues_WhenCalledAndFlagFieldIsInvalid_ItShouldReturnFalse(AttachmentTransferSettings settings, Field? flagField)
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetField(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetField(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      flagField
-    );
+      .ReturnsAsync(flagField);
 
-    var result = await _attachmentsProcessor.ValidateFlagFieldIdAndValues(
-      settings
-    );
+    var result = await _attachmentsProcessor.ValidateFlagFieldIdAndValues(settings);
 
     result.Should().BeFalse();
   }
 
   [Theory]
-  [MemberData(
-    nameof(FieldDataFactory.ValidFlagFields),
-    MemberType = typeof(FieldDataFactory)
-  )]
-  public async Task ValidateFlagFieldIdAndValues_WhenCalledAndFlagFieldIsValid_ItShouldReturnTrue(
-    AttachmentTransferSettings settings,
-    Field? flagField
-  )
+  [MemberData(nameof(FieldDataFactory.ValidFlagFields), MemberType = typeof(FieldDataFactory))]
+  public async Task ValidateFlagFieldIdAndValues_WhenCalledAndFlagFieldIsValid_ItShouldReturnTrue(AttachmentTransferSettings settings, Field? flagField)
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetField(
-        It.IsAny<string>(),
-        It.IsAny<int>()
+      .Setup(
+        m => m.GetField(
+          It.IsAny<string>(),
+          It.IsAny<int>()
+        )
       )
-    )
-    .ReturnsAsync(
-      flagField
-    );
+      .ReturnsAsync(flagField);
 
-    var result = await _attachmentsProcessor.ValidateFlagFieldIdAndValues(
-      settings
-    );
+    var result = await _attachmentsProcessor.ValidateFlagFieldIdAndValues(settings);
 
     result.Should().BeTrue();
   }
@@ -1043,18 +853,16 @@ public class AttachmentsProcessorTests
   public async Task GetSourceRecordsToProcess_WhenCalledAndNoRecordsCanBeRetrieved_ItShouldReturnAnEmptyList()
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetAPageOfRecordsByQuery(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<string>(),
-        It.IsAny<PagingRequest>()
+      .Setup(
+        m => m.GetAPageOfRecordsByQuery(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<string>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (GetPagedRecordsResponse?) null
-    );
+      .ReturnsAsync((GetPagedRecordsResponse?) null);
 
     var settings = new AttachmentTransferSettings
     {
@@ -1062,9 +870,7 @@ public class AttachmentsProcessorTests
       ProcessFlagFieldId = 1,
     };
 
-    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(
-      settings
-    );
+    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(settings);
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<ResultRecord>>();
@@ -1083,27 +889,22 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(RecordDataFactory.GetOnePageOfRecords),
-    MemberType = typeof(RecordDataFactory)
-  )]
+  [MemberData(nameof(RecordDataFactory.GetOnePageOfRecords), MemberType = typeof(RecordDataFactory))]
   public async Task GetSourceRecordsToProcess_WhenCalledAndRecordsAreFound_ItShouldReturnAListOfRecords(
     GetPagedRecordsResponse response
   )
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetAPageOfRecordsByQuery(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<string>(),
-        It.IsAny<PagingRequest>()
+      .Setup(
+        m => m.GetAPageOfRecordsByQuery(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<string>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      response
-    );
+      .ReturnsAsync(response);
 
     var settings = new AttachmentTransferSettings
     {
@@ -1111,15 +912,11 @@ public class AttachmentsProcessorTests
       ProcessFlagFieldId = 1,
     };
 
-    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(
-      settings
-    );
+    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(settings);
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<ResultRecord>>();
-    result.Should().BeEquivalentTo(
-      response.Items
-    );
+    result.Should().BeEquivalentTo(response.Items);
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecordsByQuery(
@@ -1134,27 +931,20 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(RecordDataFactory.GetOnePageOfRecords),
-    MemberType = typeof(RecordDataFactory)
-  )]
-  public async Task GetSourceRecordsToProcess_WhenCalledAndRecordFilterIsGiven_ItShouldReturnAListOfRecordsThatMatchTheFilter(
-    GetPagedRecordsResponse response
-  )
+  [MemberData(nameof(RecordDataFactory.GetOnePageOfRecords), MemberType = typeof(RecordDataFactory))]
+  public async Task GetSourceRecordsToProcess_WhenCalledAndRecordFilterIsGiven_ItShouldReturnAListOfRecordsThatMatchTheFilter(GetPagedRecordsResponse response)
   {
     _onspringServiceMock
-    .Setup(
-      m => m.GetAPageOfRecordsByQuery(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<string>(),
-        It.IsAny<PagingRequest>()
+      .Setup(
+        m => m.GetAPageOfRecordsByQuery(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<string>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      response
-    );
+      .ReturnsAsync(response);
 
     var settings = new AttachmentTransferSettings
     {
@@ -1162,16 +952,11 @@ public class AttachmentsProcessorTests
       ProcessFlagFieldId = 1,
     };
 
-    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(
-      settings,
-      new List<int> { 1 }
-    );
+    var result = await _attachmentsProcessor.GetSourceRecordsToProcess(settings, [1]);
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<ResultRecord>>();
-    result.Should().BeEquivalentTo(
-      new List<ResultRecord> { response.Items[0] }
-    );
+    result.Should().BeEquivalentTo(new List<ResultRecord> { response.Items[0] });
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecordsByQuery(
@@ -1188,10 +973,7 @@ public class AttachmentsProcessorTests
   [Fact]
   public async Task TransferAttachments_WhenCalledAndNoRecordsAreGiven_ItShouldNotTransferAttachments()
   {
-    await _attachmentsProcessor.TransferAttachments(
-      new AttachmentTransferSettings(),
-      new List<ResultRecord>()
-    );
+    await _attachmentsProcessor.TransferAttachments(new AttachmentTransferSettings(), []);
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecordsByQuery(
@@ -1220,36 +1002,33 @@ public class AttachmentsProcessorTests
     };
 
     _onspringServiceMock.
-    Setup(
-      m => m.GetAPageOfRecordsByQuery(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<string>(),
-        It.IsAny<PagingRequest>()
+      Setup(
+        m => m.GetAPageOfRecordsByQuery(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<string>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (GetPagedRecordsResponse?) null
-    );
+      .ReturnsAsync((GetPagedRecordsResponse?) null);
 
     await _attachmentsProcessor.TransferAttachments(
       settings,
-      new List<ResultRecord>
-      {
+      [
         new ResultRecord
         {
           AppId = 1,
           RecordId = 1,
-          FieldData = new List<RecordFieldValue>
-          {
+          FieldData =
+          [
             new StringFieldValue(
               settings.SourceMatchFieldId,
               "Test"
             ),
-          },
+          ],
         },
-      }
+      ]
     );
 
     _onspringServiceMock.Verify(
@@ -1267,10 +1046,7 @@ public class AttachmentsProcessorTests
   [Fact]
   public async Task TransferRecordAttachments_WhenCalledAndMatchValueCanNotBeFoundInSourceRecord_ItShouldReturnEarly()
   {
-    await _attachmentsProcessor.TransferRecordAttachments(
-      RecordDataFactory.AttachmentTransferSettings,
-      new ResultRecord()
-    );
+    await _attachmentsProcessor.TransferRecordAttachments(RecordDataFactory.AttachmentTransferSettings, new ResultRecord());
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecordsByQuery(
@@ -1317,10 +1093,7 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(RecordDataFactory.GetUnTransferrableSourceRecords),
-    MemberType = typeof(RecordDataFactory)
-  )]
+  [MemberData(nameof(RecordDataFactory.GetUnTransferrableSourceRecords), MemberType = typeof(RecordDataFactory))]
   public async Task TransferRecordAttachments_WhenCalledAndSourceRecordCanNotBeTransferred_ItShouldReturnEarly(
     AttachmentTransferSettings settings,
     ResultRecord sourceRecord,
@@ -1328,23 +1101,18 @@ public class AttachmentsProcessorTests
   )
   {
     _onspringServiceMock.
-    Setup(
-      m => m.GetAPageOfRecordsByQuery(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<string>(),
-        It.IsAny<PagingRequest>()
+      Setup(
+        m => m.GetAPageOfRecordsByQuery(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<string>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      response
-    );
+      .ReturnsAsync(response);
 
-    await _attachmentsProcessor.TransferRecordAttachments(
-      settings,
-      sourceRecord
-    );
+    await _attachmentsProcessor.TransferRecordAttachments(settings, sourceRecord);
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecordsByQuery(
@@ -1412,16 +1180,15 @@ public class AttachmentsProcessorTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>
-      {
+      FieldData =
+      [
         new StringFieldValue(
           settings.SourceMatchFieldId,
           "Test"
         ),
         new AttachmentListFieldValue(
           4,
-          new List<AttachmentFile>
-          {
+          [
             new AttachmentFile
             {
               FileId = 4,
@@ -1429,59 +1196,56 @@ public class AttachmentsProcessorTests
               Notes = "Test",
               StorageLocation = FileStorageSite.Internal,
             },
-          }
+          ]
         ),
-      },
+      ],
     };
 
     var targetRecord = new ResultRecord
     {
       AppId = 1,
       RecordId = 2,
-      FieldData = new List<RecordFieldValue>
-      {
+      FieldData =
+      [
         new StringFieldValue(
           settings.TargetMatchFieldId,
           "Test"
         ),
-      },
+      ],
     };
 
     _onspringServiceMock.
-    Setup(
-      m => m.GetAPageOfRecordsByQuery(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<string>(),
-        It.IsAny<PagingRequest>()
+      Setup(
+        m => m.GetAPageOfRecordsByQuery(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<string>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new GetPagedRecordsResponse
-      {
-        Items = new List<ResultRecord> { targetRecord },
-      }
-    );
+      .ReturnsAsync(
+        new GetPagedRecordsResponse
+        {
+          Items = [targetRecord],
+        }
+      );
 
     _onspringServiceMock
-    .Setup(
-      m => m.UpdateRecord(
-        It.IsAny<string>(),
-        It.IsAny<ResultRecord>()
+      .Setup(
+        m => m.UpdateRecord(
+          It.IsAny<string>(),
+          It.IsAny<ResultRecord>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new CreatedWithIdResponse<int>
-      {
-        Id = 1,
-      }
-    );
+      .ReturnsAsync(
+        new CreatedWithIdResponse<int>
+        {
+          Id = 1,
+        }
+      );
 
-    await _attachmentsProcessor.TransferRecordAttachments(
-      settings,
-      sourceRecord
-    );
+    await _attachmentsProcessor.TransferRecordAttachments(settings, sourceRecord);
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecordsByQuery(
@@ -1525,16 +1289,15 @@ public class AttachmentsProcessorTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>
-      {
+      FieldData =
+      [
         new StringFieldValue(
           settings.SourceMatchFieldId,
           "Test"
         ),
         new AttachmentListFieldValue(
           4,
-          new List<AttachmentFile>
-          {
+          [
             new AttachmentFile
             {
               FileId = 4,
@@ -1542,56 +1305,53 @@ public class AttachmentsProcessorTests
               Notes = "Test",
               StorageLocation = FileStorageSite.Internal,
             },
-          }
+          ]
         ),
-      },
+      ],
     };
 
     var targetRecord = new ResultRecord
     {
       AppId = 1,
       RecordId = 2,
-      FieldData = new List<RecordFieldValue>
-      {
+      FieldData =
+      [
         new StringFieldValue(
           settings.TargetMatchFieldId,
           "Test"
         ),
-      },
+      ],
     };
 
     _onspringServiceMock.
-    Setup(
-      m => m.GetAPageOfRecordsByQuery(
-        It.IsAny<string>(),
-        It.IsAny<int>(),
-        It.IsAny<List<int>>(),
-        It.IsAny<string>(),
-        It.IsAny<PagingRequest>()
+      Setup(
+        m => m.GetAPageOfRecordsByQuery(
+          It.IsAny<string>(),
+          It.IsAny<int>(),
+          It.IsAny<List<int>>(),
+          It.IsAny<string>(),
+          It.IsAny<PagingRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new GetPagedRecordsResponse
-      {
-        Items = new List<ResultRecord> { targetRecord },
-      }
-    );
+      .ReturnsAsync(
+        new GetPagedRecordsResponse
+        {
+          Items = [targetRecord],
+        }
+      );
 
     _onspringServiceMock
-    .Setup(
-      m => m.UpdateRecord(
-        It.IsAny<string>(),
-        It.IsAny<ResultRecord>()
+      .Setup(
+        m => m.UpdateRecord(
+          It.IsAny<string>(),
+          It.IsAny<ResultRecord>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (CreatedWithIdResponse<int>?) null
-    );
+      .ReturnsAsync(
+        (CreatedWithIdResponse<int>?) null
+      );
 
-    await _attachmentsProcessor.TransferRecordAttachments(
-      settings,
-      sourceRecord
-    );
+    await _attachmentsProcessor.TransferRecordAttachments(settings, sourceRecord);
 
     _onspringServiceMock.Verify(
       m => m.GetAPageOfRecordsByQuery(
@@ -1623,17 +1383,10 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(FileDataFactory.InvalidOnspringFileResults),
-    MemberType = typeof(FileDataFactory)
-  )]
-  public async Task TrySveFile_WhenCalledAndOnspringFileResultCanNotBeSaved_ItShouldReturnFalse(
-    OnspringFileResult fileResult
-  )
+  [MemberData(nameof(FileDataFactory.InvalidOnspringFileResults), MemberType = typeof(FileDataFactory))]
+  public async Task TrySveFile_WhenCalledAndOnspringFileResultCanNotBeSaved_ItShouldReturnFalse(OnspringFileResult fileResult)
   {
-    var result = await _attachmentsProcessor.TrySaveFile(
-      fileResult
-    );
+    var result = await _attachmentsProcessor.TrySaveFile(fileResult);
 
     result.Should().BeFalse();
   }
@@ -1651,9 +1404,7 @@ public class AttachmentsProcessorTests
       new MemoryStream()
     );
 
-    var result = await _attachmentsProcessor.TrySaveFile(
-      fileResult
-    );
+    var result = await _attachmentsProcessor.TrySaveFile(fileResult);
 
     result.Should().BeTrue();
   }
@@ -1675,9 +1426,7 @@ public class AttachmentsProcessorTests
 
     stream.Dispose();
 
-    var result = await _attachmentsProcessor.TrySaveFile(
-      fileResult
-    );
+    var result = await _attachmentsProcessor.TrySaveFile(fileResult);
 
     result.Should().BeFalse();
   }
@@ -1726,19 +1475,17 @@ public class AttachmentsProcessorTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>(),
+      FieldData = [],
     };
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFileInfo(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFileInfo(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (GetFileInfoResponse?) null
-    );
+      .ReturnsAsync((GetFileInfoResponse?) null);
 
     await _attachmentsProcessor.TransferAttachment(
       sourceRecord,
@@ -1772,30 +1519,26 @@ public class AttachmentsProcessorTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>(),
+      FieldData = [],
     };
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFileInfo(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFileInfo(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new GetFileInfoResponse()
-    );
+      .ReturnsAsync(new GetFileInfoResponse());
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (GetFileResponse?) null
-    );
+      .ReturnsAsync((GetFileResponse?) null);
 
     await _attachmentsProcessor.TransferAttachment(
       sourceRecord,
@@ -1825,58 +1568,58 @@ public class AttachmentsProcessorTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>(),
+      FieldData = [],
     };
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFileInfo(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFileInfo(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new GetFileInfoResponse
-      {
-        Name = "Test",
-        CreatedDate = DateTime.Now,
-        ModifiedDate = DateTime.Now,
-        Owner = "Test",
-        Notes = notes,
-        FileHref = "TestData/Test",
-      }
-    );
+      .ReturnsAsync(
+        new GetFileInfoResponse
+        {
+          Name = "Test",
+          CreatedDate = DateTime.Now,
+          ModifiedDate = DateTime.Now,
+          Owner = "Test",
+          Notes = notes,
+          FileHref = "TestData/Test",
+        }
+      );
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new GetFileResponse
-      {
-        Stream = new MemoryStream(),
-        FileName = "Test",
-        ContentType = "Test",
-        ContentLength = 1,
-      }
-    );
+      .ReturnsAsync(
+        new GetFileResponse
+        {
+          Stream = new MemoryStream(),
+          FileName = "Test",
+          ContentType = "Test",
+          ContentLength = 1,
+        }
+      );
 
     _onspringServiceMock
-    .Setup(
-      m => m.SaveFile(
-        It.IsAny<string>(),
-        It.IsAny<SaveFileRequest>()
+      .Setup(
+        m => m.SaveFile(
+          It.IsAny<string>(),
+          It.IsAny<SaveFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new CreatedWithIdResponse<int>
-      {
-        Id = 1,
-      }
-    );
+      .ReturnsAsync(
+        new CreatedWithIdResponse<int>
+        {
+          Id = 1,
+        }
+      );
 
     await _attachmentsProcessor.TransferAttachment(
       sourceRecord,
@@ -1902,55 +1645,53 @@ public class AttachmentsProcessorTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>(),
+      FieldData = [],
     };
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFileInfo(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFileInfo(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new GetFileInfoResponse
-      {
-        Name = "Test",
-        CreatedDate = DateTime.Now,
-        ModifiedDate = DateTime.Now,
-        Owner = "Test",
-        Notes = "Test",
-        FileHref = "TestData/Test",
-      }
-    );
+      .ReturnsAsync(
+        new GetFileInfoResponse
+        {
+          Name = "Test",
+          CreatedDate = DateTime.Now,
+          ModifiedDate = DateTime.Now,
+          Owner = "Test",
+          Notes = "Test",
+          FileHref = "TestData/Test",
+        }
+      );
 
     _onspringServiceMock
-    .Setup(
-      m => m.GetFile(
-        It.IsAny<string>(),
-        It.IsAny<OnspringFileRequest>()
+      .Setup(
+        m => m.GetFile(
+          It.IsAny<string>(),
+          It.IsAny<OnspringFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      new GetFileResponse
-      {
-        Stream = new MemoryStream(),
-        FileName = "Test",
-        ContentType = "Test",
-        ContentLength = 1,
-      }
-    );
+      .ReturnsAsync(
+        new GetFileResponse
+        {
+          Stream = new MemoryStream(),
+          FileName = "Test",
+          ContentType = "Test",
+          ContentLength = 1,
+        }
+      );
 
     _onspringServiceMock
-    .Setup(
-      m => m.SaveFile(
-        It.IsAny<string>(),
-        It.IsAny<SaveFileRequest>()
+      .Setup(
+        m => m.SaveFile(
+          It.IsAny<string>(),
+          It.IsAny<SaveFileRequest>()
+        )
       )
-    )
-    .ReturnsAsync(
-      (CreatedWithIdResponse<int>?) null
-    );
+      .ReturnsAsync((CreatedWithIdResponse<int>?) null);
 
     await _attachmentsProcessor.TransferAttachment(
       sourceRecord,
@@ -1971,10 +1712,7 @@ public class AttachmentsProcessorTests
   }
 
   [Theory]
-  [MemberData(
-    nameof(RecordDataFactory.GetRecordWithFileToBeRequested),
-    MemberType = typeof(RecordDataFactory)
-  )]
+  [MemberData(nameof(RecordDataFactory.GetRecordWithFileToBeRequested), MemberType = typeof(RecordDataFactory))]
   public void GetFileRequestsFromRecord_WhenCalled_ItShouldReturnAListOfFileRequests(
     ResultRecord record,
     List<Field> fields,
@@ -1991,9 +1729,7 @@ public class AttachmentsProcessorTests
     fileRequests.Should().NotBeEmpty();
     fileRequests.Should().BeOfType<List<OnspringFileRequest>>();
     fileRequests.Should().HaveCount(3);
-    fileRequests.Select(r => r.FileId).Should().BeEquivalentTo(
-      new List<int> { 1, 3, 5 }
-    );
+    fileRequests.Select(r => r.FileId).Should().BeEquivalentTo(new List<int> { 1, 3, 5 });
   }
 
   [Fact]
@@ -2003,31 +1739,31 @@ public class AttachmentsProcessorTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>
-      {
+      FieldData =
+      [
         new AttachmentListFieldValue
         {
           FieldId = 1,
-          Value = new List<AttachmentFile>
-          {
+          Value =
+          [
             new AttachmentFile
             {
               FileId = 2,
             },
-          },
+          ],
         },
         new AttachmentListFieldValue
         {
           FieldId = 2,
-          Value = new List<AttachmentFile>
-          {
+          Value =
+          [
             new AttachmentFile
             {
               FileId = 2,
             },
-          },
+          ],
         },
-      },
+      ],
     };
 
     var fields = new List<Field>

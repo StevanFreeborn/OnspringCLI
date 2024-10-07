@@ -46,7 +46,7 @@ public class OnspringServiceTests
       "OK",
       new GetPagedFieldsResponse
       {
-        Items = new List<Field>()
+        Items = []
       }
     );
 
@@ -1663,7 +1663,7 @@ public class OnspringServiceTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>()
+      FieldData = []
     };
 
     var result = await _onspringService.UpdateRecord(
@@ -1701,7 +1701,7 @@ public class OnspringServiceTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>()
+      FieldData = []
     };
 
     var result = await _onspringService.UpdateRecord(
@@ -1734,7 +1734,7 @@ public class OnspringServiceTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>()
+      FieldData = []
     };
 
     var result = await _onspringService.UpdateRecord(
@@ -1769,7 +1769,7 @@ public class OnspringServiceTests
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>()
+      FieldData = []
     };
 
     var result = await _onspringService.UpdateRecord(

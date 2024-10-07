@@ -16,11 +16,8 @@ public class TransferCommandTests
   public void TransferCommand_WhenCalled_ItShouldHaveARequiredTargetApiKeyOption()
   {
     var transferCommand = new TransferCommand();
-    var targetApiKeyOption = transferCommand
-    .Options
-    .FirstOrDefault(
-      x => x.Name == "target-api-key"
-    );
+    var targetApiKeyOption = transferCommand.Options
+      .FirstOrDefault(x => x.Name == "target-api-key");
 
     targetApiKeyOption.Should().NotBeNull();
     targetApiKeyOption.Should().BeOfType<Option<string>>();
@@ -31,11 +28,8 @@ public class TransferCommandTests
   public void TransferCommand_WhenCalled_ItShouldHaveARequiredSettingsFileOption()
   {
     var transferCommand = new TransferCommand();
-    var settingsOption = transferCommand
-    .Options
-    .FirstOrDefault(
-      x => x.Name == "settings-file"
-    );
+    var settingsOption = transferCommand.Options
+      .FirstOrDefault(x => x.Name == "settings-file");
 
     settingsOption.Should().NotBeNull();
     settingsOption.Should().BeOfType<Option<FileInfo>>();
@@ -46,11 +40,8 @@ public class TransferCommandTests
   public void TransferCommand_WhenCalled_ItShouldHaveARecordsFilterOption()
   {
     var transferCommand = new TransferCommand();
-    var recordsFilterOption = transferCommand
-    .Options
-    .FirstOrDefault(
-      x => x.Name == "records-filter"
-    );
+    var recordsFilterOption = transferCommand.Options
+      .FirstOrDefault(x => x.Name == "records-filter");
 
     recordsFilterOption.Should().NotBeNull();
     recordsFilterOption.Should().BeOfType<Option<List<int>>>();
@@ -60,11 +51,8 @@ public class TransferCommandTests
   public void TransferCommand_WhenCalled_ItShouldHaveAReportFilterOption()
   {
     var transferCommand = new TransferCommand();
-    var reportFilterOption = transferCommand
-    .Options
-    .FirstOrDefault(
-      x => x.Name == "report-filter"
-    );
+    var reportFilterOption = transferCommand.Options
+      .FirstOrDefault(x => x.Name == "report-filter");
 
     reportFilterOption.Should().NotBeNull();
     reportFilterOption.Should().BeOfType<Option<int>>();
@@ -85,12 +73,8 @@ public class TransferCommandTests
       _processorMock = new Mock<IAttachmentsProcessor>();
 
       _loggerMock
-      .Setup(
-        m => m.ForContext<It.IsAnyType>()
-      )
-      .Returns(
-        _loggerMock.Object
-      );
+        .Setup(m => m.ForContext<It.IsAnyType>())
+        .Returns(_loggerMock.Object);
 
       _handler = new TransferCommand.Handler(
         _loggerMock.Object,
@@ -98,7 +82,7 @@ public class TransferCommandTests
         _processorMock.Object
       );
 
-      _command = new TransferCommand();
+      _command = [];
       _command.SetHandler(_handler.InvokeAsync);
     }
 
@@ -116,12 +100,8 @@ public class TransferCommandTests
     public async Task InvokeAsync_WhenCalledAndMatchFieldsAreInvalid_ItShouldReturnNonZeroValue()
     {
       _processorMock
-      .Setup(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
-        )
-      )
-      .ReturnsAsync(false);
+        .Setup(x => x.ValidateMatchFields(It.IsAny<AttachmentTransferSettings>()))
+        .ReturnsAsync(false);
 
       var options = OptionsFactory.RequiredTransferOptionsWithValidSettingsFile;
 
@@ -130,74 +110,60 @@ public class TransferCommandTests
       result.Should().Be(1);
 
       _processorMock
-      .Verify(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateMatchFields(It.IsAny<AttachmentTransferSettings>()),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.ValidateFlagFieldIdAndValues(It.IsAny<AttachmentTransferSettings>()),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
-      );
+        .Verify(x => x.GetRecordIdsFromReport(It.IsAny<int>()), Times.Never);
 
       _processorMock
-      .Verify(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
-      );
+        .Verify(x => x.GetRecordIdsFromReport(It.IsAny<int>()), Times.Never);
 
       _processorMock
-      .Verify(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          ),
+          Times.Never
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndFlagFieldOrFlagValuesAreInvalid_ItShouldReturnNonZeroValue()
     {
       _processorMock
-      .Setup(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(false);
+        .ReturnsAsync(false);
 
       var options = OptionsFactory.RequiredTransferOptionsWithValidSettingsFile;
 
@@ -206,77 +172,75 @@ public class TransferCommandTests
       result.Should().Be(2);
 
       _processorMock
-      .Verify(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.GetRecordIdsFromReport(
+            It.IsAny<int>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          ),
+          Times.Never
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndNoSourceRecordsAreFound_ItShouldReturnNonZeroValue()
     {
       _processorMock
-      .Setup(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
+        .Setup(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<ResultRecord>()
-      );
+        .ReturnsAsync([]);
 
       var options = OptionsFactory.RequiredTransferOptionsWithValidSettingsFile;
 
@@ -285,88 +249,83 @@ public class TransferCommandTests
       result.Should().Be(3);
 
       _processorMock
-      .Verify(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.GetRecordIdsFromReport(
+            It.IsAny<int>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          ),
+          Times.Never
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndSourceRecordsAreFound_ItShouldProcessRecordsAndReturnZeroValue()
     {
       _processorMock
-      .Setup(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
+        .Setup(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<ResultRecord>()
-        {
-          new ResultRecord()
-        }
-      );
+        .ReturnsAsync([new ResultRecord()]);
 
       _processorMock
-      .Setup(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        )
-      );
+        .Setup(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          )
+        );
 
       var options = OptionsFactory.RequiredTransferOptionsWithValidSettingsFile;
 
@@ -375,106 +334,95 @@ public class TransferCommandTests
       result.Should().Be(0);
 
       _processorMock
-      .Verify(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          x => x.GetRecordIdsFromReport(
+            It.IsAny<int>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          ),
+          Times.Once
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndReportFilterProvided_ItShouldRetrieveReportAndAddRecordIdsToRecordFilter()
     {
       _processorMock
-      .Setup(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
+        .Setup(
+          x => x.GetRecordIdsFromReport(
+            It.IsAny<int>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<int>()
-        {
-          1
-        }
-      );
+        .ReturnsAsync([1]);
 
       _processorMock
-      .Setup(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
+        .Setup(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<ResultRecord>()
-        {
-          new ResultRecord()
-        }
-      );
+        .ReturnsAsync([new ResultRecord()]);
 
       _processorMock
-      .Setup(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        )
-      );
+        .Setup(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          )
+        );
 
       _handler.ReportFilter = 1;
 
-      var options = OptionsFactory
-      .RequiredTransferOptionsWithValidSettingsFile;
+      var options = OptionsFactory.RequiredTransferOptionsWithValidSettingsFile;
 
       var result = await _command.InvokeAsync(options);
 
@@ -482,104 +430,94 @@ public class TransferCommandTests
       _handler.RecordsFilter.Should().BeEquivalentTo(new List<int>() { 1 });
 
       _processorMock
-      .Verify(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.GetRecordIdsFromReport(
+            It.IsAny<int>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          ),
+          Times.Once
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledWithAllOptions_ItShouldReturnZeroValue()
     {
       _processorMock
-      .Setup(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
+        .Setup(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          )
         )
-      )
-      .ReturnsAsync(true);
+        .ReturnsAsync(true);
 
       _processorMock
-      .Setup(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
+        .Setup(
+          x => x.GetRecordIdsFromReport(
+            It.IsAny<int>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<int>()
-        {
-          3
-        }
-      );
+        .ReturnsAsync([3]);
 
       _processorMock
-      .Setup(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
+        .Setup(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<ResultRecord>()
-        {
-          new ResultRecord()
-        }
-      );
+        .ReturnsAsync([new ResultRecord()]);
 
       _processorMock
-      .Setup(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        )
-      );
+        .Setup(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          )
+        );
 
       _handler.ReportFilter = 1;
-      _handler.RecordsFilter = new List<int>() { 1, 2 };
+      _handler.RecordsFilter = [1, 2];
 
       var options = OptionsFactory.AllTransferOptions;
       var result = await _command.InvokeAsync(options);
@@ -588,54 +526,52 @@ public class TransferCommandTests
       _handler.RecordsFilter.Should().BeEquivalentTo(new List<int>() { 1, 2, 3 });
 
       _processorMock
-      .Verify(
-        x => x.ValidateMatchFields(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateMatchFields(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.ValidateFlagFieldIdAndValues(
-          It.IsAny<AttachmentTransferSettings>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.ValidateFlagFieldIdAndValues(
+            It.IsAny<AttachmentTransferSettings>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetRecordIdsFromReport(
-          It.IsAny<int>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.GetRecordIdsFromReport(
+            It.IsAny<int>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.GetSourceRecordsToProcess(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<int>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.GetSourceRecordsToProcess(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<int>>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        x => x.TransferAttachments(
-          It.IsAny<AttachmentTransferSettings>(),
-          It.IsAny<List<ResultRecord>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          x => x.TransferAttachments(
+            It.IsAny<AttachmentTransferSettings>(),
+            It.IsAny<List<ResultRecord>>()
+          ),
+          Times.Once
+        );
     }
 
     [Fact]
     public void Invoke_WhenCalled_ItShouldThrowAnException()
     {
-      var action = () => _handler.Invoke(
-        It.IsAny<InvocationContext>()
-      );
+      var action = () => _handler.Invoke(It.IsAny<InvocationContext>());
 
       action.Should().Throw<NotImplementedException>();
     }

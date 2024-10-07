@@ -6,7 +6,7 @@ public class BulkCommand : Command
   {
     AddOption(
       new Option<int>(
-        aliases: new[] { "--app-id", "-a" },
+        aliases: ["--app-id", "-a"],
         description: "The app id where the attachments are held that will be deleted."
       )
       {
@@ -16,7 +16,7 @@ public class BulkCommand : Command
 
     AddOption(
       new Option<List<int>>(
-        aliases: new[] { "--fields-filter", "-ff" },
+        aliases: ["--fields-filter", "-ff"],
         description: "A comma separated list of field ids to whose attachments will be deleted.",
         parseArgument: result => result.ParseToIntegerList()
       )
@@ -24,7 +24,7 @@ public class BulkCommand : Command
 
     AddOption(
       new Option<List<int>>(
-        aliases: new[] { "--records-filter", "-rf" },
+        aliases: ["--records-filter", "-rf"],
         description: "A comma separated list of record ids whose attachments will be deleted.",
         parseArgument: result => result.ParseToIntegerList()
       )
@@ -32,7 +32,7 @@ public class BulkCommand : Command
 
     AddOption(
       new Option<int>(
-        aliases: new[] { "--report-filter", "-rpf" },
+        aliases: ["--report-filter", "-rpf"],
         description: "The id of the report whose records' attachments will be deleted."
       )
     );
@@ -44,14 +44,11 @@ public class BulkCommand : Command
     private readonly IAttachmentsProcessor _processor;
     public int AppId { get; set; } = 0;
     public string OutputDirectory { get; set; } = "output";
-    public List<int> FieldsFilter { get; set; } = new();
-    public List<int> RecordsFilter { get; set; } = new();
+    public List<int> FieldsFilter { get; set; } = [];
+    public List<int> RecordsFilter { get; set; } = [];
     public int ReportFilter { get; set; } = 0;
 
-    public Handler(
-      ILogger logger,
-      IAttachmentsProcessor processor
-    )
+    public Handler(ILogger logger, IAttachmentsProcessor processor)
     {
       _logger = logger.ForContext<Handler>();
       _processor = processor;
@@ -63,10 +60,7 @@ public class BulkCommand : Command
 
       _logger.Information("Retrieving file fields.");
 
-      var fileFields = await _processor.GetFileFields(
-        AppId,
-        FieldsFilter
-      );
+      var fileFields = await _processor.GetFileFields(AppId, FieldsFilter);
 
       if (fileFields.Count is 0)
       {
@@ -76,30 +70,18 @@ public class BulkCommand : Command
 
       if (ReportFilter is not 0)
       {
-        _logger.Information(
-          "Retrieving records from report {ReportId}.",
-          ReportFilter
-        );
+        _logger.Information("Retrieving records from report {ReportId}.", ReportFilter);
 
-        var records = await _processor.GetRecordIdsFromReport(
-          ReportFilter
-        );
+        var records = await _processor.GetRecordIdsFromReport(ReportFilter);
 
-        _logger.Information(
-          "Records retrieved. {Count} records found.",
-          records.Count
-        );
+        _logger.Information("Records retrieved. {Count} records found.", records.Count);
 
         RecordsFilter.AddRange(records);
       }
 
       _logger.Information("Retrieving files that need to be deleted.");
 
-      var fileRequests = await _processor.GetFileRequests(
-        AppId,
-        fileFields,
-        recordsFilter: RecordsFilter
-      );
+      var fileRequests = await _processor.GetFileRequests(AppId, fileFields, recordsFilter: RecordsFilter);
 
       if (fileRequests.Count is 0)
       {
@@ -107,28 +89,17 @@ public class BulkCommand : Command
         return 2;
       }
 
-      _logger.Information(
-        "Files retrieved. {Count} files found.",
-        fileRequests.Count
-      );
+      _logger.Information("Files retrieved. {Count} files found.", fileRequests.Count);
 
       _logger.Information("Deleting files.");
 
-      var erroredRequests = await _processor.TryDeleteFiles(
-        fileRequests
-      );
+      var erroredRequests = await _processor.TryDeleteFiles(fileRequests);
 
-      if (erroredRequests.Any() is true)
+      if (erroredRequests.Count is not 0)
       {
-        _processor.WriteFileRequestErrorReport(
-          erroredRequests,
-          OutputDirectory
-        );
+        _processor.WriteFileRequestErrorReport(erroredRequests, OutputDirectory);
 
-        var outputDirectory = Path.Combine(
-          AppDomain.CurrentDomain.BaseDirectory,
-          OutputDirectory
-        );
+        var outputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OutputDirectory);
 
         _logger.Warning(
           "Some files were not deleted. You can find a list of the files that were not deleted in the output directory: {OutputDirectory}",

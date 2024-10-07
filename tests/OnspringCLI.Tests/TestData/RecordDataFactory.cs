@@ -11,13 +11,12 @@ public static class RecordDataFactory
         {
           AppId = 1,
           RecordId = 1,
-          FieldData = new List<RecordFieldValue>
-          {
+          FieldData =
+          [
             new StringFieldValue(1, "Test"),
             new AttachmentListFieldValue(
               2,
-              new List<AttachmentFile>
-              {
+              [
                 new AttachmentFile
                 {
                   FileId = 1,
@@ -54,20 +53,18 @@ public static class RecordDataFactory
                   DownloadLink = "Test",
                   QuickEditLink = "Test",
                 },
-              }
+              ]
             ),
             new FileListFieldValue(
               3,
-              new List<int>
-              {
+              [
                 4,
                 5,
-              }
+              ]
             ),
             new AttachmentListFieldValue(
               4,
-              new List<AttachmentFile>
-              {
+              [
                 new AttachmentFile
                 {
                   FileId = 7,
@@ -78,12 +75,11 @@ public static class RecordDataFactory
                   FileId = 8,
                   FileName = "Test",
                 },
-              }
+              ]
             ),
             new AttachmentListFieldValue(
               5,
-              new List<AttachmentFile>
-              {
+              [
                 new AttachmentFile
                 {
                   FileId = 1,
@@ -114,9 +110,9 @@ public static class RecordDataFactory
                   FileId = 8,
                   FileName = "Test",
                 },
-              }
+              ]
             ),
-          }
+          ]
         },
         new List<Field>
         {
@@ -170,7 +166,7 @@ public static class RecordDataFactory
         SourceRecord,
         new GetPagedRecordsResponse
         {
-          Items = new List<ResultRecord>(),
+          Items = [],
         }
       },
       new object[]
@@ -179,33 +175,33 @@ public static class RecordDataFactory
         SourceRecord,
         new GetPagedRecordsResponse
         {
-          Items = new List<ResultRecord>
-          {
+          Items =
+          [
             new ResultRecord
             {
               AppId = 1,
               RecordId = 2,
-              FieldData = new List<RecordFieldValue>
-              {
+              FieldData =
+              [
                 new StringFieldValue(
                   AttachmentTransferSettings.TargetMatchFieldId,
                   "Test"
                 ),
-              },
+              ],
             },
             new ResultRecord
             {
               AppId = 1,
               RecordId = 3,
-              FieldData = new List<RecordFieldValue>
-              {
+              FieldData =
+              [
                 new StringFieldValue(
                   AttachmentTransferSettings.TargetMatchFieldId,
                   "Test"
                 ),
-              },
+              ],
             },
-          },
+          ],
         }
       },
     };
@@ -214,19 +210,18 @@ public static class RecordDataFactory
     Field attachmentField,
     Field imageField
   ) =>
-    new()
-    {
+    [
       new ResultRecord
       {
         AppId = 1,
         RecordId = 1,
-        FieldData = new List<RecordFieldValue>
-        {
+        FieldData =
+        [
           new AttachmentListFieldValue
           {
             FieldId = attachmentField.Id,
-            Value = new List<AttachmentFile>
-            {
+            Value =
+            [
               new AttachmentFile
               {
                 FileId = 1,
@@ -245,26 +240,26 @@ public static class RecordDataFactory
                 DownloadLink = "downloadLink1",
                 QuickEditLink = "quickEditLink1",
               }
-            }
+            ]
           },
           new FileListFieldValue
           {
             FieldId = imageField.Id,
-            Value = new List<int> { 3, 4, }
+            Value = [3, 4,]
           }
-        }
+        ]
       },
       new ResultRecord
       {
         AppId = 1,
         RecordId = 2,
-        FieldData = new List<RecordFieldValue>
-        {
+        FieldData =
+        [
           new AttachmentListFieldValue
           {
             FieldId = attachmentField.Id,
-            Value = new List<AttachmentFile>
-            {
+            Value =
+            [
               new AttachmentFile
               {
                 FileId = 5,
@@ -283,16 +278,16 @@ public static class RecordDataFactory
                 DownloadLink = "downloadLink1",
                 QuickEditLink = "quickEditLink1",
               }
-            }
+            ]
           },
           new FileListFieldValue
           {
             FieldId = imageField.Id,
-            Value = new List<int> { 7, 8, }
+            Value = [7, 8,]
           }
-        }
+        ]
       }
-    };
+    ];
 
   public static IEnumerable<object[]> GetOnePageOfRecords =>
     new List<object[]>
@@ -338,13 +333,13 @@ public static class RecordDataFactory
     {
       AppId = 1,
       RecordId = 1,
-      FieldData = new List<RecordFieldValue>
-      {
+      FieldData =
+      [
         new StringFieldValue(
           AttachmentTransferSettings.SourceMatchFieldId,
           "Test"
         ),
-      },
+      ],
     };
 
   private static GetPagedRecordsResponse EmptyPageOfRecords =>
@@ -353,7 +348,7 @@ public static class RecordDataFactory
       PageNumber = 1,
       TotalPages = 1,
       TotalRecords = 0,
-      Items = new List<ResultRecord>(),
+      Items = [],
     };
 
   private static GetPagedRecordsResponse PageOfRecords =>
@@ -366,35 +361,34 @@ public static class RecordDataFactory
     };
 
   private static List<ResultRecord> PageOneRecords =>
-    new()
-    {
+    [
       new ResultRecord
       {
         AppId = 1,
         RecordId = 1,
-        FieldData = new List<RecordFieldValue>
-        {
+        FieldData =
+        [
           new StringFieldValue
           {
             FieldId = 1,
             Value = "Field 1",
           },
-        },
+        ],
       },
       new ResultRecord
       {
         AppId = 1,
         RecordId = 2,
-        FieldData = new List<RecordFieldValue>
-        {
+        FieldData =
+        [
           new StringFieldValue
           {
             FieldId = 1,
             Value = "Field 1",
           },
-        },
+        ],
       },
-    };
+    ];
 
   private static SaveRecordResponse SaveRecordResponse =>
     new()

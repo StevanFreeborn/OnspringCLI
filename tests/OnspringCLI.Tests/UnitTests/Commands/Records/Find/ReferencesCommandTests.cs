@@ -67,7 +67,7 @@ public class ReferencesCommandTests
         _processorMock.Object
       );
 
-      _command = new ReferencesCommand();
+      _command = [];
       _command.SetHandler(_handler.InvokeAsync);
     }
 
