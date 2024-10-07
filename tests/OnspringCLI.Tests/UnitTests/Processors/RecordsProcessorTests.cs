@@ -148,6 +148,13 @@ public class RecordsProcessorTests
         AppId = sourceApp.Id,
         ReferencedAppId = 2,
       },
+      new()
+      {
+        Id = 3,
+        Name = "Reference Field 3",
+        AppId = sourceApp.Id,
+        ReferencedAppId = 2,
+      }
     };
 
     var recordIds = new List<int> { targetRecordId };
@@ -164,17 +171,17 @@ public class RecordsProcessorTests
           FieldData = [
             new IntegerFieldValue()
             {
-              FieldId = referenceFields.First().Id,
+              FieldId = referenceFields[0].Id,
               Value = targetRecordId
             },
             new IntegerListFieldValue()
             {
-              FieldId = referenceFields.Last().Id,
+              FieldId = referenceFields[1].Id,
               Value = [targetRecordId, 2]
             },
             new IntegerFieldValue()
             {
-              FieldId = 3,
+              FieldId = referenceFields[2].Id,
               Value = 2
             }
           ]
@@ -196,22 +203,22 @@ public class RecordsProcessorTests
     result.Should().BeEquivalentTo([
       new RecordReference()
       {
-        TargetAppId = referenceFields.First().ReferencedAppId,
+        TargetAppId = referenceFields[0].ReferencedAppId,
         TargetRecordId = targetRecordId,
         SourceAppId = sourceApp.Id,
         SourceAppName = sourceApp.Name,
-        SourceFieldId = referenceFields.First().Id,
-        SourceFieldName = referenceFields.First().Name,
+        SourceFieldId = referenceFields[0].Id,
+        SourceFieldName = referenceFields[0].Name,
         SourceRecordId = page.Items.First().RecordId,
       },
       new RecordReference()
       {
-        TargetAppId = referenceFields.Last().ReferencedAppId,
+        TargetAppId = referenceFields[1].ReferencedAppId,
         TargetRecordId = targetRecordId,
         SourceAppId = sourceApp.Id,
         SourceAppName = sourceApp.Name,
-        SourceFieldId = referenceFields.Last().Id,
-        SourceFieldName = referenceFields.Last().Name,
+        SourceFieldId = referenceFields[1].Id,
+        SourceFieldName = referenceFields[1].Name,
         SourceRecordId = page.Items.First().RecordId,
       }
     ]);

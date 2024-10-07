@@ -121,6 +121,7 @@ public class TransferCommand : Command
       return 0;
     }
 
+    [ExcludeFromCodeCoverage]
     public int Invoke(InvocationContext context)
     {
       throw new NotImplementedException();

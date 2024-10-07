@@ -139,6 +139,7 @@ public class ReportCommand : Command
       return filesFilterList;
     }
 
+    [ExcludeFromCodeCoverage]
     public int Invoke(InvocationContext context)
     {
       throw new NotImplementedException();
