@@ -12,13 +12,7 @@ public class OnspringFile
   {
   }
 
-  public OnspringFile(
-    int recordId,
-    int fieldId,
-    string fieldName,
-    int fileId,
-    string? fileName
-  )
+  public OnspringFile(int recordId, int fieldId, string fieldName, int fileId, string? fileName)
   {
     RecordId = recordId;
     FieldId = fieldId;

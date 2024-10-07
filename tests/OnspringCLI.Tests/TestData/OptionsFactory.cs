@@ -3,17 +3,15 @@ namespace OnspringCLI.Tests.TestData;
 public static class OptionsFactory
 {
   public static string[] RequiredTransferOptionsWithValidSettingsFile =>
-    new string[]
-    {
+    [
       "--target-api-key",
       "123",
       "--settings-file",
       "TestData/Files/transfer.json"
-    };
+    ];
 
   public static string[] AllTransferOptions =>
-    new string[]
-    {
+    [
       "--target-api-key",
       "123",
       "--settings-file",
@@ -22,27 +20,24 @@ public static class OptionsFactory
       "1",
       "--records-filter",
       "1,2"
-    };
+    ];
 
   public static string[] RequiredTransferOptionsWithInvalidSettingsFile =>
-    new string[]
-    {
+    [
       "--target-api-key",
       "123",
       "--settings-file",
       "TestData/Files/fake.json"
-    };
+    ];
 
   public static string[] RequiredBulkDownloadOptions =>
-    new string[]
-    {
+    [
       "--app-id",
       "123",
-    };
+    ];
 
   public static string[] AllBulkDownloadOptions =>
-    new string[]
-    {
+    [
       "--app-id",
       "123",
       "--output-directory",
@@ -53,18 +48,16 @@ public static class OptionsFactory
       "1,2",
       "--report-filter",
       "1"
-    };
+    ];
 
   public static string[] RequiredReportOptions =>
-    new string[]
-    {
+    [
       "--app-id",
       "123",
-    };
+    ];
 
   public static string[] AllReportOptions =>
-    new string[]
-    {
+    [
       "--app-id",
       "123",
       "--output-directory",
@@ -73,11 +66,10 @@ public static class OptionsFactory
       "1,2",
       "--files-filter-csv",
       "TestData/Files/testFilesFilter.csv"
-    };
+    ];
 
   public static string[] AllBulkDeleteOptions =>
-    new string[]
-    {
+    [
       "--app-id",
       "123",
       "--fields-filter",
@@ -86,5 +78,13 @@ public static class OptionsFactory
       "1,2",
       "--report-filter",
       "1"
-    };
+    ];
+
+  public static string[] RequiredReferencesOptions =>
+    [
+      "--app-id",
+      "123",
+      "--record-ids",
+      "1,2"
+    ];
 }

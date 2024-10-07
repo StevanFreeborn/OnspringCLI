@@ -6,7 +6,7 @@ public class TransferCommand : Command
   {
     AddOption(
       new Option<string>(
-        aliases: new[] { "--target-api-key", "-tk" },
+        aliases: ["--target-api-key", "-tk"],
         description: "The API key to use to authenticate with an Onspring target instance."
       )
       {
@@ -15,24 +15,20 @@ public class TransferCommand : Command
     );
 
     var settingsFileOption = new Option<FileInfo>(
-      aliases: new string[] { "--settings-file", "-s" },
+      aliases: ["--settings-file", "-s"],
       description: "The path to the file that specifies configuration for the transferer."
     )
     {
       IsRequired = true
     };
 
-    settingsFileOption.AddValidator(
-      FileInfoOptionValidator.Validate
-    );
+    settingsFileOption.AddValidator(FileInfoOptionValidator.Validate);
 
-    AddOption(
-      settingsFileOption
-    );
+    AddOption(settingsFileOption);
 
     AddOption(
       new Option<List<int>>(
-        aliases: new[] { "--records-filter", "-rf" },
+        aliases: ["--records-filter", "-rf"],
         description: "A comma separated list of record ids whose attachments will be transferred.",
         parseArgument: result => result.ParseToIntegerList()
       )
@@ -40,7 +36,7 @@ public class TransferCommand : Command
 
     AddOption(
       new Option<int>(
-        aliases: new[] { "--report-filter", "-rpf" },
+        aliases: ["--report-filter", "-rpf"],
         description: "The id of the report whose records' attachments will be transferred."
       )
     );
@@ -53,7 +49,7 @@ public class TransferCommand : Command
     private readonly IAttachmentsProcessor _processor;
     public IAttachmentTransferSettings AttachmentTransferSettings { get; set; } = null!;
     public FileInfo SettingsFile { get; set; } = null!;
-    public List<int> RecordsFilter { get; set; } = new();
+    public List<int> RecordsFilter { get; set; } = [];
     public int ReportFilter { get; set; } = 0;
 
     public Handler(
@@ -77,21 +73,15 @@ public class TransferCommand : Command
 
       if (hasValidMatchFields is false)
       {
-        _logger.Fatal(
-          "Invalid match fields. Match fields should be of type text, date, number, auto number, or a formula with a non list output type."
-        );
+        _logger.Fatal("Invalid match fields. Match fields should be of type text, date, number, auto number, or a formula with a non list output type.");
         return 1;
       }
 
-      bool hasValidFlagFieldIdAndValues = await _processor.ValidateFlagFieldIdAndValues(
-        AttachmentTransferSettings
-      );
+      bool hasValidFlagFieldIdAndValues = await _processor.ValidateFlagFieldIdAndValues(AttachmentTransferSettings);
 
       if (hasValidFlagFieldIdAndValues is false)
       {
-        _logger.Fatal(
-          "Invalid flag field id or values. Flag field id should be of type text, date, number, auto number, or a formula with a non list output type."
-        );
+        _logger.Fatal("Invalid flag field id or values. Flag field id should be of type text, date, number, auto number, or a formula with a non list output type.");
         return 2;
       }
 
@@ -99,27 +89,16 @@ public class TransferCommand : Command
 
       if (ReportFilter is not 0)
       {
-        _logger.Information(
-          "Retrieving records from report {ReportId}.",
-          ReportFilter
-        );
+        _logger.Information("Retrieving records from report {ReportId}.", ReportFilter);
 
-        var records = await _processor.GetRecordIdsFromReport(
-          ReportFilter
-        );
+        var records = await _processor.GetRecordIdsFromReport(ReportFilter);
 
-        _logger.Information(
-          "Records retrieved. {Count} records found.",
-          records.Count
-        );
+        _logger.Information("Records retrieved. {Count} records found.", records.Count);
 
         RecordsFilter.AddRange(records);
       }
 
-      var sourceRecords = await _processor.GetSourceRecordsToProcess(
-        AttachmentTransferSettings,
-        RecordsFilter
-      );
+      var sourceRecords = await _processor.GetSourceRecordsToProcess(AttachmentTransferSettings, RecordsFilter);
 
       if (sourceRecords.Count is 0)
       {
@@ -127,17 +106,11 @@ public class TransferCommand : Command
         return 3;
       }
 
-      _logger.Information(
-        "Retrieved {Count} records from source app.",
-        sourceRecords.Count
-      );
+      _logger.Information("Retrieved {Count} records from source app.", sourceRecords.Count);
 
       _logger.Information("Begin transferring attachments.");
 
-      await _processor.TransferAttachments(
-        AttachmentTransferSettings,
-        sourceRecords
-      );
+      await _processor.TransferAttachments(AttachmentTransferSettings, sourceRecords);
 
       _logger.Information("Attachments transferred.");
 
@@ -148,6 +121,7 @@ public class TransferCommand : Command
       return 0;
     }
 
+    [ExcludeFromCodeCoverage]
     public int Invoke(InvocationContext context)
     {
       throw new NotImplementedException();

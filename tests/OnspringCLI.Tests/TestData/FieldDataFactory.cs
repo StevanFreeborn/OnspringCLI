@@ -23,8 +23,8 @@ public class FieldDataFactory
           Name = "test",
           Type = FieldType.List,
           Multiplicity = Multiplicity.SingleSelect,
-          Values = new List<ListValue>
-          {
+          Values =
+          [
             new ListValue
             {
               Id = processGuid,
@@ -35,7 +35,7 @@ public class FieldDataFactory
               Id = processedGuid,
               Name = "Test2"
             },
-          },
+          ],
         },
       },
       new object[]
@@ -52,8 +52,8 @@ public class FieldDataFactory
           Name = "test",
           Type = FieldType.List,
           Multiplicity = Multiplicity.SingleSelect,
-          Values = new List<ListValue>
-          {
+          Values =
+          [
             new ListValue
             {
               Id = processGuid,
@@ -64,7 +64,7 @@ public class FieldDataFactory
               Id = processedGuid,
               Name = "Test2"
             },
-          },
+          ],
         },
       },
     };
@@ -113,14 +113,14 @@ public class FieldDataFactory
           Name = "test",
           Type = FieldType.List,
           Multiplicity = Multiplicity.SingleSelect,
-          Values = new List<ListValue>
-          {
+          Values =
+          [
             new ListValue
             {
               Id = Guid.NewGuid(),
               Name = "Test1"
             },
-          },
+          ],
         },
       },
       new object[]
@@ -137,14 +137,14 @@ public class FieldDataFactory
           Name = "test",
           Type = FieldType.List,
           Multiplicity = Multiplicity.SingleSelect,
-          Values = new List<ListValue>
-          {
+          Values =
+          [
             new ListValue
             {
               Id = Guid.NewGuid(),
               Name = "Test2"
             },
-          },
+          ],
         },
       },
     };
@@ -335,8 +335,7 @@ public class FieldDataFactory
     };
 
   private static List<Field> PageOneFields =>
-    new()
-    {
+    [
       Field1,
       new Field
       {
@@ -350,11 +349,10 @@ public class FieldDataFactory
         Name = "Field 3",
         Type = FieldType.Attachment,
       },
-    };
+    ];
 
   private static List<Field> PageTwoFields =>
-    new()
-    {
+    [
       new Field
       {
         Id = 4,
@@ -373,7 +371,7 @@ public class FieldDataFactory
         Name = "Field 6",
         Type = FieldType.Attachment,
       },
-    };
+    ];
 
   private static Field Field1 =>
     new()

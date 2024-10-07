@@ -7,19 +7,68 @@ public class OnspringService : IOnspringService
   private readonly ILogger _logger;
   private readonly IOnspringClientFactory _clientFactory;
 
-  public OnspringService(
-    ILogger logger,
-    IOnspringClientFactory clientFactory
-  )
+  public OnspringService(ILogger logger, IOnspringClientFactory clientFactory)
   {
     _logger = logger.ForContext<OnspringService>();
     _clientFactory = clientFactory;
   }
 
-  public async Task<List<Field>> GetAllFields(
-    string apiKey,
-    int appId
-  )
+  public async Task<List<App>> GetApps(string apiKey)
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+
+      var apps = new ConcurrentBag<App>();
+
+      var initialRes = await ExecuteRequest(async () => await client.GetAppsAsync());
+
+      if (initialRes.IsSuccessful is false)
+      {
+        _logger.Error(
+          "Unable to get apps. {StatusCode} - {Message}.",
+          initialRes.StatusCode,
+          initialRes.Message
+        );
+
+        return [];
+      }
+
+      initialRes.Value.Items.ForEach(apps.Add);
+
+      var remainingPageNumbers = Enumerable.Range(initialRes.Value.PageNumber + 1, initialRes.Value.TotalPages - 1);
+      var remainingPageRequests = remainingPageNumbers.Select(pageNumber => new PagingRequest() { PageNumber = pageNumber });
+      var remainingRequests = remainingPageRequests.Select(async pr =>
+      {
+        var res = await ExecuteRequest(async () => await client.GetAppsAsync(pr));
+
+        if (res.IsSuccessful is false)
+        {
+          _logger.Error(
+            "Unable to get apps for page {PageNumber}. {StatusCode} - {Message}.",
+            pr.PageNumber,
+            res.StatusCode,
+            res.Message
+          );
+          return;
+        }
+
+        res.Value.Items.ForEach(apps.Add);
+      });
+
+
+      await Task.WhenAll(remainingRequests);
+
+      return [.. apps];
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(ex, "Unable to get apps.");
+      return [];
+    }
+  }
+
+  public async Task<List<Field>> GetAllFields(string apiKey, int appId)
   {
     try
     {
@@ -79,21 +128,12 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to get fields."
-      );
-
-      return new List<Field>();
+      _logger.Error(ex, "Unable to get fields.");
+      return [];
     }
   }
 
-  public async Task<GetPagedRecordsResponse?> GetAPageOfRecords(
-    string apiKey,
-    int appId,
-    List<int> fieldIds,
-    PagingRequest pagingRequest
-  )
+  public async Task<GetPagedRecordsResponse?> GetAPageOfRecords(string apiKey, int appId, List<int> fieldIds, PagingRequest pagingRequest)
   {
     try
     {
@@ -106,67 +146,44 @@ public class OnspringService : IOnspringService
         FieldIds = fieldIds
       };
 
-      var res = await ExecuteRequest(
-        async () => await client.GetRecordsForAppAsync(request)
-      );
+      var res = await ExecuteRequest(async () => await client.GetRecordsForAppAsync(request));
 
       if (res.IsSuccessful is true)
       {
         return res.Value;
       }
 
-      _logger.Error(
-        "Unable to get records. {StatusCode} - {Message}.",
-        res.StatusCode,
-        res.Message
-      );
+      _logger.Error("Unable to get records. {StatusCode} - {Message}.", res.StatusCode, res.Message);
 
       return null;
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to get records."
-      );
-
+      _logger.Error(ex, "Unable to get records.");
       return null;
     }
   }
 
-  public async Task<Field?> GetField(
-    string apiKey,
-    int fieldId
-  )
+  public async Task<Field?> GetField(string apiKey, int fieldId)
   {
     try
     {
       var client = _clientFactory.Create(apiKey);
 
-      var res = await ExecuteRequest(
-        async () => await client.GetFieldAsync(fieldId)
-      );
+      var res = await ExecuteRequest(async () => await client.GetFieldAsync(fieldId));
 
       if (res.IsSuccessful is true)
       {
         return res.Value;
       }
 
-      _logger.Error(
-        "Unable to get field. {StatusCode} - {Message}.",
-        res.StatusCode,
-        res.Message
-      );
+      _logger.Error("Unable to get field. {StatusCode} - {Message}.", res.StatusCode, res.Message);
 
       return null;
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to get field."
-      );
-
+      _logger.Error(ex, "Unable to get field.");
       return null;
     }
   }
@@ -203,20 +220,12 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to get file: {@FileRequest}.",
-        fileRequest
-      );
-
+      _logger.Error(ex, "Unable to get file: {@FileRequest}.", fileRequest);
       return null;
     }
   }
 
-  public async Task<GetFileInfoResponse?> GetFileInfo(
-    string apiKey,
-    OnspringFileRequest fileRequest
-  )
+  public async Task<GetFileInfoResponse?> GetFileInfo(string apiKey, OnspringFileRequest fileRequest)
   {
     try
     {
@@ -245,12 +254,7 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to get file info: {@FileRequest}.",
-        fileRequest
-      );
-
+      _logger.Error(ex, "Unable to get file info: {@FileRequest}.", fileRequest);
       return null;
     }
   }
@@ -293,19 +297,12 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to get records by query."
-      );
-
+      _logger.Error(ex, "Unable to get records by query.");
       return null;
     }
   }
 
-  public async Task<ReportData?> GetReport(
-    string apiKey,
-    int reportId
-  )
+  public async Task<ReportData?> GetReport(string apiKey, int reportId)
   {
     try
     {
@@ -330,19 +327,12 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to get report."
-      );
-
+      _logger.Error(ex, "Unable to get report.");
       return null;
     }
   }
 
-  public async Task<CreatedWithIdResponse<int>?> SaveFile(
-    string apiKey,
-    SaveFileRequest request
-  )
+  public async Task<CreatedWithIdResponse<int>?> SaveFile(string apiKey, SaveFileRequest request)
   {
     try
     {
@@ -367,20 +357,12 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to save file: {@SaveFileRequest}.",
-        request
-      );
-
+      _logger.Error(ex, "Unable to save file: {@SaveFileRequest}.", request);
       return null;
     }
   }
 
-  public async Task<bool> TryDeleteFile(
-    string apiKey,
-    OnspringFileRequest fileRequest
-  )
+  public async Task<bool> TryDeleteFile(string apiKey, OnspringFileRequest fileRequest)
   {
     try
     {
@@ -409,28 +391,18 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to delete file: {@FileRequest}.",
-        fileRequest
-      );
-
+      _logger.Error(ex, "Unable to delete file: {@FileRequest}.", fileRequest);
       return false;
     }
   }
 
-  public async Task<CreatedWithIdResponse<int>?> UpdateRecord(
-    string apiKey,
-    ResultRecord recordUpdates
-  )
+  public async Task<CreatedWithIdResponse<int>?> UpdateRecord(string apiKey, ResultRecord recordUpdates)
   {
     try
     {
       var client = _clientFactory.Create(apiKey);
 
-      var res = await ExecuteRequest(
-        async () => await client.SaveRecordAsync(recordUpdates)
-      );
+      var res = await ExecuteRequest(async () => await client.SaveRecordAsync(recordUpdates));
 
       if (res.IsSuccessful is true)
       {
@@ -447,21 +419,13 @@ public class OnspringService : IOnspringService
     }
     catch (Exception ex)
     {
-      _logger.Error(
-        ex,
-        "Unable to save record: {@RecordUpdates}.",
-        recordUpdates
-      );
-
+      _logger.Error(ex, "Unable to save record: {@RecordUpdates}.", recordUpdates);
       return null;
     }
   }
 
   [ExcludeFromCodeCoverage]
-  private async Task<ApiResponse<T>> ExecuteRequest<T>(
-    Func<Task<ApiResponse<T>>> func,
-    int retry = 1
-  )
+  private async Task<ApiResponse<T>> ExecuteRequest<T>(Func<Task<ApiResponse<T>>> func, int retry = 1)
   {
     ApiResponse<T> response;
     var retryLimit = 3;
@@ -472,9 +436,7 @@ public class OnspringService : IOnspringService
       {
         response = await func();
 
-        if (
-          NeedsToBeRetried(response) is false
-        )
+        if (NeedsToBeRetried(response) is false)
         {
           return response;
         }
@@ -529,10 +491,7 @@ public class OnspringService : IOnspringService
   }
 
   [ExcludeFromCodeCoverage]
-  private async Task<ApiResponse> ExecuteRequest(
-    Func<Task<ApiResponse>> func,
-    int retry = 1
-  )
+  private async Task<ApiResponse> ExecuteRequest(Func<Task<ApiResponse>> func, int retry = 1)
   {
     ApiResponse response;
     var retryLimit = 3;
@@ -543,9 +502,7 @@ public class OnspringService : IOnspringService
       {
         response = await func();
 
-        if (
-          NeedsToBeRetried(response) is false
-        )
+        if (NeedsToBeRetried(response) is false)
         {
           return response;
         }

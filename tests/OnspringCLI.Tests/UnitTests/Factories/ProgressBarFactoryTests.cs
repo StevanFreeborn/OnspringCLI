@@ -14,10 +14,7 @@ public class ProgressBarFactoryTests
   public void Create_WhenCalled_ReturnsNewInstance()
   {
     var progressBarFactory = new ProgressBarFactory();
-    var progressBar = progressBarFactory.Create(
-      10,
-      "Test"
-    );
+    var progressBar = progressBarFactory.Create(10, "Test");
 
     progressBar.Should().NotBeNull();
     progressBar.MaxTicks.Should().Be(10);
