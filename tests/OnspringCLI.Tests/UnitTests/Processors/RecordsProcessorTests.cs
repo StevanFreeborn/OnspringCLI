@@ -147,7 +147,7 @@ public class RecordsProcessorTests
         Name = "Reference Field 2",
         AppId = sourceApp.Id,
         ReferencedAppId = 2,
-      }
+      },
     };
 
     var recordIds = new List<int> { targetRecordId };
@@ -171,6 +171,11 @@ public class RecordsProcessorTests
             {
               FieldId = referenceFields.Last().Id,
               Value = [targetRecordId, 2]
+            },
+            new IntegerFieldValue()
+            {
+              FieldId = 3,
+              Value = 2
             }
           ]
         }
@@ -312,5 +317,21 @@ public class RecordsProcessorTests
         SourceRecordId = pageTwo.Items.First().RecordId,
       }
     ]);
+  }
+
+  [Fact]
+  public void WriteReferencesReport_WhenCalled_ItShouldWriteReferencesToCsv()
+  {
+    _processor.WriteReferencesReport([], "output");
+
+    _reportServiceMock.Verify(
+      m => m.WriteCsvReport(
+        It.IsAny<List<RecordReference>>(),
+        typeof(RecordReferenceMap),
+        It.IsAny<string>(),
+        It.IsAny<string>()
+      ),
+      Times.Once
+    );
   }
 }
