@@ -37,61 +37,31 @@ class RecordsProcessor : IRecordsProcessor
   {
     var referenceFieldIds = referenceFields.Select(f => f.Id).ToList();
     var pagingRequest = new PagingRequest { PageNumber = 1 };
+    var totalPages = 1;
 
     _logger.Debug("Retrieving references from app {SourceAppId}.", sourceApp.Id);
 
     var references = new ConcurrentBag<RecordReference>();
 
-    var initialRes = await _onspringService.GetAPageOfRecords(
-      _globalOptions.SourceApiKey,
-      sourceApp.Id,
-      referenceFieldIds,
-      pagingRequest
-    );
-
-    if (initialRes is null)
-    {
-      _logger.Debug("No records found in app {SourceAppId} for page {PageNumber}.", sourceApp.Id, pagingRequest.PageNumber);
-      return [.. references];
-    }
-
-    _logger.Debug(
-      "Records retrieved from app {SourceAppId} for page {PageNumber}. {Count} records found.", 
-      sourceApp.Id, 
-      initialRes.PageNumber, 
-      initialRes.Items.Count
-    );
-
-    var referencesFromFirstPage = GetReferencesFromRecords(
-      sourceApp,
-      initialRes.Items,
-      referenceFields,
-      recordIds
-    );
-
-    referencesFromFirstPage.ForEach(references.Add);
-
-    var remainingPages = Enumerable.Range(initialRes.PageNumber + 1, initialRes.TotalPages - 1);
-    var remainingPageRequests = remainingPages.Select(p => new PagingRequest { PageNumber = p });
-    var remainingRequests = remainingPageRequests.Select(async (pr) => 
+    do
     {
       var res = await _onspringService.GetAPageOfRecords(
         _globalOptions.SourceApiKey,
         sourceApp.Id,
         referenceFieldIds,
-        pr
+        pagingRequest
       );
 
       if (res is null)
       {
-        _logger.Debug("No records found in app {SourceAppId} for page {PageNumber}.", sourceApp.Id, pr.PageNumber);
-        return;
+        _logger.Debug("No records found in app {SourceAppId} for page {PageNumber}.", sourceApp.Id, pagingRequest.PageNumber);
+        break;
       }
 
       _logger.Debug(
         "Records retrieved from app {SourceAppId} for page {PageNumber}. {Count} records found.", 
         sourceApp.Id, 
-        pr.PageNumber, 
+        pagingRequest.PageNumber, 
         res.Items.Count
       );
 
@@ -103,9 +73,9 @@ class RecordsProcessor : IRecordsProcessor
       );
 
       referencesFromPage.ForEach(references.Add);
-    });
-
-    await Task.WhenAll(remainingRequests);
+      totalPages = res.TotalPages;
+      pagingRequest.PageNumber++;
+    } while (pagingRequest.PageNumber <= totalPages);
 
     return [.. references];
   }
