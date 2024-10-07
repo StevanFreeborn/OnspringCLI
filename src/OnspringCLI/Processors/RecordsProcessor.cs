@@ -8,8 +8,8 @@ class RecordsProcessor : IRecordsProcessor
   private readonly GlobalOptions _globalOptions;
 
   public RecordsProcessor(
-    ILogger logger, 
-    IReportService reportService, 
+    ILogger logger,
+    IReportService reportService,
     IOnspringService onspringService,
     IOptions<GlobalOptions> globalOptions
   )
@@ -25,7 +25,7 @@ class RecordsProcessor : IRecordsProcessor
   public async Task<List<ReferenceField>> GetReferenceFields(int sourceAppId, int targetAppId)
   {
     var fields = await _onspringService.GetAllFields(_globalOptions.SourceApiKey, sourceAppId);
-    
+
     return fields
       .Where(f => f.Type is FieldType.Reference)
       .Cast<ReferenceField>()
@@ -62,8 +62,8 @@ class RecordsProcessor : IRecordsProcessor
 
       _logger.Information(
         "Records retrieved from app {SourceAppId} for page {PageNumber} of {TotalPages}.",
-        sourceApp.Id, 
-        pagingRequest.PageNumber, 
+        sourceApp.Id,
+        pagingRequest.PageNumber,
         totalPages
       );
 
@@ -82,9 +82,9 @@ class RecordsProcessor : IRecordsProcessor
   }
 
   private List<RecordReference> GetReferencesFromRecords(
-    App sourceApp, 
-    List<ResultRecord> records, 
-    List<ReferenceField> referenceFields, 
+    App sourceApp,
+    List<ResultRecord> records,
+    List<ReferenceField> referenceFields,
     List<int> recordIds
   )
   {
@@ -132,7 +132,7 @@ class RecordsProcessor : IRecordsProcessor
             {
               continue;
             }
-            
+
             references.Add(new()
             {
               TargetAppId = field.ReferencedAppId,

@@ -104,7 +104,7 @@ public class ReportCommand : Command
 
       _logger.Information("Onspring Attachment Reporter finished.");
 
-      var outputPath =  Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OutputDirectory);
+      var outputPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OutputDirectory);
 
       _logger.Information("You can find the report in the output directory: {OutputDirectory}", outputPath);
 

@@ -1883,7 +1883,7 @@ public class OnspringServiceTests
     result.Should().HaveCount(2);
 
     _mockClient.Verify(m => m.GetAppsAsync(
-      It.IsAny<PagingRequest>()), 
+      It.IsAny<PagingRequest>()),
       Times.Exactly(2)
     );
   }
@@ -1920,7 +1920,7 @@ public class OnspringServiceTests
     result.Should().HaveCount(1);
 
     _mockClient.Verify(m => m.GetAppsAsync(
-      It.IsAny<PagingRequest>()), 
+      It.IsAny<PagingRequest>()),
       Times.Exactly(2)
     );
   }

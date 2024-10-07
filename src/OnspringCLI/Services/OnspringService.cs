@@ -37,8 +37,8 @@ public class OnspringService : IOnspringService
       initialRes.Value.Items.ForEach(apps.Add);
 
       var remainingPageNumbers = Enumerable.Range(initialRes.Value.PageNumber + 1, initialRes.Value.TotalPages - 1);
-      var remainingPageRequests = remainingPageNumbers.Select(pageNumber => new PagingRequest() { PageNumber = pageNumber});
-      var remainingRequests = remainingPageRequests.Select(async pr => 
+      var remainingPageRequests = remainingPageNumbers.Select(pageNumber => new PagingRequest() { PageNumber = pageNumber });
+      var remainingRequests = remainingPageRequests.Select(async pr =>
       {
         var res = await ExecuteRequest(async () => await client.GetAppsAsync(pr));
 
@@ -55,15 +55,15 @@ public class OnspringService : IOnspringService
 
         res.Value.Items.ForEach(apps.Add);
       });
-      
-      
+
+
       await Task.WhenAll(remainingRequests);
 
       return [.. apps];
     }
     catch (Exception ex)
     {
-      _logger.Error(ex,"Unable to get apps.");
+      _logger.Error(ex, "Unable to get apps.");
       return [];
     }
   }

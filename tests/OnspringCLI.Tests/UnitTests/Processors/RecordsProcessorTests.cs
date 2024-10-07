@@ -85,9 +85,9 @@ public class RecordsProcessorTests
 
     _onspringServiceMock
       .Setup(x => x.GetAPageOfRecords(
-        It.IsAny<string>(), 
-        It.IsAny<int>(), 
-        It.IsAny<List<int>>(), 
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
         It.IsAny<PagingRequest>()
       ))
       .ReturnsAsync(null as GetPagedRecordsResponse);
@@ -114,9 +114,9 @@ public class RecordsProcessorTests
 
     _onspringServiceMock
       .Setup(x => x.GetAPageOfRecords(
-        It.IsAny<string>(), 
-        It.IsAny<int>(), 
-        It.IsAny<List<int>>(), 
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
         It.IsAny<PagingRequest>()
       ))
       .ReturnsAsync(page);
@@ -132,10 +132,10 @@ public class RecordsProcessorTests
     var targetRecordId = 1;
 
     var sourceApp = new App { Id = 1, Name = "App 1" };
-    var referenceFields = new List<ReferenceField> 
-    { 
-      new() 
-      { 
+    var referenceFields = new List<ReferenceField>
+    {
+      new()
+      {
         Id = 1,
         Name = "Reference Field 1",
         AppId = sourceApp.Id,
@@ -158,12 +158,12 @@ public class RecordsProcessorTests
       PageNumber = 1,
       TotalPages = 1,
       Items = [
-        new() 
-        { 
+        new()
+        {
           RecordId = 1,
           FieldData = [
             new IntegerFieldValue()
-            { 
+            {
               FieldId = referenceFields.First().Id,
               Value = targetRecordId
             },
@@ -184,9 +184,9 @@ public class RecordsProcessorTests
 
     _onspringServiceMock
       .Setup(x => x.GetAPageOfRecords(
-        It.IsAny<string>(), 
-        It.IsAny<int>(), 
-        It.IsAny<List<int>>(), 
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
         It.IsAny<PagingRequest>()
       ))
       .ReturnsAsync(page);
@@ -223,10 +223,10 @@ public class RecordsProcessorTests
     var targetRecordId = 1;
 
     var sourceApp = new App { Id = 1, Name = "App 1" };
-    var referenceFields = new List<ReferenceField> 
-    { 
-      new() 
-      { 
+    var referenceFields = new List<ReferenceField>
+    {
+      new()
+      {
         Id = 1,
         Name = "Reference Field 1",
         AppId = sourceApp.Id,
@@ -249,12 +249,12 @@ public class RecordsProcessorTests
       PageNumber = 1,
       TotalPages = 2,
       Items = [
-        new() 
-        { 
+        new()
+        {
           RecordId = 1,
           FieldData = [
             new IntegerFieldValue()
-            { 
+            {
               FieldId = referenceFields.First().Id,
               Value = targetRecordId
             },
@@ -269,8 +269,8 @@ public class RecordsProcessorTests
       PageNumber = 2,
       TotalPages = 2,
       Items = [
-        new() 
-        { 
+        new()
+        {
           RecordId = 2,
           FieldData = [
             new IntegerListFieldValue()
@@ -285,9 +285,9 @@ public class RecordsProcessorTests
 
     _onspringServiceMock
       .SetupSequence(x => x.GetAPageOfRecords(
-        It.IsAny<string>(), 
-        It.IsAny<int>(), 
-        It.IsAny<List<int>>(), 
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
         It.IsAny<PagingRequest>()
       ))
       .ReturnsAsync(pageOne)

@@ -594,7 +594,7 @@ public class AttachmentsProcessorTests
       FileId = 1,
     };
 
-    var result = await _attachmentsProcessor.TryDownloadFiles([fileRequest],"output");
+    var result = await _attachmentsProcessor.TryDownloadFiles([fileRequest], "output");
 
     result.Should().NotBeNull();
     result.Should().BeOfType<List<OnspringFileRequest>>();

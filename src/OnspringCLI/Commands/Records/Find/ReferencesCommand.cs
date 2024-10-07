@@ -114,7 +114,7 @@ public class ReferencesCommand : Command
       _logger.Information("Finished references search.");
 
       _logger.Information(
-        "You can find the report in the output directory: {OutputDirectory}", 
+        "You can find the report in the output directory: {OutputDirectory}",
         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OutputDirectory)
       );
 
