@@ -39,7 +39,7 @@ class RecordsProcessor : IRecordsProcessor
     var pagingRequest = new PagingRequest { PageNumber = 1 };
     var totalPages = 1;
 
-    _logger.Debug("Retrieving references from app {SourceAppId}.", sourceApp.Id);
+    _logger.Information("Retrieving references from app {SourceAppId}.", sourceApp.Id);
 
     var references = new ConcurrentBag<RecordReference>();
 
@@ -54,15 +54,17 @@ class RecordsProcessor : IRecordsProcessor
 
       if (res is null)
       {
-        _logger.Debug("No records found in app {SourceAppId} for page {PageNumber}.", sourceApp.Id, pagingRequest.PageNumber);
+        _logger.Information("No records found in app {SourceAppId} for page {PageNumber}.", sourceApp.Id, pagingRequest.PageNumber);
         break;
       }
 
-      _logger.Debug(
-        "Records retrieved from app {SourceAppId} for page {PageNumber}. {Count} records found.", 
+      totalPages = res.TotalPages;
+
+      _logger.Information(
+        "Records retrieved from app {SourceAppId} for page {PageNumber} of {TotalPages}.",
         sourceApp.Id, 
         pagingRequest.PageNumber, 
-        res.Items.Count
+        totalPages
       );
 
       var referencesFromPage = GetReferencesFromRecords(
@@ -73,7 +75,6 @@ class RecordsProcessor : IRecordsProcessor
       );
 
       referencesFromPage.ForEach(references.Add);
-      totalPages = res.TotalPages;
       pagingRequest.PageNumber++;
     } while (pagingRequest.PageNumber <= totalPages);
 
