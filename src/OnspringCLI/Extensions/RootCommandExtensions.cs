@@ -12,7 +12,7 @@ static class RootCommandExtensions
   {
     root.AddGlobalOption(
       new Option<string>(
-        aliases: new[] { "--source-api-key", "-sk" },
+        aliases: ["--source-api-key", "-sk"],
         description: "The API key to use to authenticate with an Onspring source instance."
       )
       {
@@ -22,7 +22,7 @@ static class RootCommandExtensions
 
     root.AddGlobalOption(
       new Option<LogEventLevel>(
-        aliases: new[] { "--log-level", "-l" },
+        aliases: ["--log-level", "-l"],
         description: "The minimum level of log events to be written to the log file.",
         getDefaultValue: () => LogEventLevel.Debug
       )
@@ -35,6 +35,10 @@ static class RootCommandExtensions
   {
     root.AddCommand(
       new AttachmentsCommand()
+    );
+
+    root.AddCommand(
+      new RecordsCommand()
     );
 
     return root;

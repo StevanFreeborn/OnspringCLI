@@ -32,17 +32,19 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.x
+      - name: Install report generator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.0
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
       - name: Test
-        run: dotnet test --environment ENVIRONMENT=testing --collect:"XPlat Code Coverage;Include=[OnspringCLI]*;ExcludeByFile=**/program.cs" --no-build --verbosity normal
+        run: dotnet test --environment ENVIRONMENT=testing --no-build --verbosity normal
       - name: Upload test coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: tests/OnspringCLI.Tests/TestResults/*/coverage.cobertura.xml
+          path: tests/OnspringCLI.Tests/TestResults/coverage/coverage.cobertura.xml
   publish_coverage:
     needs: [test]
     name: publish_test_coverage

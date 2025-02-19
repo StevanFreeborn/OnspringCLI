@@ -1,5 +1,13 @@
 # Onspring CLI
 
+[![build_test](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/build_test.yml/badge.svg)](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/build_test.yml)
+[![codecov](https://codecov.io/gh/StevanFreeborn/OnspringCLI/branch/main/graph/badge.svg?token=xSm7UcxgDj)](https://codecov.io/gh/StevanFreeborn/OnspringCLI)
+[![publish_and_release](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/publish_release.yml/badge.svg)](https://github.com/StevanFreeborn/OnspringCLI/actions/workflows/publish_release.yml)
+![GitHub](https://img.shields.io/github/license/StevanFreeborn/OnspringCLI)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/StevanFreeborn/OnspringCLI)
+![GitHub all releases](https://img.shields.io/github/downloads/StevanFreeborn/OnspringCLI/total)
+[![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+
 OnspringCLI is a command line app for interacting with an [Onspring](https://onspring.com/) instance. The app provides a set of commands that can be run from the command line. The commands use the [Onspring API](https://api.onspring.com/swagger/index.html) to execute actions against content in an Onspring instance.
 
 ![Onspring CLI](README/onspring_cli.png)
@@ -15,7 +23,7 @@ The app is published [here](https://github.com/StevanFreeborn/OnspringCLI/releas
 **Notes:**
 
 - After downloading the executable you may need to run `chmod +x` to give the executable execute permissions on your machine.
-- After downloading the executable you may need to provide permission for the application to run via the your systems settings.
+- After downloading the executable you may need to provide permission for the application to run via your system settings.
 
 You are also welcome to clone this repository and run the app using the [.NET 9](https://dotnet.microsoft.com/en-us/download) tooling and runtime. As well as modify the app further for your specific needs.
 
@@ -28,6 +36,9 @@ You are also welcome to clone this repository and run the app using the [.NET 9]
     - **Bulk** - Delete all attachments from fields on records in an app. See [Bulk Delete Attachments](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Delete-Bulk) for more information.
   - **Transfer** - Transfer attachments from fields on records in one app to fields on records in another app. See [Transfer Attachments](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Transfer) for more information.
   - **Report** - Generate a report of attachments in an app. See [Attachment Report](https://github.com/StevanFreeborn/OnspringCLI/wiki/Attachments-Report) for more information.
+- **Records** - Commands for working with records in an Onspring instance.
+  - **Find**
+    - **References** - Locate all references to set of content records in one app from all other apps. See [References Find Records](https://github.com/StevanFreeborn/OnspringCLI/wiki/Records-Find-References)
 
 **Note:** The app will prompt you for any required information that is not provided via the command line.
 
@@ -40,6 +51,7 @@ You are also welcome to clone this repository and run the app using the [.NET 9]
   - Allows you to specify what the minimum level of event that will be written to the log file while the app is running.
   - By default this will be set to the `Debug` level.
   - The valid levels are: `Debug` | `Error` | `Fatal` | `Information` | `Verbose` | `Warning`
+  - **Example usage:** `onspringcli.exe -l fatal`
 - **Help:** `--help` or `-h`
   - Can be passed to any command to get more detail about the command and its arguments and/or options.
   - **Example usage:** `onspringcli.exe attachments -h`

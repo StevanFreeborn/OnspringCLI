@@ -22,6 +22,8 @@ global using Onspring.API.SDK.Models;
 
 global using OnspringCLI.Commands;
 global using OnspringCLI.Commands.Attachments;
+global using OnspringCLI.Commands.Records;
+global using OnspringCLI.Commands.Records.Find;
 global using OnspringCLI.Extensions;
 global using OnspringCLI.Factories;
 global using OnspringCLI.Interfaces;

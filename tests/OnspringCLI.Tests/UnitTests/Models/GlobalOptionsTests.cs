@@ -17,7 +17,7 @@ public class GlobalOptionsTests
     var targetApiKey = "TargetKey";
     var logLevel = LogEventLevel.Debug;
 
-    var options = new GlobalOptions
+    var options = new GlobalOptions()
     {
       SourceApiKey = sourceApiKey,
       TargetApiKey = targetApiKey,

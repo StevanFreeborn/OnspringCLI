@@ -19,8 +19,9 @@ public class DownloadCommandTests
   {
     var downloadCommand = new DownloadCommand();
 
-    downloadCommand.Subcommands.FirstOrDefault(
-      x => x.Name == "bulk"
-    ).Should().NotBeNull().And.BeOfType<BulkCommand>();
+    downloadCommand.Subcommands
+      .FirstOrDefault(x => x.Name == "bulk")
+      .Should()
+      .NotBeNull().And.BeOfType<BulkCommand>();
   }
 }

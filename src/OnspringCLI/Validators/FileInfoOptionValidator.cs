@@ -7,10 +7,7 @@ public class FileInfoOptionValidator
   {
     var value = result.GetValueOrDefault<FileInfo>();
 
-    if (
-      value is not null &&
-      value.Exists is false
-    )
+    if (value is not null && value.Exists is false)
     {
       result.ErrorMessage = $"The file {value.FullName} does not exist.";
     }

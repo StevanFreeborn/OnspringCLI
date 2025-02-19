@@ -1,3 +1,4 @@
+
 namespace OnspringCLI.Services;
 
 public class ReportService : IReportService
@@ -9,12 +10,7 @@ public class ReportService : IReportService
     _logger = logger.ForContext<ReportService>();
   }
 
-  public void WriteCsvReport<T>(
-    List<T> records,
-    Type mapType,
-    string outputDirectory,
-    string fileName
-  )
+  public void WriteCsvReport<T>(List<T> records, Type mapType, string outputDirectory, string fileName)
   {
     var reportPath = GetReportPath(outputDirectory, fileName);
     using var writer = new StreamWriter(reportPath);
@@ -26,7 +22,7 @@ public class ReportService : IReportService
 
     using var csv = new CsvWriter(writer, config);
 
-    if (mapType != null)
+    if (mapType is not null)
     {
       csv.Context.RegisterClassMap(mapType);
     }
@@ -38,23 +34,12 @@ public class ReportService : IReportService
     _logger.Debug("Report written to {FileName}.", fileName);
   }
 
-  internal static string GetReportPath(
-    string outputDirectory,
-    string fileName
-  )
+  internal static string GetReportPath(string outputDirectory, string fileName)
   {
-    var outputDirectoryPath = Path.Combine(
-      AppDomain.CurrentDomain.BaseDirectory,
-      outputDirectory
-    );
+    var outputDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, outputDirectory);
 
-    Directory.CreateDirectory(
-      outputDirectoryPath
-    );
+    Directory.CreateDirectory(outputDirectoryPath);
 
-    return Path.Combine(
-      outputDirectoryPath,
-      fileName
-    );
+    return Path.Combine(outputDirectoryPath, fileName);
   }
 }

@@ -17,11 +17,8 @@ public class ReportCommandTests
   {
     var command = new ReportCommand();
 
-    var appIdOption = command
-    .Options
-    .FirstOrDefault(
-      o => o.Name == "app-id"
-    );
+    var appIdOption = command.Options
+      .FirstOrDefault(o => o.Name == "app-id");
 
     appIdOption.Should().NotBeNull();
     appIdOption.Should().BeOfType<Option<int>>();
@@ -33,11 +30,8 @@ public class ReportCommandTests
   {
     var command = new ReportCommand();
 
-    var outputDirectoryOption = command
-    .Options
-    .FirstOrDefault(
-      o => o.Name == "output-directory"
-    );
+    var outputDirectoryOption = command.Options
+      .FirstOrDefault(o => o.Name == "output-directory");
 
     outputDirectoryOption.Should().NotBeNull();
     outputDirectoryOption.Should().BeOfType<Option<string>>();
@@ -49,11 +43,8 @@ public class ReportCommandTests
   {
     var command = new ReportCommand();
 
-    var filesFilterOption = command
-    .Options
-    .FirstOrDefault(
-      o => o.Name == "files-filter"
-    );
+    var filesFilterOption = command.Options
+      .FirstOrDefault(o => o.Name == "files-filter");
 
     filesFilterOption.Should().NotBeNull();
     filesFilterOption.Should().BeOfType<Option<List<int>>>();
@@ -65,11 +56,8 @@ public class ReportCommandTests
   {
     var command = new ReportCommand();
 
-    var filesFilterCsvOption = command
-    .Options
-    .FirstOrDefault(
-      o => o.Name == "files-filter-csv"
-    );
+    var filesFilterCsvOption = command.Options
+      .FirstOrDefault(o => o.Name == "files-filter-csv");
 
     filesFilterCsvOption.Should().NotBeNull();
     filesFilterCsvOption.Should().BeOfType<Option<FileInfo>>();
@@ -89,19 +77,15 @@ public class ReportCommandTests
       _processorMock = new Mock<IAttachmentsProcessor>();
 
       _loggerMock
-      .Setup(
-        l => l.ForContext<It.IsAnyType>()
-      )
-      .Returns(
-        _loggerMock.Object
-      );
+        .Setup(l => l.ForContext<It.IsAnyType>())
+        .Returns(_loggerMock.Object);
 
       _handler = new ReportCommand.Handler(
         _loggerMock.Object,
         _processorMock.Object
       );
 
-      _command = new ReportCommand();
+      _command = [];
       _command.SetHandler(_handler.InvokeAsync);
     }
 
@@ -109,15 +93,13 @@ public class ReportCommandTests
     public async Task InvokeAsync_WhenCalledAndNoFileFieldsAreFound_ItShouldReturnNonZeroValue()
     {
       _processorMock
-      .Setup(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
+        .Setup(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<Field>()
-      );
+        .ReturnsAsync([]);
 
       var options = OptionsFactory.RequiredReportOptions;
       var result = await _command.InvokeAsync(options);
@@ -125,72 +107,65 @@ public class ReportCommandTests
       result.Should().Be(1);
 
       _processorMock
-      .Verify(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          null,
-          It.IsAny<List<int>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            null,
+            It.IsAny<List<int>>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        m => m.WriteFileInfoReport(
-          It.IsAny<List<OnspringFileInfoResult>>(),
-          It.IsAny<string>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          m => m.WriteFileInfoReport(
+            It.IsAny<List<OnspringFileInfoResult>>(),
+            It.IsAny<string>()
+          ),
+          Times.Never
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndNoFileRequestsAreFound_ItShouldReturnNonZeroValue()
     {
       _processorMock
-      .Setup(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
+        .Setup(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<Field>
-        {
-          new Field()
-        }
-      );
+        .ReturnsAsync([new Field()]);
 
       _processorMock
-      .Setup(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
+        .Setup(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<OnspringFileRequest>()
-      );
+        .ReturnsAsync([]);
 
       var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
@@ -198,85 +173,73 @@ public class ReportCommandTests
       result.Should().Be(2);
 
       _processorMock
-      .Verify(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          ),
+          Times.Never
+        );
 
       _processorMock
-      .Verify(
-        m => m.WriteFileInfoReport(
-          It.IsAny<List<OnspringFileInfoResult>>(),
-          It.IsAny<string>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          m => m.WriteFileInfoReport(
+            It.IsAny<List<OnspringFileInfoResult>>(),
+            It.IsAny<string>()
+          ),
+          Times.Never
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndNoFileInfosAreFound_ItShouldReturnNonZeroValue()
     {
       _processorMock
-      .Setup(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
+        .Setup(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<Field>
-        {
-          new Field()
-        }
-      );
+        .ReturnsAsync([new Field()]);
 
       _processorMock
-      .Setup(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
+        .Setup(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<OnspringFileRequest>
-        {
-          new OnspringFileRequest()
-        }
-      );
+        .ReturnsAsync([new OnspringFileRequest()]);
 
       _processorMock
-      .Setup(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
+        .Setup(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<OnspringFileInfoResult>()
-      );
+        .ReturnsAsync([]);
 
       var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
@@ -284,88 +247,73 @@ public class ReportCommandTests
       result.Should().Be(3);
 
       _processorMock
-      .Verify(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.WriteFileInfoReport(
-          It.IsAny<List<OnspringFileInfoResult>>(),
-          It.IsAny<string>()
-        ),
-        Times.Never
-      );
+        .Verify(
+          m => m.WriteFileInfoReport(
+            It.IsAny<List<OnspringFileInfoResult>>(),
+            It.IsAny<string>()
+          ),
+          Times.Never
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndFileInfosAreFound_ItShouldReturnZeroValue()
     {
       _processorMock
-      .Setup(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
+        .Setup(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<Field>
-        {
-          new Field()
-        }
-      );
+        .ReturnsAsync([new Field()]);
 
       _processorMock
-      .Setup(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
+        .Setup(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<OnspringFileRequest>
-        {
-          new OnspringFileRequest()
-        }
-      );
+        .ReturnsAsync([new OnspringFileRequest()]);
 
       _processorMock
-      .Setup(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
+        .Setup(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<OnspringFileInfoResult>
-        {
-          new OnspringFileInfoResult()
-        }
-      );
+        .ReturnsAsync([new OnspringFileInfoResult()]);
 
       var options = OptionsFactory.AllReportOptions;
       var result = await _command.InvokeAsync(options);
@@ -373,88 +321,73 @@ public class ReportCommandTests
       result.Should().Be(0);
 
       _processorMock
-      .Verify(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.WriteFileInfoReport(
-          It.IsAny<List<OnspringFileInfoResult>>(),
-          It.IsAny<string>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.WriteFileInfoReport(
+            It.IsAny<List<OnspringFileInfoResult>>(),
+            It.IsAny<string>()
+          ),
+          Times.Once
+        );
     }
 
     [Fact]
     public async Task InvokeAsync_WhenCalledAndFilesFilterCsvOptionIsGiven_ItShouldAddFileIdsFromCsvToFilesFilter()
     {
       _processorMock
-      .Setup(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
+        .Setup(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<Field>
-        {
-          new Field()
-        }
-      );
+        .ReturnsAsync([new Field()]);
 
       _processorMock
-      .Setup(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
+        .Setup(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<OnspringFileRequest>
-        {
-          new OnspringFileRequest()
-        }
-      );
+        .ReturnsAsync([new OnspringFileRequest()]);
 
       _processorMock
-      .Setup(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
+        .Setup(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          )
         )
-      )
-      .ReturnsAsync(
-        new List<OnspringFileInfoResult>
-        {
-          new OnspringFileInfoResult()
-        }
-      );
+        .ReturnsAsync([new OnspringFileInfoResult()]);
 
       var filesFilterCsvPath = TestFilesPathFactory.GetTestFilesFilterCsvPath();
       _handler.FilesFilterCsv = new FileInfo(filesFilterCsvPath);
@@ -468,49 +401,47 @@ public class ReportCommandTests
       _handler.FilesFilterList.Should().BeEquivalentTo(new List<int> { 1, 2, 3 });
 
       _processorMock
-      .Verify(
-        m => m.GetFileFields(
-          It.IsAny<int>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileFields(
+            It.IsAny<int>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileRequests(
-          It.IsAny<int>(),
-          It.IsAny<List<Field>>(),
-          It.IsAny<List<int>>(),
-          null
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileRequests(
+            It.IsAny<int>(),
+            It.IsAny<List<Field>>(),
+            It.IsAny<List<int>>(),
+            null
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.GetFileInfos(
-          It.IsAny<List<OnspringFileRequest>>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.GetFileInfos(
+            It.IsAny<List<OnspringFileRequest>>()
+          ),
+          Times.Once
+        );
 
       _processorMock
-      .Verify(
-        m => m.WriteFileInfoReport(
-          It.IsAny<List<OnspringFileInfoResult>>(),
-          It.IsAny<string>()
-        ),
-        Times.Once
-      );
+        .Verify(
+          m => m.WriteFileInfoReport(
+            It.IsAny<List<OnspringFileInfoResult>>(),
+            It.IsAny<string>()
+          ),
+          Times.Once
+        );
     }
 
     [Fact]
     public void Invoke_WhenCalled_ItShouldThrowException()
     {
-      var action = () => _handler.Invoke(
-        It.IsAny<InvocationContext>()
-      );
+      var action = () => _handler.Invoke(It.IsAny<InvocationContext>());
 
       action.Should().Throw<NotImplementedException>();
     }

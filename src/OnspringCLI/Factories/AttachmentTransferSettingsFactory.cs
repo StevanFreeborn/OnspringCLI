@@ -7,12 +7,8 @@ public class AttachmentTransferSettingsFactory : IAttachmentTransferSettingsFact
     var settings = new AttachmentTransferSettings();
 
     var config = new ConfigurationBuilder()
-    .AddJsonFile(
-      settingsFile.FullName,
-      optional: false,
-      reloadOnChange: true
-    )
-    .Build();
+      .AddJsonFile(settingsFile.FullName, optional: false, reloadOnChange: true)
+      .Build();
 
     config.Bind(settings);
 
