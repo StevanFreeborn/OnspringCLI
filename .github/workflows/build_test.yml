@@ -30,10 +30,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.ACTIONS_PAT }}
           submodules: "recursive"
-      - name: Setup .NET 7
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.x
+          dotnet-version: 9.x
       - name: Restore dependencies
         run: dotnet restore
       - name: Build on ${{ matrix.os }}
@@ -49,7 +49,7 @@ jobs:
       - name: Rename test coverage report
         run: mv tests/OnspringCLI.Tests/TestResults/*/coverage.cobertura.xml tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
       - name: Upload test coverage report for ${{ matrix.os }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-coverage-${{ matrix.os }}
           path: tests/OnspringCLI.Tests/TestResults/coverage/${{ matrix.os }}-coverage.cobertura.xml
@@ -58,27 +58,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.ACTIONS_PAT }}
           submodules: "recursive"
       - name: Download ubuntu-latest report
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-coverage-ubuntu-latest
           path: ./coverage
       - name: Download windows-latest report
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-coverage-windows-latest
           path: ./coverage
       - name: Download macos-latest report
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-coverage-macos-latest
           path: ./coverage
       - name: Upload test coverage reports
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
