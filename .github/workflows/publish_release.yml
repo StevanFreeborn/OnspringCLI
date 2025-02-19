@@ -33,7 +33,7 @@ jobs:
         with:
           dotnet-version: 9.x
       - name: Install report generator
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.0
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
