@@ -91,7 +91,7 @@ jobs:
       - name: Run versionize for main
         id: versionize-main
         if: steps.branch-name.outputs.ref_branch == 'main'
-        run: versionize -i --exit-insignificant-commits --changelog-all --workingDir ./src/OnspringCLI
+        run: versionize -i --exit-insignificant-commits --workingDir ./src/OnspringCLI
         continue-on-error: true
       - name: Upload changelog for main
         if: steps.versionize-main.outcome == 'success'
@@ -102,7 +102,7 @@ jobs:
       - name: Run versionize for beta
         id: versionize-beta
         if: steps.branch-name.outputs.ref_branch == 'beta'
-        run: versionize -i --exit-insignificant-commits --changelog-all --pre-release beta --workingDir ./src/OnspringCLI
+        run: versionize -i --exit-insignificant-commits --pre-release beta --workingDir ./src/OnspringCLI
         continue-on-error: true
       - name: Upload changelog for beta
         if: steps.versionize-beta.outcome == 'success'
