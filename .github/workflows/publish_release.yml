@@ -23,17 +23,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.ACTIONS_PAT }}
           submodules: "recursive"
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.x
+          dotnet-version: 9.x
       - name: Install report generator
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.0
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -41,7 +41,7 @@ jobs:
       - name: Test
         run: dotnet test --environment ENVIRONMENT=testing --no-build --verbosity normal
       - name: Upload test coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: tests/OnspringCLI.Tests/TestResults/coverage/coverage.cobertura.xml
@@ -51,18 +51,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.ACTIONS_PAT }}
           submodules: "recursive"
       - name: Download test coverage report
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-report
           path: ./coverage
       - name: Upload test coverage reports
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
   version:
@@ -78,10 +78,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.ACTIONS_PAT }}
           submodules: "recursive"
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.x
+          dotnet-version: 9.x
       - name: Install versionize
         run: dotnet tool install --global Versionize
       - name: Setup git
@@ -95,7 +95,7 @@ jobs:
         continue-on-error: true
       - name: Upload changelog for main
         if: steps.versionize-main.outcome == 'success'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: change-log
           path: src/OnspringCLI/CHANGELOG.md
@@ -106,7 +106,7 @@ jobs:
         continue-on-error: true
       - name: Upload changelog for beta
         if: steps.versionize-beta.outcome == 'success'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: change-log
           path: src/OnspringCLI/CHANGELOG.md
@@ -125,16 +125,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
           token: ${{ secrets.ACTIONS_PAT }}
           submodules: "recursive"
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.x
+          dotnet-version: 9.x
       - name: Publish for mac-os
         run: dotnet publish src/OnspringCLI/OnspringCLI.csproj -c Release -r osx-x64 --self-contained -o dist/mac-os
       - name: Rename mac-os binary
@@ -156,7 +156,7 @@ jobs:
         with:
           proj-path: src/OnspringCLI/OnspringCLI.csproj
       - name: Download changlog
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: change-log
           path: src/OnspringCLI
