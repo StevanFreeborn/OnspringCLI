@@ -1,41 +1,35 @@
 namespace OnspringCLI.Processors;
 
-class RecordsProcessor : IRecordsProcessor
+internal class RecordsProcessor(
+  ILogger logger,
+  IReportService reportService,
+  IOnspringService onspringService,
+  IOptions<GlobalOptions> globalOptions
+) : IRecordsProcessor
 {
-  private readonly ILogger _logger;
-  private readonly IReportService _reportService;
-  private readonly IOnspringService _onspringService;
-  private readonly GlobalOptions _globalOptions;
+  private readonly ILogger _logger = logger.ForContext<RecordsProcessor>();
+  private readonly IReportService _reportService = reportService;
+  private readonly IOnspringService _onspringService = onspringService;
+  private readonly GlobalOptions _globalOptions = globalOptions.Value;
 
-  public RecordsProcessor(
-    ILogger logger,
-    IReportService reportService,
-    IOnspringService onspringService,
-    IOptions<GlobalOptions> globalOptions
-  )
+  public Task<List<App>> GetApps()
   {
-    _logger = logger.ForContext<RecordsProcessor>();
-    _reportService = reportService;
-    _onspringService = onspringService;
-    _globalOptions = globalOptions.Value;
+    return _onspringService.GetApps(_globalOptions.SourceApiKey);
   }
-
-  public Task<List<App>> GetApps() => _onspringService.GetApps(_globalOptions.SourceApiKey);
 
   public async Task<List<ReferenceField>> GetReferenceFields(int sourceAppId, int targetAppId)
   {
     var fields = await _onspringService.GetAllFields(_globalOptions.SourceApiKey, sourceAppId);
 
-    return fields
+    return [.. fields
       .Where(f => f.Type is FieldType.Reference)
       .Cast<ReferenceField>()
-      .Where(f => f.ReferencedAppId == targetAppId)
-      .ToList();
+      .Where(f => f.ReferencedAppId == targetAppId)];
   }
 
   public async Task<List<RecordReference>> GetReferences(App sourceApp, List<ReferenceField> referenceFields, List<int> recordIds)
   {
-    var referenceFieldIds = referenceFields.Select(f => f.Id).ToList();
+    var referenceFieldIds = referenceFields.Select(static f => f.Id).ToList();
     var pagingRequest = new PagingRequest { PageNumber = 1 };
     var totalPages = 1;
 
@@ -81,7 +75,7 @@ class RecordsProcessor : IRecordsProcessor
     return [.. references];
   }
 
-  private List<RecordReference> GetReferencesFromRecords(
+  private static List<RecordReference> GetReferencesFromRecords(
     App sourceApp,
     List<ResultRecord> records,
     List<ReferenceField> referenceFields,
