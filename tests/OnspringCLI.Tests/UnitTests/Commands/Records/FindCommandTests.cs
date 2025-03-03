@@ -18,7 +18,7 @@ public class FindCommandTests
     var findCommand = new FindCommand();
 
     findCommand.Subcommands
-      .FirstOrDefault(x => x.Name == "references")
+      .FirstOrDefault(static x => x.Name == "references")
       .Should()
       .NotBeNull().And.BeOfType<ReferencesCommand>();
   }

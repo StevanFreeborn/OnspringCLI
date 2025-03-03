@@ -18,8 +18,19 @@ public class RecordsCommandTests
     var recordsCommand = new RecordsCommand();
 
     recordsCommand.Subcommands
-      .FirstOrDefault(x => x.Name == "find")
+      .FirstOrDefault(static x => x.Name == "find")
       .Should()
       .NotBeNull().And.BeOfType<FindCommand>();
+  }
+
+  [Fact]
+  public void RecordsCommand_WhenCalled_ItShouldHaveAnUpdateCommand()
+  {
+    var recordsCommand = new RecordsCommand();
+
+    recordsCommand.Subcommands
+      .FirstOrDefault(static x => x.Name == "update")
+      .Should()
+      .NotBeNull().And.BeOfType<UpdateCommand>();
   }
 }
