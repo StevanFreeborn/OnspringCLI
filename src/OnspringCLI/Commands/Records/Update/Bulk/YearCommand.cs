@@ -60,17 +60,20 @@ public class YearCommand : Command
 
       _logger.Information("Starting bulk year update");
 
-      _logger.Information("Loading settings from {File}.", File.FullName);
+      _logger.Information("Loading settings from {File}.", File?.FullName);
       var settings = await _settingsFactory.CreateAsync(File);
 
       _logger.Information("Validating apps.");
       var allApps = await _processor.GetApps();
-      var appsFound = allApps.Where(a => settings.AppFieldsMap.ContainsKey(a.Name)).ToList();
+      var appsValidationResult = settings.ValidateApps(allApps);
 
-      if (appsFound.Count != settings.AppFieldsMap.Count)
+      if (appsValidationResult.IsValid is false)
       {
-        var appsNotFound = settings.AppFieldsMap.Keys.Except(appsFound.Select(a => a.Name));
-        _logger.Warning("The following apps in the file could not be found: {Apps}.", appsNotFound);
+        _logger.Warning(
+          "The following apps in the file could not be found: {Apps}.",
+          string.Join(", ", appsValidationResult.AppsNotFound)
+        );
+
         return 1;
       }
 
@@ -79,7 +82,7 @@ public class YearCommand : Command
       var fieldsNotFound = new Dictionary<string, List<string>>();
       var invalidFieldsFound = new Dictionary<string, List<string>>();
 
-      foreach (var app in appsFound)
+      foreach (var app in appsValidationResult.AppsFound)
       {
         var fields = await _processor.GetFieldsForApp(app.Id);
         var fieldsLookingFor = settings.AppFieldsMap[app.Name];

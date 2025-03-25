@@ -14,23 +14,22 @@ public class YearCommandTests
 
   public class HandlerTests
   {
-    private readonly Mock<ILogger> _loggerMock;
-    private readonly Mock<IRecordsProcessor> _processorMock;
+    private readonly Mock<ILogger> _loggerMock = new();
+    private readonly Mock<IRecordsProcessor> _processorMock = new();
+    private readonly Mock<IUpdateYearSettingsFactory> _settingsFactoryMock = new();
     private readonly YearCommand.Handler _handler;
     private readonly YearCommand _command;
 
     public HandlerTests()
     {
-      _loggerMock = new Mock<ILogger>();
-      _processorMock = new Mock<IRecordsProcessor>();
-
       _loggerMock
         .Setup(static x => x.ForContext<It.IsAnyType>())
         .Returns(_loggerMock.Object);
 
       _handler = new YearCommand.Handler(
         _loggerMock.Object,
-        _processorMock.Object
+        _processorMock.Object,
+        _settingsFactoryMock.Object
       );
 
       _command = [];
@@ -44,7 +43,7 @@ public class YearCommandTests
         .Setup(static x => x.GetApps())
         .ReturnsAsync([]);
 
-      var result = await _handler.InvokeAsync(context);
+      var result = await _command.InvokeAsync(OptionsFactory.RequiredYearOptions);
 
       result.Should().Be(1);
     }
