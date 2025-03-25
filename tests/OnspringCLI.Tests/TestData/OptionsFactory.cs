@@ -87,4 +87,10 @@ public static class OptionsFactory
       "--record-ids",
       "1,2"
     ];
+
+  public static string[] RequiredYearOptions =>
+    [
+      "--file",
+      "TestData/Files/fields.csv"
+    ];
 }

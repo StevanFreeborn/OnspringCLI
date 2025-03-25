@@ -11,7 +11,7 @@ public class RecordsProcessorTests
   public RecordsProcessorTests()
   {
     _globalOptionsMock
-      .SetupGet(m => m.Value)
+      .SetupGet(static m => m.Value)
       .Returns(new GlobalOptions
       {
         SourceApiKey = "sourceApiKey",
@@ -19,7 +19,7 @@ public class RecordsProcessorTests
       });
 
     _loggerMock
-      .Setup(m => m.ForContext<It.IsAnyType>())
+      .Setup(static m => m.ForContext<It.IsAnyType>())
       .Returns(_loggerMock.Object);
 
     _processor = new RecordsProcessor(
@@ -36,7 +36,7 @@ public class RecordsProcessorTests
     var apps = new List<App> { new() };
 
     _onspringServiceMock
-      .Setup(x => x.GetApps(It.IsAny<string>()))
+      .Setup(static x => x.GetApps(It.IsAny<string>()))
       .ReturnsAsync(apps);
 
     var result = await _processor.GetApps();
@@ -48,7 +48,7 @@ public class RecordsProcessorTests
   public async Task GetReferenceFields_WhenCalledAndNoReferenceFields_ItShouldReturnEmptyList()
   {
     _onspringServiceMock
-      .Setup(x => x.GetAllFields(It.IsAny<string>(), It.IsAny<int>()))
+      .Setup(static x => x.GetAllFields(It.IsAny<string>(), It.IsAny<int>()))
       .ReturnsAsync([]);
 
     var result = await _processor.GetReferenceFields(It.IsAny<int>(), It.IsAny<int>());
@@ -67,7 +67,7 @@ public class RecordsProcessorTests
     };
 
     _onspringServiceMock
-      .Setup(x => x.GetAllFields(It.IsAny<string>(), It.IsAny<int>()))
+      .Setup(static x => x.GetAllFields(It.IsAny<string>(), It.IsAny<int>()))
       .ReturnsAsync(fields);
 
     var result = await _processor.GetReferenceFields(It.IsAny<int>(), 2);
@@ -84,7 +84,7 @@ public class RecordsProcessorTests
     var recordIds = new List<int> { 1 };
 
     _onspringServiceMock
-      .Setup(x => x.GetAPageOfRecords(
+      .Setup(static x => x.GetAPageOfRecords(
         It.IsAny<string>(),
         It.IsAny<int>(),
         It.IsAny<List<int>>(),
@@ -113,7 +113,7 @@ public class RecordsProcessorTests
     };
 
     _onspringServiceMock
-      .Setup(x => x.GetAPageOfRecords(
+      .Setup(static x => x.GetAPageOfRecords(
         It.IsAny<string>(),
         It.IsAny<int>(),
         It.IsAny<List<int>>(),
@@ -190,7 +190,7 @@ public class RecordsProcessorTests
     };
 
     _onspringServiceMock
-      .Setup(x => x.GetAPageOfRecords(
+      .Setup(static x => x.GetAPageOfRecords(
         It.IsAny<string>(),
         It.IsAny<int>(),
         It.IsAny<List<int>>(),
@@ -291,7 +291,7 @@ public class RecordsProcessorTests
     };
 
     _onspringServiceMock
-      .SetupSequence(x => x.GetAPageOfRecords(
+      .SetupSequence(static x => x.GetAPageOfRecords(
         It.IsAny<string>(),
         It.IsAny<int>(),
         It.IsAny<List<int>>(),
@@ -332,7 +332,7 @@ public class RecordsProcessorTests
     _processor.WriteReferencesReport([], "output");
 
     _reportServiceMock.Verify(
-      m => m.WriteCsvReport(
+      static m => m.WriteCsvReport(
         It.IsAny<List<RecordReference>>(),
         typeof(RecordReferenceMap),
         It.IsAny<string>(),
@@ -340,5 +340,19 @@ public class RecordsProcessorTests
       ),
       Times.Once
     );
+  }
+
+  [Fact]
+  public async Task GetFieldsForApp_WhenCalled_ItShouldReturnFields()
+  {
+    var fields = new List<Field> { new() };
+
+    _onspringServiceMock
+      .Setup(static x => x.GetAllFields(It.IsAny<string>(), It.IsAny<int>()))
+      .ReturnsAsync(fields);
+
+    var result = await _processor.GetFieldsForApp(It.IsAny<int>());
+
+    result.Should().BeEquivalentTo(fields);
   }
 }

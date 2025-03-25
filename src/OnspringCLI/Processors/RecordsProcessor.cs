@@ -154,4 +154,9 @@ internal class RecordsProcessor(
       "references-report.csv"
     );
   }
+
+  public async Task<List<Field>> GetFieldsForApp(int appId)
+  {
+    return await _onspringService.GetAllFields(_globalOptions.SourceApiKey, appId);
+  }
 }

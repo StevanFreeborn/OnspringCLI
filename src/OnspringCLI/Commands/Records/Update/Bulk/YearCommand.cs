@@ -31,13 +31,15 @@ public class YearCommand : Command
   {
     private readonly ILogger _logger;
     private readonly IRecordsProcessor _processor;
-    public FileInfo File { get; set; }
+    private readonly IUpdateYearSettingsFactory _settingsFactory;
+    public FileInfo? File { get; set; }
     public int Years { get; set; }
 
-    public Handler(ILogger logger, IRecordsProcessor processor)
+    public Handler(ILogger logger, IRecordsProcessor processor, IUpdateYearSettingsFactory settingsFactory)
     {
       _logger = logger.ForContext<Handler>();
       _processor = processor;
+      _settingsFactory = settingsFactory;
     }
 
     public async Task<int> InvokeAsync(InvocationContext context)
@@ -59,15 +61,15 @@ public class YearCommand : Command
       _logger.Information("Starting bulk year update");
 
       _logger.Information("Loading settings from {File}.", File.FullName);
-      var fieldsToUpdate = await GetFieldsToUpdateAsync();
+      var settings = await _settingsFactory.CreateAsync(File);
 
       _logger.Information("Validating apps.");
       var allApps = await _processor.GetApps();
-      var appsFound = allApps.Where(a => fieldsToUpdate.ContainsKey(a.Name)).ToList();
+      var appsFound = allApps.Where(a => settings.AppFieldsMap.ContainsKey(a.Name)).ToList();
 
-      if (appsFound.Count != fieldsToUpdate.Count)
+      if (appsFound.Count != settings.AppFieldsMap.Count)
       {
-        var appsNotFound = fieldsToUpdate.Keys.Except(appsFound.Select(a => a.Name));
+        var appsNotFound = settings.AppFieldsMap.Keys.Except(appsFound.Select(a => a.Name));
         _logger.Warning("The following apps in the file could not be found: {Apps}.", appsNotFound);
         return 1;
       }
@@ -80,26 +82,21 @@ public class YearCommand : Command
       foreach (var app in appsFound)
       {
         var fields = await _processor.GetFieldsForApp(app.Id);
-        var fieldsLookingFor = fieldsToUpdate[app.Name];
+        var fieldsLookingFor = settings.AppFieldsMap[app.Name];
         var foundFields = fields.Where(f => fieldsLookingFor
-              .Contains(f.Name, StringComparer.OrdinalIgnoreCase))
-              .ToList();
+          .Contains(f.Name, StringComparer.OrdinalIgnoreCase))
+          .ToList();
 
-        // TODO: Extract to method
-        if (foundFields.Count != fieldsLookingFor.Count)
+        var (notFoundFields, invalidFields) = ValidateFields(fields, fieldsLookingFor);
+
+        if (notFoundFields.Count > 0)
         {
-          var fieldsNotFoundForApp = fieldsLookingFor.Except(foundFields.Select(f => f.Name));
-          fieldsNotFound.Add(app.Name, [.. fieldsNotFoundForApp]);
+          fieldsNotFound.Add(app.Name, notFoundFields);
         }
 
-        // TODO: Extract to method
-        if (foundFields.Any(f => f.Type is not FieldType.List and not FieldType.Date))
+        if (invalidFields.Count > 0)
         {
-          var invalidFields = foundFields
-            .Where(f => f.Type is not FieldType.List and not FieldType.Date)
-            .Select(f => f.Name);
-
-          invalidFieldsFound.Add(app.Name, [.. invalidFields]);
+          invalidFieldsFound.Add(app.Name, invalidFields);
         }
 
         if (fieldsNotFound.ContainsKey(app.Name) || invalidFieldsFound.ContainsKey(app.Name))
@@ -114,9 +111,20 @@ public class YearCommand : Command
       {
         foreach (var (app, fields) in fieldsNotFound)
         {
-          _logger.Warning("The following fields in app {App} could not be found: {Fields}.", app, fields);
+          _logger.Warning("The following fields in app {App} could not be found: {Fields}.", app, string.Join(", ", fields));
         }
+      }
 
+      if (invalidFieldsFound.Count > 0)
+      {
+        foreach (var (app, fields) in invalidFieldsFound)
+        {
+          _logger.Warning("The following fields in app {App} are not valid for updating: {Fields}.", app, string.Join(", ", fields));
+        }
+      }
+
+      if (fieldsNotFound.Count > 0 || invalidFieldsFound.Count > 0)
+      {
         return 2;
       }
 
@@ -131,30 +139,22 @@ public class YearCommand : Command
       throw new NotImplementedException();
     }
 
-    private async Task<Dictionary<string, List<string>>> GetFieldsToUpdateAsync()
+    private static ValidationResult ValidateFields(List<Field> fields, List<string> fieldsLookingFor)
     {
-      var fieldsToUpdate = new Dictionary<string, List<string>>();
+      var foundFields = fields.Where(f => fieldsLookingFor
+        .Contains(f.Name, StringComparer.OrdinalIgnoreCase))
+        .ToList();
 
-      using var reader = new StreamReader(File.FullName);
-      using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+      var notFoundFields = fieldsLookingFor.Except(foundFields.Select(f => f.Name)).ToList();
 
-      await foreach (var record in csv.GetRecordsAsync<FieldToUpdate>())
-      {
-        if (fieldsToUpdate.TryGetValue(record.App, out var value))
-        {
-          value.Add(record.Field);
-          continue;
-        }
+      var invalidFields = foundFields
+        .Where(f => f.Type is not FieldType.List and not FieldType.Date)
+        .Select(f => f.Name)
+        .ToList();
 
-        fieldsToUpdate.Add(record.App, [record.Field]);
-      }
-
-      return fieldsToUpdate;
+      return new(notFoundFields, invalidFields);
     }
 
-    private record FieldToUpdate(
-      string App,
-      string Field
-    );
+    private record ValidationResult(List<string> NotFoundFields, List<string> InvalidFields);
   }
 }
