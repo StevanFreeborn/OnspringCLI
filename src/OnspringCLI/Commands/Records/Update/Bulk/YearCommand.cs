@@ -44,20 +44,6 @@ public class YearCommand : Command
 
     public async Task<int> InvokeAsync(InvocationContext context)
     {
-      // TODO: Implement this method
-      // 1. Parse the csv file to get a list of apps and their fields
-      // 2. Validate the apps and fields exist and can be accessed by this app
-      // 3. For each app page through the records and update the field value of fields
-      //    that match a field in the list
-      //    a. If the field is a list field, get the correct GUID for the target year. Add the value if necessary.
-      //    b. If the field is a date field, adjust the date by the number of years
-      //    c. Update the record with the new field values
-      //    d. Log the record id and the field that was updated
-      //    e. If the record could not be updated, log the record id and the error message, and continue to the next record
-      // 4. Log the number of records updated and the number of records that could not be updated
-      // 5. Return 0 if all records were updated successfully, 1 if any records could not be updated
-      // 6. Write out errors to a file if any records could not be updated
-
       _logger.Information("Starting bulk year update");
 
       _logger.Information("Loading settings from {File}.", File?.FullName);
@@ -120,101 +106,43 @@ public class YearCommand : Command
         return 2;
       }
 
-      _logger.Information("Updating records.");
+      _logger.Information("Updating records...");
+
+      var counts = new Dictionary<string, int>();
 
       foreach (var mapping in mappings)
       {
         await foreach (var record in _processor.GetRecords(mapping.Key, mapping.Value))
         {
-          var updatedRecord = new ResultRecord()
+          var updatedRecord = await _processor.UpdateRecordYearValues(
+            mapping.Key.Name,
+            record,
+            mapping.Value,
+            Years
+          );
+
+          if (updatedRecord is null)
           {
-            AppId = record.AppId,
-            RecordId = record.RecordId
-          };
+            continue;
+          }
 
-          foreach (var field in mapping.Value)
+          if (counts.TryGetValue(mapping.Key.Name, out var value))
           {
-            var fieldValue = record.FieldData.FirstOrDefault(fv => fv.FieldId == field.Id);
-
-            if (fieldValue is null)
-            {
-              _logger.Debug("No value found for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
-              continue;
-            }
-
-            if (field is ListField listField && listField.Multiplicity is Multiplicity.SingleSelect)
-            {
-              var singleSelectListFieldValue = fieldValue.AsNullableGuid();
-
-              if (singleSelectListFieldValue is null)
-              {
-                _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
-                continue;
-              }
-
-              var value = listField.Values.FirstOrDefault(v => v.Id == singleSelectListFieldValue);
-
-              if (value is null)
-              {
-                _logger.Debug(
-                  "Unable to find list value for {Value} for {Field} on {Record} in {App}",
-                  singleSelectListFieldValue,
-                  field.Name,
-                  record.RecordId,
-                  mapping.Key
-                );
-
-                continue;
-              }
-
-              var isYear = int.TryParse(value.Name, out var valueAsYear);
-
-              if (isYear is false)
-              {
-                _logger.Debug(
-                  "Unable to parse a year value from {Value} for {Field} on {Record} in {App}",
-                  value.Name,
-                  field.Name,
-                  record.RecordId,
-                  mapping.Key
-                );
-
-                continue;
-              }
-
-              var newYearValue = valueAsYear + Years;
-
-
-
-              continue;
-            }
-
-            if (field.Type is FieldType.Date)
-            {
-              var dateFieldValue = fieldValue.AsNullableDateTime();
-
-              if (dateFieldValue is null || dateFieldValue.HasValue is false)
-              {
-                _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
-                continue;
-              }
-
-              var newDateFieldValue = dateFieldValue.Value.AddYears(Years);
-              _logger.Debug(
-                "Updating value for {Field} on {Record} in {App} from {OldValue} to {NewValue}",
-                field.Name,
-                record.RecordId,
-                mapping.Key,
-                dateFieldValue.Value,
-                newDateFieldValue
-              );
-              updatedRecord.FieldData.Add(new DateFieldValue(fieldValue.FieldId, newDateFieldValue));
-
-              continue;
-            }
+            counts[mapping.Key.Name] = ++value;
+          }
+          else
+          {
+            counts.Add(mapping.Key.Name, 1);
           }
         }
       }
+
+      foreach (var (app, count) in counts)
+      {
+        _logger.Information("Updated {Count} record(s) in app {App}.", count, app);
+      }
+
+      _logger.Information("Finished bulk year update");
 
       return 0;
     }

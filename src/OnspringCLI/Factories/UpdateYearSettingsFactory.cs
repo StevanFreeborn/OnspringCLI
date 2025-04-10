@@ -14,6 +14,7 @@ internal class UpdateYearSettingsFactory : IUpdateYearSettingsFactory
 
     using var reader = new StreamReader(file.FullName);
     using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+    csv.Context.RegisterClassMap<FieldToUpdateMap>();
 
     await foreach (var record in csv.GetRecordsAsync<FieldToUpdate>())
     {
@@ -27,5 +28,21 @@ internal class UpdateYearSettingsFactory : IUpdateYearSettingsFactory
     }
 
     return new(fieldsToUpdate);
+  }
+
+  private class FieldToUpdateMap : ClassMap<FieldToUpdate>
+  {
+    public FieldToUpdateMap()
+    {
+      Map(static m => m.AppName)
+        .Name("AppName")
+        .Name("App Name")
+        .Name("App");
+
+      Map(static m => m.FieldName)
+        .Name("FieldName")
+        .Name("Field Name")
+        .Name("Field");
+    }
   }
 }

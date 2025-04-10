@@ -1,4 +1,3 @@
-
 namespace OnspringCLI.Processors;
 
 internal class RecordsProcessor(
@@ -142,7 +141,6 @@ internal class RecordsProcessor(
         }
       }
     }
-
     return references;
   }
 
@@ -161,12 +159,45 @@ internal class RecordsProcessor(
     return await _onspringService.GetAllFields(_globalOptions.SourceApiKey, appId);
   }
 
-  public IAsyncEnumerable<ResultRecord> GetRecords(App app, List<Field> fields)
+  public async IAsyncEnumerable<ResultRecord> GetRecords(App app, List<Field> fields)
   {
-    throw new NotImplementedException();
+    var pagingRequest = new PagingRequest { PageNumber = 1 };
+    var totalPages = 1;
+
+    do
+    {
+      var page = await _onspringService.GetAPageOfRecords(
+        _globalOptions.SourceApiKey,
+        app.Id,
+        [.. fields.Select(static f => f.Id)],
+        pagingRequest
+      );
+
+      if (page is null || page.Items.Count is 0)
+      {
+        _logger.Warning("No records found in app {AppId} for page {PageNumber}.", app.Id, pagingRequest.PageNumber);
+        yield break;
+      }
+
+      totalPages = page.TotalPages;
+
+      _logger.Information(
+        "Records retrieved from app {AppId} for page {PageNumber} of {TotalPages}.",
+        app.Id,
+        pagingRequest.PageNumber,
+        totalPages
+      );
+
+      foreach (var record in page.Items)
+      {
+        yield return record;
+      }
+
+      pagingRequest.PageNumber++;
+    } while (pagingRequest.PageNumber <= totalPages);
   }
 
-  public async Task UpdateRecordYearValuesAsync(string appName, ResultRecord record, List<Field> fields, int years)
+  public async Task<ResultRecord?> UpdateRecordYearValues(string appName, ResultRecord record, List<Field> fields, int years)
   {
     var updatedRecord = new ResultRecord()
     {
@@ -282,5 +313,30 @@ internal class RecordsProcessor(
         continue;
       }
     }
+
+    if (updatedRecord.FieldData.Count is 0)
+    {
+      _logger.Debug("No fields to update for {Record} in {App}", record.RecordId, appName);
+      return null;
+    }
+
+    var updateRecordResponse = await _onspringService.UpdateRecord(
+      _globalOptions.SourceApiKey,
+      updatedRecord
+    );
+
+    if (updateRecordResponse is null)
+    {
+      _logger.Warning("Unable to update record {Record} in {App}", record.RecordId, appName);
+      return null;
+    }
+
+    _logger.Information(
+      "Record {Record} in {App} updated successfully",
+      record.RecordId,
+      appName
+    );
+
+    return updatedRecord;
   }
 }
