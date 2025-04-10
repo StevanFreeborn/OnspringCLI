@@ -78,28 +78,23 @@ public class YearCommand : Command
       }
 
       _logger.Information("Validating fields.");
-      var mapping = new Dictionary<App, List<Field>>();
+      var mappings = new Dictionary<App, List<Field>>();
       var fieldsNotFound = new Dictionary<string, List<string>>();
       var invalidFieldsFound = new Dictionary<string, List<string>>();
 
       foreach (var app in appsValidationResult.AppsFound)
       {
         var fields = await _processor.GetFieldsForApp(app.Id);
-        var fieldsLookingFor = settings.AppFieldsMap[app.Name];
-        var foundFields = fields.Where(f => fieldsLookingFor
-          .Contains(f.Name, StringComparer.OrdinalIgnoreCase))
-          .ToList();
+        var fieldsValidationResult = settings.ValidateFields(app, fields);
 
-        var (notFoundFields, invalidFields) = ValidateFields(fields, fieldsLookingFor);
-
-        if (notFoundFields.Count > 0)
+        if (fieldsValidationResult.FieldsNotFound.Count > 0)
         {
-          fieldsNotFound.Add(app.Name, notFoundFields);
+          fieldsNotFound.Add(app.Name, fieldsValidationResult.FieldsNotFound);
         }
 
-        if (invalidFields.Count > 0)
+        if (fieldsValidationResult.InvalidFields.Count > 0)
         {
-          invalidFieldsFound.Add(app.Name, invalidFields);
+          invalidFieldsFound.Add(app.Name, fieldsValidationResult.InvalidFields);
         }
 
         if (fieldsNotFound.ContainsKey(app.Name) || invalidFieldsFound.ContainsKey(app.Name))
@@ -107,31 +102,97 @@ public class YearCommand : Command
           continue;
         }
 
-        mapping.Add(app, foundFields);
+        mappings.Add(app, fieldsValidationResult.FieldsFound);
       }
 
-      if (fieldsNotFound.Count > 0)
+      if (fieldsNotFound.Count > 0 || invalidFieldsFound.Count > 0)
       {
         foreach (var (app, fields) in fieldsNotFound)
         {
           _logger.Warning("The following fields in app {App} could not be found: {Fields}.", app, string.Join(", ", fields));
         }
-      }
 
-      if (invalidFieldsFound.Count > 0)
-      {
-        foreach (var (app, fields) in invalidFieldsFound)
+        foreach (var (app, fields) in fieldsNotFound)
         {
-          _logger.Warning("The following fields in app {App} are not valid for updating: {Fields}.", app, string.Join(", ", fields));
+          _logger.Warning("The following fields in app {App} could not be found: {Fields}.", app, string.Join(", ", fields));
         }
-      }
 
-      if (fieldsNotFound.Count > 0 || invalidFieldsFound.Count > 0)
-      {
         return 2;
       }
 
       _logger.Information("Updating records.");
+
+      foreach (var mapping in mappings)
+      {
+        await foreach (var record in _processor.GetRecords(mapping.Key, mapping.Value))
+        {
+          var updatedRecord = new ResultRecord()
+          {
+            AppId = record.AppId,
+            RecordId = record.RecordId
+          };
+
+          // TODO: Finish building updated record
+          foreach (var field in mapping.Value)
+          {
+            var fieldValue = record.FieldData.FirstOrDefault(fv => fv.FieldId == field.Id);
+
+            if (fieldValue is null)
+            {
+              _logger.Debug("No value found for {Field} on {Record} in {App}", field.Name, record.RecordId, record.AppId);
+              continue;
+            }
+
+            if (field is ListField listField)
+            {
+              if (listField.Multiplicity is Multiplicity.SingleSelect)
+              {
+                var singleSelectListFieldValue = fieldValue.AsNullableGuid();
+
+                if (singleSelectListFieldValue is null)
+                {
+                  _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, record.AppId);
+                }
+
+                continue;
+              }
+
+              var multiSelectListFieldValue = fieldValue.AsGuidList();
+
+              if (multiSelectListFieldValue is null)
+              {
+                _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
+              }
+
+              continue;
+            }
+
+            if (field.Type is FieldType.Date)
+            {
+              var dateFieldValue = fieldValue.AsNullableDateTime();
+
+              if (dateFieldValue is null || dateFieldValue.HasValue is false)
+              {
+                _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
+                continue;
+              }
+
+              var newDateFieldValue = dateFieldValue.Value.AddYears(Years);
+              _logger.Debug(
+                "Updating value for {Field} on {Record} in {App} from {OldValue} to {NewValue}",
+                field.Name,
+                record.RecordId,
+                mapping.Key,
+                dateFieldValue.Value,
+                newDateFieldValue
+              );
+              updatedRecord.FieldData.Add(new DateFieldValue(fieldValue.FieldId, newDateFieldValue));
+
+              continue;
+            }
+          }
+        }
+      }
 
       return 0;
     }
@@ -141,23 +202,5 @@ public class YearCommand : Command
     {
       throw new NotImplementedException();
     }
-
-    private static ValidationResult ValidateFields(List<Field> fields, List<string> fieldsLookingFor)
-    {
-      var foundFields = fields.Where(f => fieldsLookingFor
-        .Contains(f.Name, StringComparer.OrdinalIgnoreCase))
-        .ToList();
-
-      var notFoundFields = fieldsLookingFor.Except(foundFields.Select(f => f.Name)).ToList();
-
-      var invalidFields = foundFields
-        .Where(f => f.Type is not FieldType.List and not FieldType.Date)
-        .Select(f => f.Name)
-        .ToList();
-
-      return new(notFoundFields, invalidFields);
-    }
-
-    private record ValidationResult(List<string> NotFoundFields, List<string> InvalidFields);
   }
 }
