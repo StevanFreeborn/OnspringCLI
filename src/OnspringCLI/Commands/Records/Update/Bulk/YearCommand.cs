@@ -132,37 +132,59 @@ public class YearCommand : Command
             RecordId = record.RecordId
           };
 
-          // TODO: Finish building updated record
           foreach (var field in mapping.Value)
           {
             var fieldValue = record.FieldData.FirstOrDefault(fv => fv.FieldId == field.Id);
 
             if (fieldValue is null)
             {
-              _logger.Debug("No value found for {Field} on {Record} in {App}", field.Name, record.RecordId, record.AppId);
+              _logger.Debug("No value found for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
               continue;
             }
 
-            if (field is ListField listField)
+            if (field is ListField listField && listField.Multiplicity is Multiplicity.SingleSelect)
             {
-              if (listField.Multiplicity is Multiplicity.SingleSelect)
-              {
-                var singleSelectListFieldValue = fieldValue.AsNullableGuid();
+              var singleSelectListFieldValue = fieldValue.AsNullableGuid();
 
-                if (singleSelectListFieldValue is null)
-                {
-                  _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, record.AppId);
-                }
+              if (singleSelectListFieldValue is null)
+              {
+                _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
+                continue;
+              }
+
+              var value = listField.Values.FirstOrDefault(v => v.Id == singleSelectListFieldValue);
+
+              if (value is null)
+              {
+                _logger.Debug(
+                  "Unable to find list value for {Value} for {Field} on {Record} in {App}",
+                  singleSelectListFieldValue,
+                  field.Name,
+                  record.RecordId,
+                  mapping.Key
+                );
 
                 continue;
               }
 
-              var multiSelectListFieldValue = fieldValue.AsGuidList();
+              var isYear = int.TryParse(value.Name, out var valueAsYear);
 
-              if (multiSelectListFieldValue is null)
+              if (isYear is false)
               {
-                _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, mapping.Key);
+                _logger.Debug(
+                  "Unable to parse a year value from {Value} for {Field} on {Record} in {App}",
+                  value.Name,
+                  field.Name,
+                  record.RecordId,
+                  mapping.Key
+                );
+
+                continue;
               }
+
+              var newYearValue = valueAsYear + Years;
+
+
 
               continue;
             }

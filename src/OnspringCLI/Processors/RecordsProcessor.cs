@@ -1,3 +1,4 @@
+
 namespace OnspringCLI.Processors;
 
 internal class RecordsProcessor(
@@ -158,5 +159,128 @@ internal class RecordsProcessor(
   public async Task<List<Field>> GetFieldsForApp(int appId)
   {
     return await _onspringService.GetAllFields(_globalOptions.SourceApiKey, appId);
+  }
+
+  public IAsyncEnumerable<ResultRecord> GetRecords(App app, List<Field> fields)
+  {
+    throw new NotImplementedException();
+  }
+
+  public async Task UpdateRecordYearValuesAsync(string appName, ResultRecord record, List<Field> fields, int years)
+  {
+    var updatedRecord = new ResultRecord()
+    {
+      AppId = record.AppId,
+      RecordId = record.RecordId
+    };
+
+    foreach (var field in fields)
+    {
+      var fieldValue = record.FieldData.FirstOrDefault(fv => fv.FieldId == field.Id);
+
+      if (fieldValue is null)
+      {
+        _logger.Debug("No value found for {Field} on {Record} in {App}", field.Name, record.RecordId, appName);
+        continue;
+      }
+
+      if (field is ListField listField && listField.Multiplicity is Multiplicity.SingleSelect)
+      {
+        var singleSelectListFieldValue = fieldValue.AsNullableGuid();
+
+        if (singleSelectListFieldValue is null)
+        {
+          _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, appName);
+          continue;
+        }
+
+        var value = listField.Values.FirstOrDefault(v => v.Id == singleSelectListFieldValue);
+
+        if (value is null)
+        {
+          _logger.Debug(
+            "Unable to find list value for {Value} for {Field} on {Record} in {App}",
+            singleSelectListFieldValue,
+            field.Name,
+            record.RecordId,
+            appName
+          );
+
+          continue;
+        }
+
+        var isYear = int.TryParse(value.Name, out var valueAsYear);
+
+        if (isYear is false)
+        {
+          _logger.Debug(
+            "Unable to parse a year value from {Value} for {Field} on {Record} in {App}",
+            value.Name,
+            field.Name,
+            record.RecordId,
+            appName
+          );
+
+          continue;
+        }
+
+        var newYearValue = valueAsYear + years;
+        var listValue = new ListValue()
+        {
+          Name = newYearValue.ToString(CultureInfo.InvariantCulture),
+          NumericValue = newYearValue,
+        };
+
+        var newYearValueId = await _onspringService.GetOrAddListValueByName(_globalOptions.SourceApiKey, listField.Id, listValue);
+
+        if (newYearValueId is null)
+        {
+          _logger.Debug(
+            "Unable to get new year value {NewYearValue} for {Field} on {Record} in {App}",
+            newYearValue,
+            field.Name,
+            record.RecordId,
+            appName
+          );
+
+          continue;
+        }
+
+        _logger.Debug(
+          "Updating value for {Field} on {Record} in {App} from {OldValue} to {NewValue}",
+          field.Name,
+          record.RecordId,
+          appName,
+          valueAsYear,
+          newYearValue
+        );
+        updatedRecord.FieldData.Add(new GuidFieldValue(listField.Id, newYearValueId));
+        continue;
+      }
+
+      if (field.Type is FieldType.Date)
+      {
+        var dateFieldValue = fieldValue.AsNullableDateTime();
+
+        if (dateFieldValue is null || dateFieldValue.HasValue is false)
+        {
+          _logger.Debug("Unable to get value for {Field} on {Record} in {App}", field.Name, record.RecordId, appName);
+          continue;
+        }
+
+        var newDateFieldValue = dateFieldValue.Value.AddYears(years);
+        _logger.Debug(
+          "Updating value for {Field} on {Record} in {App} from {OldValue} to {NewValue}",
+          field.Name,
+          record.RecordId,
+          appName,
+          dateFieldValue.Value,
+          newDateFieldValue
+        );
+        updatedRecord.FieldData.Add(new DateFieldValue(fieldValue.FieldId, newDateFieldValue));
+
+        continue;
+      }
+    }
   }
 }

@@ -7,6 +7,7 @@ global using System.CommandLine.Invocation;
 global using System.CommandLine.Parsing;
 global using System.Diagnostics.CodeAnalysis;
 global using System.Globalization;
+global using System.Net;
 
 global using CsvHelper;
 global using CsvHelper.Configuration;
