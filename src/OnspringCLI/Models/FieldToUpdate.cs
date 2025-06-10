@@ -8,10 +8,4 @@ internal record FieldToUpdate
   internal FieldToUpdate()
   {
   }
-
-  internal FieldToUpdate(string appName, string fieldName)
-  {
-    AppName = appName;
-    FieldName = fieldName;
-  }
 }

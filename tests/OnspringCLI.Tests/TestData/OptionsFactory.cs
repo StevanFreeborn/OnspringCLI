@@ -91,6 +91,8 @@ public static class OptionsFactory
   public static string[] RequiredYearOptions =>
     [
       "--file",
-      "TestData/Files/fields.csv"
+      "TestData/Files/fields.csv",
+      "--years",
+      "1",
     ];
 }
