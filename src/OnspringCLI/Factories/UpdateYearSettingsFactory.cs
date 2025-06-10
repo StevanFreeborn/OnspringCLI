@@ -34,15 +34,8 @@ internal class UpdateYearSettingsFactory : IUpdateYearSettingsFactory
   {
     public FieldToUpdateMap()
     {
-      Map(static m => m.AppName)
-        .Name("AppName")
-        .Name("App Name")
-        .Name("App");
-
-      Map(static m => m.FieldName)
-        .Name("FieldName")
-        .Name("Field Name")
-        .Name("Field");
+      Map(static m => m.AppName).Name("AppName", "App Name", "App");
+      Map(static m => m.FieldName).Name("FieldName", "Field Name", "Field");
     }
   }
 }
