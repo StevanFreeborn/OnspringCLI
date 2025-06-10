@@ -1,5 +1,3 @@
-using Xunit.Sdk;
-
 namespace OnspringCLI.Tests.UnitTests.Services;
 
 public class OnspringServiceTests
@@ -15,22 +13,12 @@ public class OnspringServiceTests
     _mockClient = new Mock<IOnspringClient>();
 
     _loggerMock
-      .Setup(
-        x => x.ForContext<It.IsAnyType>()
-      )
-      .Returns(
-        _loggerMock.Object
-      );
+      .Setup(static x => x.ForContext<It.IsAnyType>())
+      .Returns(_loggerMock.Object);
 
     _clientFactoryMock
-      .Setup(
-        m => m.Create(
-          It.IsAny<string>()
-        )
-      )
-      .Returns(
-        _mockClient.Object
-      );
+      .Setup(static m => m.Create(It.IsAny<string>()))
+      .Returns(_mockClient.Object);
 
     _onspringService = new OnspringService(
       _loggerMock.Object,
@@ -52,7 +40,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetFieldsForAppAsync(
+        static m => m.GetFieldsForAppAsync(
           It.IsAny<int>(),
           It.IsAny<PagingRequest>()
         )
@@ -67,7 +55,7 @@ public class OnspringServiceTests
     result.Should().BeEmpty();
 
     _mockClient.Verify(
-      m => m.GetFieldsForAppAsync(
+      static m => m.GetFieldsForAppAsync(
         It.IsAny<int>(),
         It.IsAny<PagingRequest>()
       ),
@@ -89,7 +77,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetFieldsForAppAsync(
+        static m => m.GetFieldsForAppAsync(
           It.IsAny<int>(),
           It.IsAny<PagingRequest>()
         )
@@ -106,7 +94,7 @@ public class OnspringServiceTests
     result.Should().BeEquivalentTo(pagedFieldsResponse.Items);
 
     _mockClient.Verify(
-      m => m.GetFieldsForAppAsync(
+      static m => m.GetFieldsForAppAsync(
         It.IsAny<int>(),
         It.IsAny<PagingRequest>()
       ),
@@ -135,7 +123,7 @@ public class OnspringServiceTests
 
     _mockClient
       .SetupSequence(
-        m => m.GetFieldsForAppAsync(
+        static m => m.GetFieldsForAppAsync(
           It.IsAny<int>(),
           It.IsAny<PagingRequest>()
         )
@@ -153,7 +141,7 @@ public class OnspringServiceTests
     result.Should().BeEquivalentTo(pageOne.Items.Concat(pageTwo.Items));
 
     _mockClient.Verify(
-      m => m.GetFieldsForAppAsync(
+      static m => m.GetFieldsForAppAsync(
         It.IsAny<int>(),
         It.IsAny<PagingRequest>()
       ),
@@ -180,7 +168,7 @@ public class OnspringServiceTests
 
     _mockClient
       .SetupSequence(
-        m => m.GetFieldsForAppAsync(
+        static m => m.GetFieldsForAppAsync(
           It.IsAny<int>(),
           It.IsAny<PagingRequest>()
         )
@@ -200,7 +188,7 @@ public class OnspringServiceTests
     result.Should().BeEquivalentTo(pageOne.Items);
 
     _mockClient.Verify(
-      m => m.GetFieldsForAppAsync(
+      static m => m.GetFieldsForAppAsync(
         It.IsAny<int>(),
         It.IsAny<PagingRequest>()
       ),
@@ -213,14 +201,12 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.GetFieldsForAppAsync(
+        static m => m.GetFieldsForAppAsync(
           It.IsAny<int>(),
           It.IsAny<PagingRequest>()
         )
       )
-      .Throws(
-        new Exception()
-      );
+      .Throws(new Exception());
 
     var result = await _onspringService.GetAllFields(
       It.IsAny<string>(),
@@ -231,7 +217,7 @@ public class OnspringServiceTests
     result.Should().BeOfType<List<Field>>();
 
     _mockClient.Verify(
-      m => m.GetFieldsForAppAsync(
+      static m => m.GetFieldsForAppAsync(
         It.IsAny<int>(),
         It.IsAny<PagingRequest>()
       ),
@@ -244,7 +230,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.GetFieldsForAppAsync(
+        static m => m.GetFieldsForAppAsync(
           It.IsAny<int>(),
           It.IsAny<PagingRequest>()
         )
@@ -262,7 +248,7 @@ public class OnspringServiceTests
     result.Should().BeOfType<List<Field>>();
 
     _mockClient.Verify(
-      m => m.GetFieldsForAppAsync(
+      static m => m.GetFieldsForAppAsync(
         It.IsAny<int>(),
         It.IsAny<PagingRequest>()
       ),
@@ -283,11 +269,9 @@ public class OnspringServiceTests
     );
 
     _mockClient
-      .Setup(
-        m => m.GetRecordsForAppAsync(
-          It.IsAny<GetRecordsByAppRequest>()
-        )
-      )
+      .Setup(static m => m.GetRecordsForAppAsync(
+        It.IsAny<GetRecordsByAppRequest>()
+      ))
       .ReturnsAsync(apiResponse);
 
     var result = await _onspringService.GetAPageOfRecords(
@@ -313,7 +297,7 @@ public class OnspringServiceTests
     result.Items.Should().BeEquivalentTo(recordsResponse.Items);
 
     _mockClient.Verify(
-      m => m.GetRecordsForAppAsync(
+      static m => m.GetRecordsForAppAsync(
         It.IsAny<GetRecordsByAppRequest>()
       ),
       Times.Exactly(1)
@@ -330,7 +314,7 @@ public class OnspringServiceTests
 
     _mockClient
       .SetupSequence(
-        m => m.GetRecordsForAppAsync(
+        static m => m.GetRecordsForAppAsync(
           It.IsAny<GetRecordsByAppRequest>()
         )
       )
@@ -348,7 +332,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetRecordsForAppAsync(
+      static m => m.GetRecordsForAppAsync(
         It.IsAny<GetRecordsByAppRequest>()
       ),
       Times.Exactly(3)
@@ -372,11 +356,9 @@ public class OnspringServiceTests
     );
 
     _mockClient
-      .Setup(
-        m => m.GetRecordsForAppAsync(
-          It.IsAny<GetRecordsByAppRequest>()
-        )
-      )
+      .Setup(static m => m.GetRecordsForAppAsync(
+        It.IsAny<GetRecordsByAppRequest>()
+      ))
       .ReturnsAsync(apiResponse);
 
     var result = await _onspringService.GetAPageOfRecords(
@@ -401,7 +383,7 @@ public class OnspringServiceTests
     result.Items.Should().BeOfType<List<ResultRecord>>();
 
     _mockClient.Verify(
-      m => m.GetRecordsForAppAsync(
+      static m => m.GetRecordsForAppAsync(
         It.IsAny<GetRecordsByAppRequest>()
       ),
       Times.Exactly(1)
@@ -412,14 +394,10 @@ public class OnspringServiceTests
   public async Task GetAPageOfRecords_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
   {
     _mockClient
-      .Setup(
-        m => m.GetRecordsForAppAsync(
-          It.IsAny<GetRecordsByAppRequest>()
-        )
-      )
-      .Throws(
-        new Exception()
-      );
+      .Setup(static m => m.GetRecordsForAppAsync(
+        It.IsAny<GetRecordsByAppRequest>()
+      ))
+      .Throws(new Exception());
 
     var result = await _onspringService.GetAPageOfRecords(
       It.IsAny<string>(),
@@ -431,7 +409,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetRecordsForAppAsync(
+      static m => m.GetRecordsForAppAsync(
         It.IsAny<GetRecordsByAppRequest>()
       ),
       Times.Exactly(1)
@@ -443,7 +421,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.GetRecordsForAppAsync(
+        static m => m.GetRecordsForAppAsync(
           It.IsAny<GetRecordsByAppRequest>()
         )
       )
@@ -461,7 +439,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetRecordsForAppAsync(
+      static m => m.GetRecordsForAppAsync(
         It.IsAny<GetRecordsByAppRequest>()
       ),
       Times.Exactly(3)
@@ -481,13 +459,11 @@ public class OnspringServiceTests
     );
 
     _mockClient
-      .Setup(
-        m => m.GetFileAsync(
-          It.IsAny<int>(),
-          It.IsAny<int>(),
-          It.IsAny<int>()
-        )
-      )
+      .Setup(static m => m.GetFileAsync(
+        It.IsAny<int>(),
+        It.IsAny<int>(),
+        It.IsAny<int>()
+      ))
       .ReturnsAsync(apiResponse);
 
     var fileRequest = new OnspringFileRequest(
@@ -504,12 +480,7 @@ public class OnspringServiceTests
     result.Should().NotBeNull();
     result.Should().BeOfType<GetFileResponse>();
 
-    if (result is null)
-    {
-      return;
-    }
-
-    result.FileName.Should().Be(fileResponse.FileName);
+    result!.FileName.Should().Be(fileResponse.FileName);
     result.ContentLength.Should().Be(fileResponse.ContentLength);
     result.ContentType.Should().Be(fileResponse.ContentType);
     result.Stream.Should().NotBeNull();
@@ -525,7 +496,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetFileAsync(
+        static m => m.GetFileAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -547,7 +518,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFileAsync(
+      static m => m.GetFileAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -561,7 +532,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.GetFileAsync(
+        static m => m.GetFileAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -583,7 +554,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFileAsync(
+      static m => m.GetFileAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -597,7 +568,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.GetFileAsync(
+        static m => m.GetFileAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -621,7 +592,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFileAsync(
+      static m => m.GetFileAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -643,7 +614,7 @@ public class OnspringServiceTests
     );
 
     _mockClient
-      .Setup(m => m.GetFieldAsync(It.IsAny<int>()))
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
       .ReturnsAsync(apiResponse);
 
     var result = await _onspringService.GetField(
@@ -654,17 +625,12 @@ public class OnspringServiceTests
     result.Should().NotBeNull();
     result.Should().BeOfType<Field>();
 
-    if (result is null)
-    {
-      return;
-    }
-
-    result.Id.Should().Be(field.Id);
+    result!.Id.Should().Be(field.Id);
     result.Name.Should().Be(field.Name);
     result.Type.Should().Be(field.Type);
 
     _mockClient.Verify(
-      m => m.GetFieldAsync(
+      static m => m.GetFieldAsync(
         It.IsAny<int>()
       ),
       Times.Exactly(1)
@@ -680,7 +646,7 @@ public class OnspringServiceTests
     );
 
     _mockClient
-      .Setup(m => m.GetFieldAsync(It.IsAny<int>()))
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
       .ReturnsAsync(apiResponse);
 
     var result = await _onspringService.GetField(
@@ -691,7 +657,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFieldAsync(
+      static m => m.GetFieldAsync(
         It.IsAny<int>()
       ),
       Times.Exactly(1)
@@ -702,7 +668,7 @@ public class OnspringServiceTests
   public async Task GetField_WhenCalledAndExceptionIsThrown_ItShouldReturnNull()
   {
     _mockClient
-      .Setup(m => m.GetFieldAsync(It.IsAny<int>()))
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
       .Throws(new Exception());
 
     var result = await _onspringService.GetField(
@@ -713,7 +679,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFieldAsync(
+      static m => m.GetFieldAsync(
         It.IsAny<int>()
       ),
       Times.Exactly(1)
@@ -724,7 +690,7 @@ public class OnspringServiceTests
   public async Task GetField_WhenCalledAndHttpRequestOrTaskCanceledExceptionIsThrown_ItShouldReturnNullAfterAttemptingThreeTimes()
   {
     _mockClient
-      .SetupSequence(m => m.GetFieldAsync(It.IsAny<int>()))
+      .SetupSequence(static m => m.GetFieldAsync(It.IsAny<int>()))
       .Throws(new HttpRequestException())
       .Throws(new TaskCanceledException())
       .Throws(new TaskCanceledException());
@@ -737,7 +703,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFieldAsync(
+      static m => m.GetFieldAsync(
         It.IsAny<int>()
       ),
       Times.Exactly(3)
@@ -753,7 +719,7 @@ public class OnspringServiceTests
     );
 
     _mockClient
-      .Setup(m => m.GetFieldAsync(It.IsAny<int>()))
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
       .ReturnsAsync(apiResponse);
 
     var result = await _onspringService.GetField(
@@ -764,7 +730,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFieldAsync(
+      static m => m.GetFieldAsync(
         It.IsAny<int>()
       ),
       Times.Exactly(3)
@@ -785,7 +751,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetFileInfoAsync(
+        static m => m.GetFileInfoAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -809,7 +775,7 @@ public class OnspringServiceTests
     result.Should().BeEquivalentTo(fileInfo);
 
     _mockClient.Verify(
-      m => m.GetFileInfoAsync(
+      static m => m.GetFileInfoAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -828,7 +794,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetFileInfoAsync(
+        static m => m.GetFileInfoAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -850,7 +816,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFileInfoAsync(
+      static m => m.GetFileInfoAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -864,7 +830,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.GetFileInfoAsync(
+        static m => m.GetFileInfoAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -886,7 +852,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFileInfoAsync(
+      static m => m.GetFileInfoAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -900,7 +866,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.GetFileInfoAsync(
+        static m => m.GetFileInfoAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -924,7 +890,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFileInfoAsync(
+      static m => m.GetFileInfoAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -943,7 +909,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetFileInfoAsync(
+        static m => m.GetFileInfoAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -965,7 +931,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetFileInfoAsync(
+      static m => m.GetFileInfoAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -991,7 +957,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.QueryRecordsAsync(
+        static m => m.QueryRecordsAsync(
           It.IsAny<QueryRecordsRequest>(),
           It.IsAny<PagingRequest>()
         )
@@ -1009,12 +975,7 @@ public class OnspringServiceTests
     result.Should().NotBeNull();
     result.Should().BeOfType<GetPagedRecordsResponse>();
 
-    if (result is null)
-    {
-      return;
-    }
-
-    result.TotalPages.Should().Be(recordsResponse.TotalPages);
+    result!.TotalPages.Should().Be(recordsResponse.TotalPages);
     result.TotalRecords.Should().Be(recordsResponse.TotalRecords);
     result.PageNumber.Should().Be(recordsResponse.PageNumber);
     result.Items.Should().HaveCount(recordsResponse.Items.Count);
@@ -1022,7 +983,7 @@ public class OnspringServiceTests
     result.Items.Should().BeEquivalentTo(recordsResponse.Items);
 
     _mockClient.Verify(
-      m => m.QueryRecordsAsync(
+      static m => m.QueryRecordsAsync(
         It.IsAny<QueryRecordsRequest>(),
         It.IsAny<PagingRequest>()
       ),
@@ -1040,7 +1001,7 @@ public class OnspringServiceTests
 
     _mockClient
       .SetupSequence(
-        m => m.QueryRecordsAsync(
+        static m => m.QueryRecordsAsync(
           It.IsAny<QueryRecordsRequest>(),
           It.IsAny<PagingRequest>()
         )
@@ -1060,7 +1021,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.QueryRecordsAsync(
+      static m => m.QueryRecordsAsync(
         It.IsAny<QueryRecordsRequest>(),
         It.IsAny<PagingRequest>()
       ),
@@ -1086,7 +1047,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.QueryRecordsAsync(
+        static m => m.QueryRecordsAsync(
           It.IsAny<QueryRecordsRequest>(),
           It.IsAny<PagingRequest>()
         )
@@ -1104,19 +1065,14 @@ public class OnspringServiceTests
     result.Should().NotBeNull();
     result.Should().BeOfType<GetPagedRecordsResponse>();
 
-    if (result is null)
-    {
-      return;
-    }
-
-    result.TotalPages.Should().Be(totalPages);
+    result!.TotalPages.Should().Be(totalPages);
     result.TotalRecords.Should().Be(totalRecords);
     result.PageNumber.Should().Be(pageNumber);
     result.Items.Should().BeEmpty();
     result.Items.Should().BeOfType<List<ResultRecord>>();
 
     _mockClient.Verify(
-      m => m.QueryRecordsAsync(
+      static m => m.QueryRecordsAsync(
         It.IsAny<QueryRecordsRequest>(),
         It.IsAny<PagingRequest>()
       ),
@@ -1129,7 +1085,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.QueryRecordsAsync(
+        static m => m.QueryRecordsAsync(
           It.IsAny<QueryRecordsRequest>(),
           It.IsAny<PagingRequest>()
         )
@@ -1147,7 +1103,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.QueryRecordsAsync(
+      static m => m.QueryRecordsAsync(
         It.IsAny<QueryRecordsRequest>(),
         It.IsAny<PagingRequest>()
       ),
@@ -1160,7 +1116,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.QueryRecordsAsync(
+        static m => m.QueryRecordsAsync(
           It.IsAny<QueryRecordsRequest>(),
           It.IsAny<PagingRequest>()
         )
@@ -1179,7 +1135,7 @@ public class OnspringServiceTests
 
     result.Should().BeNull();
     _mockClient.Verify(
-      m => m.QueryRecordsAsync(
+      static m => m.QueryRecordsAsync(
         It.IsAny<QueryRecordsRequest>(),
         It.IsAny<PagingRequest>()
       ),
@@ -1199,7 +1155,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetReportAsync(
+        static m => m.GetReportAsync(
           It.IsAny<int>(),
           It.IsAny<ReportDataType>(),
           It.IsAny<DataFormat>()
@@ -1217,7 +1173,7 @@ public class OnspringServiceTests
     result.Should().BeEquivalentTo(reportData);
 
     _mockClient.Verify(
-      m => m.GetReportAsync(
+      static m => m.GetReportAsync(
         It.IsAny<int>(),
         It.IsAny<ReportDataType>(),
         It.IsAny<DataFormat>()
@@ -1236,7 +1192,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.GetReportAsync(
+        static m => m.GetReportAsync(
           It.IsAny<int>(),
           It.IsAny<ReportDataType>(),
           It.IsAny<DataFormat>()
@@ -1252,7 +1208,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetReportAsync(
+      static m => m.GetReportAsync(
         It.IsAny<int>(),
         It.IsAny<ReportDataType>(),
         It.IsAny<DataFormat>()
@@ -1266,7 +1222,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.GetReportAsync(
+        static m => m.GetReportAsync(
           It.IsAny<int>(),
           It.IsAny<ReportDataType>(),
           It.IsAny<DataFormat>()
@@ -1282,7 +1238,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.GetReportAsync(
+      static m => m.GetReportAsync(
         It.IsAny<int>(),
         It.IsAny<ReportDataType>(),
         It.IsAny<DataFormat>()
@@ -1296,7 +1252,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.GetReportAsync(
+        static m => m.GetReportAsync(
           It.IsAny<int>(),
           It.IsAny<ReportDataType>(),
           It.IsAny<DataFormat>()
@@ -1313,7 +1269,7 @@ public class OnspringServiceTests
 
     result.Should().BeNull();
     _mockClient.Verify(
-      m => m.GetReportAsync(
+      static m => m.GetReportAsync(
         It.IsAny<int>(),
         It.IsAny<ReportDataType>(),
         It.IsAny<DataFormat>()
@@ -1334,7 +1290,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.SaveFileAsync(
+        static m => m.SaveFileAsync(
           It.IsAny<SaveFileRequest>()
         )
       )
@@ -1361,7 +1317,7 @@ public class OnspringServiceTests
     result.Should().BeEquivalentTo(createdWithIdResponse);
 
     _mockClient.Verify(
-      m => m.SaveFileAsync(
+      static m => m.SaveFileAsync(
         It.IsAny<SaveFileRequest>()
       ),
       Times.Exactly(1)
@@ -1378,7 +1334,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.SaveFileAsync(
+        static m => m.SaveFileAsync(
           It.IsAny<SaveFileRequest>()
         )
       )
@@ -1403,7 +1359,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.SaveFileAsync(
+      static m => m.SaveFileAsync(
         It.IsAny<SaveFileRequest>()
       ),
       Times.Exactly(3)
@@ -1415,7 +1371,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.SaveFileAsync(
+        static m => m.SaveFileAsync(
           It.IsAny<SaveFileRequest>()
         )
       )
@@ -1440,7 +1396,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.SaveFileAsync(
+      static m => m.SaveFileAsync(
         It.IsAny<SaveFileRequest>()
       ),
       Times.Exactly(1)
@@ -1452,7 +1408,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.SaveFileAsync(
+        static m => m.SaveFileAsync(
           It.IsAny<SaveFileRequest>()
         )
       )
@@ -1478,7 +1434,7 @@ public class OnspringServiceTests
 
     result.Should().BeNull();
     _mockClient.Verify(
-      m => m.SaveFileAsync(
+      static m => m.SaveFileAsync(
         It.IsAny<SaveFileRequest>()
       ),
       Times.Exactly(3)
@@ -1495,7 +1451,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.DeleteFileAsync(
+        static m => m.DeleteFileAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -1517,7 +1473,7 @@ public class OnspringServiceTests
     result.Should().BeTrue();
 
     _mockClient.Verify(
-      m => m.DeleteFileAsync(
+      static m => m.DeleteFileAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -1536,7 +1492,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.DeleteFileAsync(
+        static m => m.DeleteFileAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -1558,7 +1514,7 @@ public class OnspringServiceTests
     result.Should().BeFalse();
 
     _mockClient.Verify(
-      m => m.DeleteFileAsync(
+      static m => m.DeleteFileAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -1572,7 +1528,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.DeleteFileAsync(
+        static m => m.DeleteFileAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -1594,7 +1550,7 @@ public class OnspringServiceTests
     result.Should().BeFalse();
 
     _mockClient.Verify(
-      m => m.DeleteFileAsync(
+      static m => m.DeleteFileAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -1608,7 +1564,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.DeleteFileAsync(
+        static m => m.DeleteFileAsync(
           It.IsAny<int>(),
           It.IsAny<int>(),
           It.IsAny<int>()
@@ -1632,7 +1588,7 @@ public class OnspringServiceTests
     result.Should().BeFalse();
 
     _mockClient.Verify(
-      m => m.DeleteFileAsync(
+      static m => m.DeleteFileAsync(
         It.IsAny<int>(),
         It.IsAny<int>(),
         It.IsAny<int>()
@@ -1653,7 +1609,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.SaveRecordAsync(
+        static m => m.SaveRecordAsync(
           It.IsAny<ResultRecord>()
         )
       )
@@ -1674,7 +1630,7 @@ public class OnspringServiceTests
     result.Should().BeEquivalentTo(saveRecordResponse);
 
     _mockClient.Verify(
-      m => m.SaveRecordAsync(
+      static m => m.SaveRecordAsync(
         It.IsAny<ResultRecord>()
       ),
       Times.Exactly(1)
@@ -1691,7 +1647,7 @@ public class OnspringServiceTests
 
     _mockClient
       .Setup(
-        m => m.SaveRecordAsync(
+        static m => m.SaveRecordAsync(
           It.IsAny<ResultRecord>()
         )
       )
@@ -1712,7 +1668,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.SaveRecordAsync(
+      static m => m.SaveRecordAsync(
         It.IsAny<ResultRecord>()
       ),
       Times.Exactly(3)
@@ -1724,7 +1680,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .Setup(
-        m => m.SaveRecordAsync(
+        static m => m.SaveRecordAsync(
           It.IsAny<ResultRecord>()
         )
       )
@@ -1745,7 +1701,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.SaveRecordAsync(
+      static m => m.SaveRecordAsync(
         It.IsAny<ResultRecord>()
       ),
       Times.Exactly(1)
@@ -1757,7 +1713,7 @@ public class OnspringServiceTests
   {
     _mockClient
       .SetupSequence(
-        m => m.SaveRecordAsync(
+        static m => m.SaveRecordAsync(
           It.IsAny<ResultRecord>()
         )
       )
@@ -1780,7 +1736,7 @@ public class OnspringServiceTests
     result.Should().BeNull();
 
     _mockClient.Verify(
-      m => m.SaveRecordAsync(
+      static m => m.SaveRecordAsync(
         It.IsAny<ResultRecord>()
       ),
       Times.Exactly(3)
@@ -1833,7 +1789,7 @@ public class OnspringServiceTests
     var apiResponse = ApiResponseFactory.GetApiResponse<GetPagedAppsResponse>(HttpStatusCode.BadRequest, "Bad Request");
 
     _mockClient
-      .Setup(m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
+      .Setup(static m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
       .ReturnsAsync(apiResponse);
 
     var result = await _onspringService.GetApps(It.IsAny<string>());
@@ -1874,7 +1830,7 @@ public class OnspringServiceTests
     };
 
     _mockClient
-      .SetupSequence(m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
+      .SetupSequence(static m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
       .ReturnsAsync(firstPage)
       .ReturnsAsync(secondPage);
 
@@ -1882,7 +1838,7 @@ public class OnspringServiceTests
 
     result.Should().HaveCount(2);
 
-    _mockClient.Verify(m => m.GetAppsAsync(
+    _mockClient.Verify(static m => m.GetAppsAsync(
       It.IsAny<PagingRequest>()),
       Times.Exactly(2)
     );
@@ -1911,7 +1867,7 @@ public class OnspringServiceTests
     var secondPage = ApiResponseFactory.GetApiResponse<GetPagedAppsResponse>(HttpStatusCode.BadRequest, "Bad Request");
 
     _mockClient
-      .SetupSequence(m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
+      .SetupSequence(static m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
       .ReturnsAsync(firstPage)
       .ReturnsAsync(secondPage!);
 
@@ -1919,7 +1875,7 @@ public class OnspringServiceTests
 
     result.Should().HaveCount(1);
 
-    _mockClient.Verify(m => m.GetAppsAsync(
+    _mockClient.Verify(static m => m.GetAppsAsync(
       It.IsAny<PagingRequest>()),
       Times.Exactly(2)
     );
@@ -1929,11 +1885,128 @@ public class OnspringServiceTests
   public async Task GetApps_WhenCalledAndExceptionIsThrown_ItShouldReturnEmptyList()
   {
     _mockClient
-      .Setup(m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
+      .Setup(static m => m.GetAppsAsync(It.IsAny<PagingRequest>()))
       .ThrowsAsync(new Exception());
 
     var result = await _onspringService.GetApps(It.IsAny<string>());
 
     result.Should().BeEmpty();
+  }
+
+  [Fact]
+  public async Task GetOrAddListValueByName_WhenCalledAndFieldRequestFails_ItShouldReturnNull()
+  {
+    _mockClient
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
+      .ReturnsAsync(ApiResponseFactory.GetApiResponse<Field>(HttpStatusCode.BadRequest, "Bad Request"));
+
+    var result = await _onspringService.GetOrAddListValueByName("apikey", 1, new());
+
+    result.Should().BeNull();
+  }
+
+  [Fact]
+  public async Task GetOrAddListValueByName_WhenExceptionIsThrown_ItShouldReturnNull()
+  {
+    _mockClient
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
+      .ThrowsAsync(new Exception());
+
+    var result = await _onspringService.GetOrAddListValueByName("apikey", 1, new());
+
+    result.Should().BeNull();
+  }
+
+  [Fact]
+  public async Task GetOrAddListValueByName_WhenCalledAndFieldIsNotListField_ItShouldReturnNull()
+  {
+    _mockClient
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
+      .ReturnsAsync(ApiResponseFactory.GetApiResponse(HttpStatusCode.OK, "OK", new Field
+      {
+        Type = FieldType.Text
+      }));
+
+    var result = await _onspringService.GetOrAddListValueByName("apikey", 1, new());
+
+    result.Should().BeNull();
+  }
+
+  [Fact]
+  public async Task GetOrAddListValueByName_WhenCalledAndValueExists_ItShouldReturnExistingValueId()
+  {
+    var listValueId = Guid.NewGuid();
+    var listValueName = "existing_value";
+
+    _mockClient
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
+      .ReturnsAsync(ApiResponseFactory.GetApiResponse<Field>(HttpStatusCode.OK, "OK", new ListField
+      {
+        Type = FieldType.List,
+        Values = [
+          new()
+          {
+            Id = listValueId,
+            Name = listValueName,
+          }
+        ]
+      }));
+
+    var result = await _onspringService.GetOrAddListValueByName("apikey", 1, new() { Name = listValueName });
+
+    result.Should().Be(listValueId);
+  }
+
+  [Fact]
+  public async Task GetOrAddListValueByName_WhenCalledAndValueDoesNotExistButSavingNewValueFails_ItShouldReturnNull()
+  {
+    _mockClient
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
+      .ReturnsAsync(ApiResponseFactory.GetApiResponse<Field>(HttpStatusCode.OK, "OK", new ListField
+      {
+        Type = FieldType.List,
+        Values = []
+      }));
+
+    _mockClient
+      .Setup(static m => m.SaveListItemAsync(It.IsAny<SaveListItemRequest>()))
+      .ReturnsAsync(ApiResponseFactory.GetApiResponse<SaveListItemResponse>(HttpStatusCode.BadRequest, "Bad Request"));
+
+    var result = await _onspringService.GetOrAddListValueByName("apikey", 1, new() { Name = "new_value" });
+
+    result.Should().BeNull();
+
+    _mockClient.Verify(
+      static m => m.SaveListItemAsync(It.IsAny<SaveListItemRequest>()),
+      Times.Exactly(1)
+    );
+  }
+
+  [Fact]
+  public async Task GetOrAddListValueByName_WhenCalledAndValueDoesNotExistAndSavingNewValueSucceeds_ItShouldReturnNewValueId()
+  {
+    var newValueId = Guid.NewGuid();
+    var newValueName = "new_value";
+
+    _mockClient
+      .Setup(static m => m.GetFieldAsync(It.IsAny<int>()))
+      .ReturnsAsync(ApiResponseFactory.GetApiResponse<Field>(HttpStatusCode.OK, "OK", new ListField
+      {
+        Type = FieldType.List,
+        Values = []
+      }));
+
+    _mockClient
+      .Setup(static m => m.SaveListItemAsync(It.IsAny<SaveListItemRequest>()))
+      .ReturnsAsync(ApiResponseFactory.GetApiResponse(HttpStatusCode.OK, "OK", new SaveListItemResponse(newValueId)));
+
+    var result = await _onspringService.GetOrAddListValueByName("apikey", 1, new() { Name = newValueName });
+
+    result.Should().Be(newValueId);
+
+    _mockClient.Verify(
+      static m => m.SaveListItemAsync(It.IsAny<SaveListItemRequest>()),
+      Times.Exactly(1)
+    );
   }
 }
