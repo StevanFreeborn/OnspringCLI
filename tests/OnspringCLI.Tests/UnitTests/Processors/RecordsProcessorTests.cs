@@ -440,50 +440,441 @@ public class RecordsProcessorTests
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldHasNoValue_ItShouldNotUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldHasNoValue_ItShouldNotUpdateRecord()
   {
-    throw new NotImplementedException();
+    var fields = new List<Field>
+    {
+      new()
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [],
+    };
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldIsNotListOrDate_ItShouldNotUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsNotListOrDate_ItShouldNotUpdateRecord()
   {
-    throw new NotImplementedException();
+    var textField = new Field
+    {
+      Id = 1,
+      Type = FieldType.Text
+    };
+
+    var fields = new List<Field>
+    {
+      textField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new StringFieldValue { FieldId = textField.Id, Value = "Not a year" }
+      ],
+    };
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldIsMultiSelectList_ItShouldNotUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsMultiSelectList_ItShouldNotUpdateRecord()
   {
-    throw new NotImplementedException();
+    var multiSelectField = new ListField
+    {
+      Id = 1,
+      Type = FieldType.List,
+      Multiplicity = Multiplicity.MultiSelect
+    };
+
+    var fields = new List<Field>
+    {
+      multiSelectField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new GuidListFieldValue { FieldId = multiSelectField.Id, Value = [] }
+      ],
+    };
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButUnableToFindListValue_ItShouldNotUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButValueIsNull_ItShouldNotUpdateRecord()
   {
-    throw new NotImplementedException();
+    var singleSelectField = new ListField
+    {
+      Id = 1,
+      Type = FieldType.List,
+      Multiplicity = Multiplicity.SingleSelect
+    };
+
+    var fields = new List<Field>
+    {
+      singleSelectField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new GuidFieldValue { FieldId = singleSelectField.Id, Value = null }
+      ],
+    };
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButValueIsNotAYear_ItShouldNotUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButUnableToFindListValue_ItShouldNotUpdateRecord()
   {
-    throw new NotImplementedException();
+    var singleSelectField = new ListField
+    {
+      Id = 1,
+      Type = FieldType.List,
+      Multiplicity = Multiplicity.SingleSelect,
+      Values = []
+    };
+
+    var fields = new List<Field>
+    {
+      singleSelectField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new GuidFieldValue { FieldId = singleSelectField.Id, Value = Guid.NewGuid() }
+      ],
+    };
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButUnableToAddNewValue_ItShouldNotUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButValueIsNotAYear_ItShouldNotUpdateRecord()
   {
-    throw new NotImplementedException();
+    var listValue = new ListValue
+    {
+      Id = Guid.NewGuid(),
+      Name = "Not a year",
+    };
+
+    var singleSelectField = new ListField
+    {
+      Id = 1,
+      Type = FieldType.List,
+      Multiplicity = Multiplicity.SingleSelect,
+      Values = [listValue]
+    };
+
+    var fields = new List<Field>
+    {
+      singleSelectField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new GuidFieldValue { FieldId = singleSelectField.Id, Value = listValue.Id }
+      ],
+    };
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListAndValueIsAYear_ItShouldUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButUnableToAddNewValue_ItShouldNotUpdateRecord()
   {
-    throw new NotImplementedException();
+    var listValue = new ListValue
+    {
+      Id = Guid.NewGuid(),
+      Name = "2023",
+    };
+
+    var singleSelectField = new ListField
+    {
+      Id = 1,
+      Type = FieldType.List,
+      Multiplicity = Multiplicity.SingleSelect,
+      Values = [listValue]
+    };
+
+    var fields = new List<Field>
+    {
+      singleSelectField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new GuidFieldValue { FieldId = singleSelectField.Id, Value = listValue.Id }
+      ],
+    };
+
+    _onspringServiceMock
+      .Setup(static x => x.GetOrAddListValueByName(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<ListValue>()))
+      .ReturnsAsync(null as Guid?);
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
   }
 
   [Fact]
-  public Task UpdateRecordYearValues_WhenCalledAndFieldIsDate_ItShouldUpdateRecord()
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListAndValueIsAYearButUpdatingRecordFailsItShouldReturnNull()
   {
-    throw new NotImplementedException();
+    var year = 2023;
+    var numberOfYears = 1;
+    var expectedYear = year + numberOfYears;
+
+    var listValue = new ListValue
+    {
+      Id = Guid.NewGuid(),
+      Name = year.ToString(CultureInfo.InvariantCulture),
+    };
+
+    var singleSelectField = new ListField
+    {
+      Id = 1,
+      Type = FieldType.List,
+      Multiplicity = Multiplicity.SingleSelect,
+      Values = [listValue]
+    };
+
+    var fields = new List<Field>
+    {
+      singleSelectField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new GuidFieldValue { FieldId = singleSelectField.Id, Value = listValue.Id }
+      ],
+    };
+
+    var newListValueGuid = Guid.NewGuid();
+
+    _onspringServiceMock
+      .Setup(x => x.GetOrAddListValueByName(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.Is<ListValue>(
+          x => x.Name == expectedYear.ToString(CultureInfo.InvariantCulture) &&
+            x.NumericValue == expectedYear
+        )
+      ))
+      .ReturnsAsync(newListValueGuid);
+
+    _onspringServiceMock
+      .Setup(static x => x.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()))
+      .ReturnsAsync(null as CreatedWithIdResponse<int>);
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, numberOfYears);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListAndValueIsAYear_ItShouldUpdateRecord()
+  {
+    var year = 2023;
+    var numberOfYears = 1;
+    var expectedYear = year + numberOfYears;
+
+    var listValue = new ListValue
+    {
+      Id = Guid.NewGuid(),
+      Name = year.ToString(CultureInfo.InvariantCulture),
+    };
+
+    var singleSelectField = new ListField
+    {
+      Id = 1,
+      Type = FieldType.List,
+      Multiplicity = Multiplicity.SingleSelect,
+      Values = [listValue]
+    };
+
+    var fields = new List<Field>
+    {
+      singleSelectField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new GuidFieldValue { FieldId = singleSelectField.Id, Value = listValue.Id }
+      ],
+    };
+
+    var newListValueGuid = Guid.NewGuid();
+
+    _onspringServiceMock
+      .Setup(x => x.GetOrAddListValueByName(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.Is<ListValue>(x => x.Name == expectedYear.ToString(CultureInfo.InvariantCulture) &&
+          x.NumericValue == expectedYear
+        )
+      ))
+      .ReturnsAsync(newListValueGuid);
+
+    _onspringServiceMock
+      .Setup(static x => x.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()))
+      .ReturnsAsync(new CreatedWithIdResponse<int>(1));
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result!.FieldData.Should().HaveCount(1);
+    result.FieldData.First().As<GuidFieldValue>().Value.Should().Be(newListValueGuid);
+
+    _onspringServiceMock.Verify(
+      m => m.UpdateRecord(It.IsAny<string>(), result),
+      Times.Once
+    );
+  }
+
+  [Fact]
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsDateButValueIsNull_ItShouldNotUpdateRecord()
+  {
+    var dateField = new Field
+    {
+      Id = 1,
+      Type = FieldType.Date,
+    };
+
+    var fields = new List<Field>
+    {
+      dateField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new DateFieldValue { FieldId = dateField.Id, Value = null }
+      ],
+    };
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, 1);
+
+    result.Should().BeNull();
+
+    _onspringServiceMock.Verify(
+      static m => m.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()),
+      Times.Never
+    );
+  }
+
+  [Fact]
+  public async Task UpdateRecordYearValues_WhenCalledAndFieldIsDate_ItShouldUpdateRecord()
+  {
+    var year = 2023;
+    var numberOfYears = 1;
+    var expectedYear = year + numberOfYears;
+
+    var dateField = new Field
+    {
+      Id = 1,
+      Type = FieldType.Date,
+    };
+
+    var fields = new List<Field>
+    {
+      dateField,
+    };
+
+    var record = new ResultRecord
+    {
+      RecordId = 1,
+      FieldData = [
+        new DateFieldValue
+        {
+          FieldId = dateField.Id,
+          Value = new DateTime(year, 1, 1)
+        }
+      ],
+    };
+
+    _onspringServiceMock
+      .Setup(static x => x.UpdateRecord(It.IsAny<string>(), It.IsAny<ResultRecord>()))
+      .ReturnsAsync(new CreatedWithIdResponse<int>(1));
+
+    var result = await _processor.UpdateRecordYearValues("appName", record, fields, numberOfYears);
+
+    result!.FieldData.Should().HaveCount(1);
+    result.FieldData.First().As<DateFieldValue>().Value.Should().Be(new(expectedYear, 1, 1));
+
+    _onspringServiceMock.Verify(
+      m => m.UpdateRecord(It.IsAny<string>(), result),
+      Times.Once
+    );
   }
 }
