@@ -355,4 +355,135 @@ public class RecordsProcessorTests
 
     result.Should().BeEquivalentTo(fields);
   }
+
+  [Fact]
+  public async Task GetRecords_WhenCalledAndPageIsNull_ItShouldReturnEmptyList()
+  {
+    _onspringServiceMock
+      .Setup(static x => x.GetAPageOfRecords(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<PagingRequest>()
+      ))
+      .ReturnsAsync(null as GetPagedRecordsResponse);
+
+    var result = new List<ResultRecord>();
+
+    await foreach (var record in _processor.GetRecords(new(), []))
+    {
+      result.Add(record);
+    }
+
+    result.Should().BeEmpty();
+  }
+
+  [Fact]
+  public async Task GetRecords_WhenCalledAndPageHasNoRecords_ItShouldReturnEmptyList()
+  {
+    var page = new GetPagedRecordsResponse
+    {
+      TotalRecords = 0,
+      PageNumber = 1,
+      TotalPages = 1,
+      Items = []
+    };
+
+    _onspringServiceMock
+      .Setup(static x => x.GetAPageOfRecords(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<PagingRequest>()
+      ))
+      .ReturnsAsync(page);
+
+    var result = new List<ResultRecord>();
+
+    await foreach (var record in _processor.GetRecords(new(), []))
+    {
+      result.Add(record);
+    }
+
+    result.Should().BeEmpty();
+  }
+
+  [Fact]
+  public async Task GetRecords_WhenCalledAndPageHasRecords_ItShouldReturnRecords()
+  {
+    var page = new GetPagedRecordsResponse
+    {
+      TotalRecords = 1,
+      PageNumber = 1,
+      TotalPages = 1,
+      Items = [new() { RecordId = 1, FieldData = [] }]
+    };
+
+    _onspringServiceMock
+      .Setup(static x => x.GetAPageOfRecords(
+        It.IsAny<string>(),
+        It.IsAny<int>(),
+        It.IsAny<List<int>>(),
+        It.IsAny<PagingRequest>()
+      ))
+      .ReturnsAsync(page);
+
+    var result = new List<ResultRecord>();
+
+    await foreach (var record in _processor.GetRecords(new(), [new()]))
+    {
+      result.Add(record);
+    }
+
+    result.Should().HaveCount(1);
+    result.First().RecordId.Should().Be(1);
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldHasNoValue_ItShouldNotUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldIsNotListOrDate_ItShouldNotUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldIsMultiSelectList_ItShouldNotUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButUnableToFindListValue_ItShouldNotUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButValueIsNotAYear_ItShouldNotUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListButUnableToAddNewValue_ItShouldNotUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldIsSingleSelectListAndValueIsAYear_ItShouldUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
+
+  [Fact]
+  public Task UpdateRecordYearValues_WhenCalledAndFieldIsDate_ItShouldUpdateRecord()
+  {
+    throw new NotImplementedException();
+  }
 }
