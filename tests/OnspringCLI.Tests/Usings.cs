@@ -20,6 +20,8 @@ global using OnspringCLI.Commands;
 global using OnspringCLI.Commands.Attachments;
 global using OnspringCLI.Commands.Records;
 global using OnspringCLI.Commands.Records.Find;
+global using OnspringCLI.Commands.Records.Update;
+global using OnspringCLI.Commands.Records.Update.Bulk;
 global using OnspringCLI.Factories;
 global using OnspringCLI.Interfaces;
 global using OnspringCLI.Maps;

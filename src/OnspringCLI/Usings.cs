@@ -7,6 +7,7 @@ global using System.CommandLine.Invocation;
 global using System.CommandLine.Parsing;
 global using System.Diagnostics.CodeAnalysis;
 global using System.Globalization;
+global using System.Net;
 
 global using CsvHelper;
 global using CsvHelper.Configuration;
@@ -24,6 +25,8 @@ global using OnspringCLI.Commands;
 global using OnspringCLI.Commands.Attachments;
 global using OnspringCLI.Commands.Records;
 global using OnspringCLI.Commands.Records.Find;
+global using OnspringCLI.Commands.Records.Update;
+global using OnspringCLI.Commands.Records.Update.Bulk;
 global using OnspringCLI.Extensions;
 global using OnspringCLI.Factories;
 global using OnspringCLI.Interfaces;

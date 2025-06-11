@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace OnspringCLI.Services;
 
 public class OnspringService : IOnspringService
@@ -420,6 +418,72 @@ public class OnspringService : IOnspringService
     catch (Exception ex)
     {
       _logger.Error(ex, "Unable to save record: {@RecordUpdates}.", recordUpdates);
+      return null;
+    }
+  }
+
+  public async Task<Guid?> GetOrAddListValueByName(string apiKey, int fieldId, ListValue value)
+  {
+    try
+    {
+      var client = _clientFactory.Create(apiKey);
+      var listFieldResponse = await ExecuteRequest(async () => await client.GetFieldAsync(fieldId));
+
+      if (listFieldResponse.IsSuccessful is false)
+      {
+        _logger.Debug(
+          "Unable to get list field with id {Id}: {StatusCode} - {Message}",
+          fieldId,
+          listFieldResponse.StatusCode,
+          listFieldResponse.Message
+        );
+
+        return null;
+      }
+
+      if (listFieldResponse.Value is not ListField listField)
+      {
+        _logger.Debug(
+          "Field retrieved with id {Id} is not a list field",
+          listFieldResponse.Value.Id
+        );
+
+        return null;
+      }
+
+      var existingValue = listField.Values.FirstOrDefault(lv => lv.Name == value.Name);
+
+      if (existingValue is not null)
+      {
+        return existingValue.Id;
+      }
+
+      var saveListValueResponse = await ExecuteRequest(async () => await client.SaveListItemAsync(new()
+      {
+        ListId = listField.ListId,
+        Name = value.Name,
+        NumericValue = value.NumericValue,
+        Color = value.Color,
+        Weight = value.SortOrder,
+      }));
+
+      if (saveListValueResponse.IsSuccessful is false)
+      {
+        _logger.Debug(
+          "Unable to add list value with name {Name}: {StatusCode} - {Message}",
+          value.Name,
+          saveListValueResponse.StatusCode,
+          saveListValueResponse.Message
+        );
+
+        return null;
+      }
+
+      return saveListValueResponse.Value.Id;
+    }
+    catch (Exception ex)
+    {
+      _logger.Error(ex, "Unable to get or add list value with name {Name}.", value.Name);
       return null;
     }
   }

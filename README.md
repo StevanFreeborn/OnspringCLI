@@ -39,6 +39,9 @@ You are also welcome to clone this repository and run the app using the [.NET 9]
 - **Records** - Commands for working with records in an Onspring instance.
   - **Find**
     - **References** - Locate all references to set of content records in one app from all other apps. See [References Find Records](https://github.com/StevanFreeborn/OnspringCLI/wiki/Records-Find-References)
+  - **Update**
+    - **Bulk**
+      - **Year** - Update the values of a list of date and/or list fields by a specified number of years. See [Records Update Bulk Year](https://github.com/StevanFreeborn/OnspringCLI/wiki/Records-Update-Bulk-Year) for more information.
 
 **Note:** The app will prompt you for any required information that is not provided via the command line.
 

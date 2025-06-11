@@ -1,7 +1,7 @@
 namespace OnspringCLI.Extensions;
 
 [ExcludeFromCodeCoverage]
-static class HostBuilderExtensions
+internal static class HostBuilderExtensions
 {
   public static IHostBuilder AddSerilog(this IHostBuilder hostBuilder)
   {
@@ -40,7 +40,8 @@ static class HostBuilderExtensions
                 lc
                   .MinimumLevel.ControlledBy(logLevelSwitch)
                   .WriteTo.Console(
-                    theme: AnsiConsoleTheme.Code
+                    theme: AnsiConsoleTheme.Code,
+                    formatProvider: CultureInfo.InvariantCulture
                   )
             );
         }
@@ -51,7 +52,7 @@ static class HostBuilderExtensions
   {
     return hostBuilder
       .ConfigureServices(
-        (hostingContext, services) =>
+        static (hostingContext, services) =>
         {
           var logLevelSwitch = new LoggingLevelSwitch(
             LogEventLevel.Information
@@ -66,6 +67,7 @@ static class HostBuilderExtensions
           services.AddSingleton<IAttachmentsProcessor, AttachmentsProcessor>();
           services.AddSingleton<IRecordsProcessor, RecordsProcessor>();
           services.AddSingleton<IReportService, ReportService>();
+          services.AddSingleton<IUpdateYearSettingsFactory, UpdateYearSettingsFactory>();
         }
       );
   }
@@ -85,6 +87,7 @@ static class HostBuilderExtensions
         Commands.Attachments.Delete.BulkCommand.Handler
       >()
       .UseCommandHandler<TransferCommand, TransferCommand.Handler>()
-      .UseCommandHandler<ReferencesCommand, ReferencesCommand.Handler>();
+      .UseCommandHandler<ReferencesCommand, ReferencesCommand.Handler>()
+      .UseCommandHandler<YearCommand, YearCommand.Handler>();
   }
 }
