@@ -98,9 +98,9 @@ public class YearCommand : Command
           _logger.Warning("The following fields in app {App} could not be found: {Fields}.", app, string.Join(", ", fields));
         }
 
-        foreach (var (app, fields) in fieldsNotFound)
+        foreach (var (app, fields) in invalidFieldsFound)
         {
-          _logger.Warning("The following fields in app {App} could not be found: {Fields}.", app, string.Join(", ", fields));
+          _logger.Warning("The following fields in app {App} are not list or date fields: {Fields}.", app, string.Join(", ", fields));
         }
 
         return 2;

@@ -18,13 +18,15 @@ internal class UpdateYearSettingsFactory : IUpdateYearSettingsFactory
 
     await foreach (var record in csv.GetRecordsAsync<FieldToUpdate>())
     {
+      var fieldName = record.FieldName.Replace("\u200b", string.Empty);
+
       if (fieldsToUpdate.TryGetValue(record.AppName, out var value))
       {
-        value.Add(record.FieldName);
+        value.Add(fieldName);
         continue;
       }
 
-      fieldsToUpdate.Add(record.AppName, [record.FieldName]);
+      fieldsToUpdate.Add(record.AppName, [fieldName]);
     }
 
     return new(fieldsToUpdate);
